@@ -1,6 +1,6 @@
 export interface AHSPTemplate {
   id: string;
-  category: 'Struktur' | 'Persiapan' | 'Tanah' | 'Dinding' | 'Lantai' | 'Finishing' | 'Atap' | 'Lain-lain';
+  category: 'Struktur' | 'Persiapan' | 'Tanah' | 'Dinding' | 'Lantai' | 'Finishing' | 'Atap' | 'Arsitektur' | 'Mekanikal' | 'Elektrikal' | 'Sanitasi' | 'Lain-lain';
   name: string;
   unit: string;
   materials: { name: string; coeff: number; unit: string }[];
@@ -224,6 +224,155 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
       { name: 'Tukang Kayu', coeff: 0.8, unit: 'OH' },
       { name: 'Kepala Tukang', coeff: 0.08, unit: 'OH' },
       { name: 'Mandor', coeff: 0.04, unit: 'OH' },
+    ],
+    productivity: 1,
+  },
+  // MEKANIKAL - PLUMBING
+  {
+    id: 'mek-001',
+    category: 'Mekanikal',
+    name: 'Instalasi Pipa Air Bersih PVC (Per Titik)',
+    unit: 'titik',
+    materials: [
+      { name: 'Pipa PVC 1/2"', coeff: 6, unit: 'm' },
+      { name: 'Fitting PVC', coeff: 4, unit: 'buah' },
+      { name: 'Lem PVC', coeff: 0.1, unit: 'kaleng' },
+    ],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 0.5, unit: 'OH' },
+      { name: 'Tukang Pipa', coeff: 1.0, unit: 'OH' },
+      { name: 'Kepala Tukang', coeff: 0.1, unit: 'OH' },
+      { name: 'Mandor', coeff: 0.05, unit: 'OH' },
+    ],
+    productivity: 3,
+  },
+  {
+    id: 'mek-002',
+    category: 'Mekanikal',
+    name: 'Instalasi Pipa Air Kotor PVC (Per Titik)',
+    unit: 'titik',
+    materials: [
+      { name: 'Pipa PVC 3"', coeff: 4, unit: 'm' },
+      { name: 'Pipa PVC 4"', coeff: 2, unit: 'm' },
+      { name: 'Fitting PVC', coeff: 5, unit: 'buah' },
+      { name: 'Lem PVC', coeff: 0.15, unit: 'kaleng' },
+    ],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 0.6, unit: 'OH' },
+      { name: 'Tukang Pipa', coeff: 1.2, unit: 'OH' },
+      { name: 'Kepala Tukang', coeff: 0.12, unit: 'OH' },
+      { name: 'Mandor', coeff: 0.06, unit: 'OH' },
+    ],
+    productivity: 2,
+  },
+  {
+    id: 'mek-003',
+    category: 'Mekanikal',
+    name: 'Instalasi Pipa Air Konsumsi/Minum (Per Titik)',
+    unit: 'titik',
+    materials: [
+      { name: 'Pipa PPR 1/2"', coeff: 5, unit: 'm' },
+      { name: 'Fitting PPR', coeff: 4, unit: 'buah' },
+    ],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 0.4, unit: 'OH' },
+      { name: 'Tukang Pipa', coeff: 0.8, unit: 'OH' },
+      { name: 'Kepala Tukang', coeff: 0.08, unit: 'OH' },
+      { name: 'Mandor', coeff: 0.04, unit: 'OH' },
+    ],
+    productivity: 3,
+  },
+  // SANITASI
+  {
+    id: 'san-001',
+    category: 'Sanitasi',
+    name: 'Pemasangan Kloset Duduk (Per Unit)',
+    unit: 'unit',
+    materials: [
+      { name: 'Kloset Duduk', coeff: 1, unit: 'unit' },
+      { name: 'Stop Kran', coeff: 1, unit: 'buah' },
+      { name: 'Selang Fleksibel', coeff: 1, unit: 'buah' },
+      { name: 'Semen PC', coeff: 2, unit: 'kg' },
+    ],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 0.5, unit: 'OH' },
+      { name: 'Tukang Pipa', coeff: 1.0, unit: 'OH' },
+      { name: 'Kepala Tukang', coeff: 0.1, unit: 'OH' },
+      { name: 'Mandor', coeff: 0.05, unit: 'OH' },
+    ],
+    productivity: 2,
+  },
+  {
+    id: 'san-002',
+    category: 'Sanitasi',
+    name: 'Pemasangan Kloset Jongkok (Per Unit)',
+    unit: 'unit',
+    materials: [
+      { name: 'Kloset Jongkok', coeff: 1, unit: 'unit' },
+      { name: 'Semen PC', coeff: 3, unit: 'kg' },
+      { name: 'Pasir', coeff: 0.005, unit: 'm3' },
+    ],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 0.4, unit: 'OH' },
+      { name: 'Tukang Batu', coeff: 0.8, unit: 'OH' },
+      { name: 'Kepala Tukang', coeff: 0.08, unit: 'OH' },
+      { name: 'Mandor', coeff: 0.04, unit: 'OH' },
+    ],
+    productivity: 2,
+  },
+  // ELEKTRIKAL
+  {
+    id: 'elk-001',
+    category: 'Elektrikal',
+    name: 'Instalasi Titik Lampu (Per Titik)',
+    unit: 'titik',
+    materials: [
+      { name: 'Kabel NYM 2x1.5mm', coeff: 8, unit: 'm' },
+      { name: 'Pipa Conduit', coeff: 4, unit: 'm' },
+      { name: 'Fitting Lampu', coeff: 1, unit: 'buah' },
+      { name: 'Saklar', coeff: 1, unit: 'buah' },
+    ],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 0.3, unit: 'OH' },
+      { name: 'Tukang Listrik', coeff: 0.6, unit: 'OH' },
+      { name: 'Kepala Tukang', coeff: 0.06, unit: 'OH' },
+      { name: 'Mandor', coeff: 0.03, unit: 'OH' },
+    ],
+    productivity: 4,
+  },
+  {
+    id: 'elk-002',
+    category: 'Elektrikal',
+    name: 'Instalasi Stop Kontak (Per Titik)',
+    unit: 'titik',
+    materials: [
+      { name: 'Kabel NYM 3x2.5mm', coeff: 8, unit: 'm' },
+      { name: 'Pipa Conduit', coeff: 4, unit: 'm' },
+      { name: 'Stop Kontak', coeff: 1, unit: 'buah' },
+    ],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 0.3, unit: 'OH' },
+      { name: 'Tukang Listrik', coeff: 0.6, unit: 'OH' },
+      { name: 'Kepala Tukang', coeff: 0.06, unit: 'OH' },
+      { name: 'Mandor', coeff: 0.03, unit: 'OH' },
+    ],
+    productivity: 4,
+  },
+  {
+    id: 'elk-003',
+    category: 'Elektrikal',
+    name: 'Pemasangan Panel MCB + Instalasi Utama',
+    unit: 'unit',
+    materials: [
+      { name: 'Box Panel MCB', coeff: 1, unit: 'unit' },
+      { name: 'MCB 1 Phase', coeff: 6, unit: 'buah' },
+      { name: 'Kabel NYY 4x6mm', coeff: 10, unit: 'm' },
+    ],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 1.0, unit: 'OH' },
+      { name: 'Tukang Listrik', coeff: 2.0, unit: 'OH' },
+      { name: 'Kepala Tukang', coeff: 0.2, unit: 'OH' },
+      { name: 'Mandor', coeff: 0.1, unit: 'OH' },
     ],
     productivity: 1,
   },

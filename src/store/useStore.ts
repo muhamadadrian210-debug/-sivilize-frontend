@@ -27,6 +27,13 @@ export interface Project {
   bathroomCount?: number;
   doorCount?: number;
   windowCount?: number;
+  // Mekanikal & Elektrikal
+  waterPointCount?: number;
+  drainPointCount?: number;
+  drinkingPointCount?: number;
+  lightPointCount?: number;
+  socketPointCount?: number;
+  toiletType?: 'duduk' | 'jongkok';
 }
 
 export interface ProjectVersion {

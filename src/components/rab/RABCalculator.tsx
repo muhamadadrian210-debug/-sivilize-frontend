@@ -69,6 +69,12 @@ const RABCalculator = () => {
     bathroomCount: 2,
     doorCount: 4,
     windowCount: 6,
+    waterPointCount: 4,
+    drainPointCount: 3,
+    drinkingPointCount: 2,
+    lightPointCount: 10,
+    socketPointCount: 8,
+    toiletType: 'duduk' as 'duduk' | 'jongkok',
   });
 
   const [rabItems, setRabItems] = useState<RABItem[]>([]);
@@ -201,6 +207,27 @@ const RABCalculator = () => {
       if (windowCount > 0) {
         addItem('buk-002', windowCount, { 'Pekerja': 1, 'Tukang Kayu': 2, 'Mandor': 1 });
       }
+
+      // Mekanikal - Plumbing
+      const waterPts = projectData.waterPointCount ?? 4;
+      const drainPts = projectData.drainPointCount ?? 3;
+      const drinkPts = projectData.drinkingPointCount ?? 2;
+      if (waterPts > 0) addItem('mek-001', waterPts, { 'Pekerja': 1, 'Tukang Pipa': 2, 'Mandor': 1 });
+      if (drainPts > 0) addItem('mek-002', drainPts, { 'Pekerja': 1, 'Tukang Pipa': 2, 'Mandor': 1 });
+      if (drinkPts > 0) addItem('mek-003', drinkPts, { 'Pekerja': 1, 'Tukang Pipa': 1, 'Mandor': 1 });
+
+      // Sanitasi - Kloset
+      if (bathroomCount > 0) {
+        const toiletId = projectData.toiletType === 'jongkok' ? 'san-002' : 'san-001';
+        addItem(toiletId, bathroomCount, { 'Pekerja': 1, 'Tukang Pipa': 1, 'Mandor': 1 });
+      }
+
+      // Elektrikal
+      const lightPts = projectData.lightPointCount ?? 10;
+      const socketPts = projectData.socketPointCount ?? 8;
+      if (lightPts > 0) addItem('elk-001', lightPts, { 'Pekerja': 1, 'Tukang Listrik': 2, 'Mandor': 1 });
+      if (socketPts > 0) addItem('elk-002', socketPts, { 'Pekerja': 1, 'Tukang Listrik': 2, 'Mandor': 1 });
+      addItem('elk-003', 1, { 'Pekerja': 1, 'Tukang Listrik': 2, 'Mandor': 1 });
 
       setRabItems(generated);
       setLoading(false);
@@ -398,39 +425,83 @@ const RABCalculator = () => {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="space-y-2">
                   <label className="text-text-secondary text-sm font-medium">Kamar Tidur</label>
-                  <input
-                    type="number" min="0"
-                    value={projectData.bedroomCount}
+                  <input type="number" min="0" value={projectData.bedroomCount}
                     onChange={(e) => setProjectData({...projectData, bedroomCount: parseInt(e.target.value) || 0})}
                     className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
                   />
                 </div>
                 <div className="space-y-2">
                   <label className="text-text-secondary text-sm font-medium">Kamar Mandi</label>
-                  <input
-                    type="number" min="0"
-                    value={projectData.bathroomCount}
+                  <input type="number" min="0" value={projectData.bathroomCount}
                     onChange={(e) => setProjectData({...projectData, bathroomCount: parseInt(e.target.value) || 0})}
                     className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
                   />
                 </div>
                 <div className="space-y-2">
                   <label className="text-text-secondary text-sm font-medium">Jumlah Pintu</label>
-                  <input
-                    type="number" min="0"
-                    value={projectData.doorCount}
+                  <input type="number" min="0" value={projectData.doorCount}
                     onChange={(e) => setProjectData({...projectData, doorCount: parseInt(e.target.value) || 0})}
                     className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
                   />
                 </div>
                 <div className="space-y-2">
                   <label className="text-text-secondary text-sm font-medium">Jumlah Jendela</label>
-                  <input
-                    type="number" min="0"
-                    value={projectData.windowCount}
+                  <input type="number" min="0" value={projectData.windowCount}
                     onChange={(e) => setProjectData({...projectData, windowCount: parseInt(e.target.value) || 0})}
                     className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
                   />
+                </div>
+              </div>
+            </div>
+
+            {/* Mekanikal & Elektrikal */}
+            <div className="border-t border-border pt-6">
+              <h4 className="text-sm font-bold text-text-secondary uppercase tracking-widest mb-4">Mekanikal &amp; Elektrikal</h4>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <label className="text-text-secondary text-sm font-medium">Titik Air Bersih</label>
+                  <input type="number" min="0" value={projectData.waterPointCount}
+                    onChange={(e) => setProjectData({...projectData, waterPointCount: parseInt(e.target.value) || 0})}
+                    className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-text-secondary text-sm font-medium">Titik Air Kotor</label>
+                  <input type="number" min="0" value={projectData.drainPointCount}
+                    onChange={(e) => setProjectData({...projectData, drainPointCount: parseInt(e.target.value) || 0})}
+                    className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-text-secondary text-sm font-medium">Titik Air Konsumsi</label>
+                  <input type="number" min="0" value={projectData.drinkingPointCount}
+                    onChange={(e) => setProjectData({...projectData, drinkingPointCount: parseInt(e.target.value) || 0})}
+                    className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-text-secondary text-sm font-medium">Titik Lampu</label>
+                  <input type="number" min="0" value={projectData.lightPointCount}
+                    onChange={(e) => setProjectData({...projectData, lightPointCount: parseInt(e.target.value) || 0})}
+                    className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-text-secondary text-sm font-medium">Titik Stop Kontak</label>
+                  <input type="number" min="0" value={projectData.socketPointCount}
+                    onChange={(e) => setProjectData({...projectData, socketPointCount: parseInt(e.target.value) || 0})}
+                    className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-text-secondary text-sm font-medium">Tipe Kloset</label>
+                  <select value={projectData.toiletType}
+                    onChange={(e) => setProjectData({...projectData, toiletType: e.target.value as 'duduk' | 'jongkok'})}
+                    className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary appearance-none transition-all"
+                  >
+                    <option value="duduk">Kloset Duduk</option>
+                    <option value="jongkok">Kloset Jongkok</option>
+                  </select>
                 </div>
               </div>
             </div>
