@@ -31,29 +31,75 @@ export interface RegionalPriceOverride {
 
 // Harga material default (per satuan, harga pasar 2025 Indonesia)
 // Referensi: AHSP SNI, Harga Satuan Kota 2025, survey pasar
-const defaultMaterials = {
-  // Semen: ~Rp 60.000-70.000/sak 50kg → per kg = ~1.300
-  'Semen PC': 1350,           // per kg
-  // Pasir pasang: Rp 250.000-350.000/m³ tergantung wilayah
+const defaultMaterials: Record<string, number> = {
+  // === STRUKTUR ===
+  'Semen PC': 1350,           // per kg (~Rp 67.500/sak 50kg)
   'Pasir Pasang': 280000,     // per m³
-  // Pasir beton: Rp 300.000-400.000/m³
   'Pasir Beton': 320000,      // per m³
-  // Krikil/split: Rp 300.000-380.000/m³
   'Krikil (Split)': 330000,   // per m³
-  // Bata merah: Rp 700-900/buah (standar press)
   'Bata Merah': 800,          // per buah
-  // Besi beton: Rp 13.000-16.000/kg (2025)
   'Besi Beton': 14500,        // per kg
-  // Kawat beton: Rp 20.000-25.000/kg
   'Kawat Beton': 22000,       // per kg
-  // Plamir: Rp 25.000-35.000/kg
-  'Plamir': 28000,            // per kg
-  // Cat dasar: Rp 50.000-70.000/kg
-  'Cat Dasar': 55000,         // per kg
-  // Cat penutup: Rp 70.000-100.000/kg
-  'Cat Penutup': 80000,       // per kg
-  // Air: per liter
   'Air': 50,                  // per liter
+
+  // === FINISHING - CAT ===
+  'Plamir': 28000,            // per kg
+  'Cat Dasar': 55000,         // per kg
+  'Cat Penutup': 80000,       // per kg
+  'Cat Kayu': 75000,          // per kg
+
+  // === KAYU & KUSEN ===
+  'Kayu Kusen': 4500000,      // per m³ (kayu kelas II)
+  'Kayu Rangka Atap': 3800000,// per m³
+
+  // === PINTU ===
+  'Daun Pintu Panel': 850000, // per unit (pintu panel kayu)
+  'Daun Pintu PVC': 650000,   // per unit (pintu PVC kamar mandi)
+  'Engsel Pintu': 45000,      // per buah (engsel tanam)
+  'Kunci Tanam': 185000,      // per buah (kunci tanam standar)
+
+  // === JENDELA ===
+  'Daun Jendela': 350000,     // per unit
+  'Engsel Jendela': 35000,    // per buah
+  'Grendel': 25000,           // per buah
+  'Kaca Polos 5mm': 120000,   // per m²
+
+  // === ALUMINIUM ===
+  'Kusen Aluminium': 850000,  // per set (kusen + frame)
+
+  // === KUNCI & AKSESORIS ===
+  'Kunci Kamar Mandi': 95000, // per buah
+
+  // === PLUMBING ===
+  'Pipa PVC 1/2"': 28000,     // per m
+  'Pipa PVC 3"': 55000,       // per m
+  'Pipa PVC 4"': 75000,       // per m
+  'Pipa PPR 1/2"': 45000,     // per m
+  'Fitting PVC': 8500,        // per buah
+  'Fitting PPR': 12000,       // per buah
+  'Lem PVC': 35000,           // per kaleng
+  'Stop Kran': 85000,         // per buah
+  'Selang Fleksibel': 55000,  // per buah
+
+  // === SANITASI ===
+  'Kloset Duduk': 1250000,    // per unit (standar)
+  'Kloset Jongkok': 350000,   // per unit
+
+  // === ELEKTRIKAL ===
+  'Kabel NYM 2x1.5mm': 18000, // per m
+  'Kabel NYM 3x2.5mm': 28000, // per m
+  'Kabel NYY 4x6mm': 85000,   // per m
+  'Pipa Conduit': 12000,      // per m
+  'Fitting Lampu': 35000,     // per buah
+  'Saklar': 45000,            // per buah
+  'Stop Kontak': 55000,       // per buah
+  'Box Panel MCB': 350000,    // per unit
+  'MCB 1 Phase': 85000,       // per buah
+
+  // === ATAP ===
+  'Genteng Beton': 8500,      // per buah (~14 buah/m²)
+  'Genteng Keramik': 12000,   // per buah
+  'Spandek/Galvalum': 85000,  // per m²
 };
 
 // Upah tenaga kerja per OH (Orang Hari) - harga pasar 2025
@@ -172,7 +218,43 @@ const MATERIAL_BRANDS_BY_GRADE: Record<MaterialGrade, Record<string, { brand: st
     'Plamir': { brand: 'Avian / Jotun Plamur', spec: 'Daya rekat tinggi, minim retak rambut' },
     'Cat Dasar': { brand: 'Nippon Vinilex Primer', spec: 'Daya tutup baik, tahan alkali' },
     'Cat Penutup': { brand: 'Dulux / Jotun Premium', spec: 'Ketahanan cuaca dan warna tinggi' },
-    Air: { brand: 'Air Bersih PDAM/Sumur Uji', spec: 'Tidak mengandung minyak/garam merusak' },
+    'Cat Kayu': { brand: 'Impra / Propan Premium', spec: 'Anti jamur, tahan cuaca' },
+    'Air': { brand: 'Air Bersih PDAM/Sumur Uji', spec: 'Tidak mengandung minyak/garam merusak' },
+    'Kayu Kusen': { brand: 'Kayu Kamper / Meranti AA', spec: 'Kelas kuat II, kering oven' },
+    'Kayu Rangka Atap': { brand: 'Kayu Kamper / Meranti', spec: 'Kelas kuat II, bebas cacat' },
+    'Daun Pintu Panel': { brand: 'Pintu Panel Solid Mahoni', spec: 'Kayu solid, finishing halus' },
+    'Daun Pintu PVC': { brand: 'Conwood / Seven', spec: 'Anti air, anti rayap' },
+    'Engsel Pintu': { brand: 'Dekson / Dorma', spec: 'Stainless steel, anti karat' },
+    'Kunci Tanam': { brand: 'Dekson / Yale', spec: 'Kunci tanam 2 putaran, anti buka paksa' },
+    'Daun Jendela': { brand: 'Jendela Kayu Solid', spec: 'Kayu kamper, finishing cat' },
+    'Engsel Jendela': { brand: 'Dekson Stainless', spec: 'Anti karat, presisi' },
+    'Grendel': { brand: 'Dekson / Solid', spec: 'Stainless steel' },
+    'Kaca Polos 5mm': { brand: 'Asahimas / Mulia Glass', spec: 'Kaca float 5mm, jernih' },
+    'Kusen Aluminium': { brand: 'YKK / Alexindo Premium', spec: 'Profil 4" anodized' },
+    'Kunci Kamar Mandi': { brand: 'Dekson / Solid', spec: 'Kunci kamar mandi indicator' },
+    'Pipa PVC 1/2"': { brand: 'Wavin / Rucika', spec: 'AW class, SNI' },
+    'Pipa PVC 3"': { brand: 'Wavin / Rucika', spec: 'AW class, SNI' },
+    'Pipa PVC 4"': { brand: 'Wavin / Rucika', spec: 'AW class, SNI' },
+    'Pipa PPR 1/2"': { brand: 'Wavin Tigris / Georg Fischer', spec: 'PN20, food grade' },
+    'Fitting PVC': { brand: 'Wavin / Rucika', spec: 'SNI, pressure rated' },
+    'Fitting PPR': { brand: 'Wavin Tigris', spec: 'PN20, heat fusion' },
+    'Lem PVC': { brand: 'Tangit / Henkel', spec: 'Solvent cement, kuat' },
+    'Stop Kran': { brand: 'San-Ei / Onda', spec: 'Brass, anti bocor' },
+    'Selang Fleksibel': { brand: 'Onda / San-Ei', spec: 'Stainless braided' },
+    'Kloset Duduk': { brand: 'TOTO / American Standard', spec: 'Dual flush, water saving' },
+    'Kloset Jongkok': { brand: 'TOTO / Ina', spec: 'Porselen, anti slip' },
+    'Kabel NYM 2x1.5mm': { brand: 'Supreme / Kabelindo', spec: 'SNI, 300/500V' },
+    'Kabel NYM 3x2.5mm': { brand: 'Supreme / Kabelindo', spec: 'SNI, 300/500V' },
+    'Kabel NYY 4x6mm': { brand: 'Supreme / Kabelindo', spec: 'SNI, 0.6/1kV' },
+    'Pipa Conduit': { brand: 'Clipsal / Ega', spec: 'PVC conduit, fire retardant' },
+    'Fitting Lampu': { brand: 'Broco / Panasonic', spec: 'E27, porcelain' },
+    'Saklar': { brand: 'Panasonic / Schneider', spec: 'Flush mount, 10A' },
+    'Stop Kontak': { brand: 'Panasonic / Schneider', spec: 'Grounded, 16A' },
+    'Box Panel MCB': { brand: 'Schneider / Hager', spec: 'IP40, 12 way' },
+    'MCB 1 Phase': { brand: 'Schneider / ABB', spec: '10A-20A, 6kA' },
+    'Genteng Beton': { brand: 'Monier / Cisangkan', spec: 'Beton press, anti lumut' },
+    'Genteng Keramik': { brand: 'KIA / Kanmuri', spec: 'Glasir, tahan cuaca' },
+    'Spandek/Galvalum': { brand: 'BlueScope / Lysaght', spec: 'Zincalume AZ150' },
   },
   B: {
     'Semen PC': { brand: 'Bosowa / Dynamix', spec: 'Portland Composite Cement, mutu standar proyek' },
@@ -185,7 +267,43 @@ const MATERIAL_BRANDS_BY_GRADE: Record<MaterialGrade, Record<string, { brand: st
     'Plamir': { brand: 'No Drop / Avitex Putty', spec: 'Plamir standar interior-eksterior' },
     'Cat Dasar': { brand: 'Avitex Primer', spec: 'Primer standar dinding' },
     'Cat Penutup': { brand: 'Avitex / Mowilex', spec: 'Finishing standar kualitas baik' },
-    Air: { brand: 'Air Bersih Lokal', spec: 'Sumber air bersih terkontrol' },
+    'Cat Kayu': { brand: 'Impra / Propan Standar', spec: 'Cat kayu standar' },
+    'Air': { brand: 'Air Bersih Lokal', spec: 'Sumber air bersih terkontrol' },
+    'Kayu Kusen': { brand: 'Kayu Meranti / Bengkirai', spec: 'Kelas kuat II-III' },
+    'Kayu Rangka Atap': { brand: 'Kayu Meranti Lokal', spec: 'Kelas kuat II-III' },
+    'Daun Pintu Panel': { brand: 'Pintu Panel Meranti', spec: 'Kayu solid standar' },
+    'Daun Pintu PVC': { brand: 'Conwood / Lokal', spec: 'Anti air standar' },
+    'Engsel Pintu': { brand: 'Solid / Lokal SNI', spec: 'Besi galvanis, 3 buah/pintu' },
+    'Kunci Tanam': { brand: 'Solid / Lokal', spec: 'Kunci tanam standar' },
+    'Daun Jendela': { brand: 'Jendela Kayu Meranti', spec: 'Kayu meranti, cat standar' },
+    'Engsel Jendela': { brand: 'Solid Standar', spec: 'Besi galvanis' },
+    'Grendel': { brand: 'Solid / Lokal', spec: 'Besi galvanis' },
+    'Kaca Polos 5mm': { brand: 'Mulia Glass / Lokal', spec: 'Kaca float 5mm' },
+    'Kusen Aluminium': { brand: 'Alexindo / Lokal', spec: 'Profil 3" standar' },
+    'Kunci Kamar Mandi': { brand: 'Solid / Lokal', spec: 'Kunci kamar mandi standar' },
+    'Pipa PVC 1/2"': { brand: 'Rucika / Pralon', spec: 'AW class, SNI' },
+    'Pipa PVC 3"': { brand: 'Rucika / Pralon', spec: 'AW class, SNI' },
+    'Pipa PVC 4"': { brand: 'Rucika / Pralon', spec: 'AW class, SNI' },
+    'Pipa PPR 1/2"': { brand: 'Wavin / Lokal', spec: 'PN16, standar' },
+    'Fitting PVC': { brand: 'Rucika / Pralon', spec: 'SNI standar' },
+    'Fitting PPR': { brand: 'Wavin / Lokal', spec: 'PN16' },
+    'Lem PVC': { brand: 'Tangit / Lokal', spec: 'Solvent cement standar' },
+    'Stop Kran': { brand: 'Onda / Lokal', spec: 'Brass standar' },
+    'Selang Fleksibel': { brand: 'Onda / Lokal', spec: 'PVC braided' },
+    'Kloset Duduk': { brand: 'Ina / INA Sanitasi', spec: 'Dual flush standar' },
+    'Kloset Jongkok': { brand: 'Ina / Lokal', spec: 'Porselen standar' },
+    'Kabel NYM 2x1.5mm': { brand: 'Eterna / Extrana', spec: 'SNI, 300/500V' },
+    'Kabel NYM 3x2.5mm': { brand: 'Eterna / Extrana', spec: 'SNI, 300/500V' },
+    'Kabel NYY 4x6mm': { brand: 'Eterna / Extrana', spec: 'SNI, 0.6/1kV' },
+    'Pipa Conduit': { brand: 'Ega / Lokal', spec: 'PVC conduit standar' },
+    'Fitting Lampu': { brand: 'Broco / Lokal', spec: 'E27 standar' },
+    'Saklar': { brand: 'Broco / Lokal', spec: 'Flush mount standar' },
+    'Stop Kontak': { brand: 'Broco / Lokal', spec: 'Grounded standar' },
+    'Box Panel MCB': { brand: 'Hager / Lokal', spec: 'IP40, 8-12 way' },
+    'MCB 1 Phase': { brand: 'Hager / Lokal', spec: '10A-16A standar' },
+    'Genteng Beton': { brand: 'Cisangkan / Lokal', spec: 'Beton press standar' },
+    'Genteng Keramik': { brand: 'KIA / Lokal', spec: 'Keramik standar' },
+    'Spandek/Galvalum': { brand: 'Lokal SNI', spec: 'Zincalume standar' },
   },
   C: {
     'Semen PC': { brand: 'Bosowa Ekonomis / Lokal SNI', spec: 'PCC ekonomis tetap bersertifikat' },
@@ -198,7 +316,43 @@ const MATERIAL_BRANDS_BY_GRADE: Record<MaterialGrade, Record<string, { brand: st
     'Plamir': { brand: 'Plamir Lokal', spec: 'Ekonomis dengan kontrol aplikasi' },
     'Cat Dasar': { brand: 'Primer Lokal', spec: 'Primer ekonomis' },
     'Cat Penutup': { brand: 'Cat Ekonomis SNI', spec: 'Daya sebar menengah' },
-    Air: { brand: 'Air Bersih Lokal', spec: 'Tetap harus air bersih' },
+    'Cat Kayu': { brand: 'Cat Kayu Lokal', spec: 'Ekonomis' },
+    'Air': { brand: 'Air Bersih Lokal', spec: 'Tetap harus air bersih' },
+    'Kayu Kusen': { brand: 'Kayu Lokal Kelas III', spec: 'Kelas kuat III, diawetkan' },
+    'Kayu Rangka Atap': { brand: 'Kayu Lokal Ekonomis', spec: 'Kelas kuat III' },
+    'Daun Pintu Panel': { brand: 'Pintu HDF / Ekonomis', spec: 'HDF press, ekonomis' },
+    'Daun Pintu PVC': { brand: 'PVC Lokal', spec: 'Anti air ekonomis' },
+    'Engsel Pintu': { brand: 'Engsel Lokal', spec: 'Besi standar' },
+    'Kunci Tanam': { brand: 'Kunci Lokal', spec: 'Kunci tanam ekonomis' },
+    'Daun Jendela': { brand: 'Jendela Kayu Lokal', spec: 'Kayu lokal ekonomis' },
+    'Engsel Jendela': { brand: 'Lokal', spec: 'Besi standar' },
+    'Grendel': { brand: 'Lokal', spec: 'Besi standar' },
+    'Kaca Polos 5mm': { brand: 'Kaca Lokal', spec: 'Kaca 5mm ekonomis' },
+    'Kusen Aluminium': { brand: 'Aluminium Lokal', spec: 'Profil standar ekonomis' },
+    'Kunci Kamar Mandi': { brand: 'Lokal', spec: 'Kunci ekonomis' },
+    'Pipa PVC 1/2"': { brand: 'Pralon / Lokal SNI', spec: 'AW class ekonomis' },
+    'Pipa PVC 3"': { brand: 'Pralon / Lokal SNI', spec: 'AW class ekonomis' },
+    'Pipa PVC 4"': { brand: 'Pralon / Lokal SNI', spec: 'AW class ekonomis' },
+    'Pipa PPR 1/2"': { brand: 'Lokal SNI', spec: 'PN10 ekonomis' },
+    'Fitting PVC': { brand: 'Lokal SNI', spec: 'Standar ekonomis' },
+    'Fitting PPR': { brand: 'Lokal', spec: 'Standar ekonomis' },
+    'Lem PVC': { brand: 'Lokal', spec: 'Solvent cement ekonomis' },
+    'Stop Kran': { brand: 'Lokal', spec: 'Standar ekonomis' },
+    'Selang Fleksibel': { brand: 'Lokal', spec: 'PVC standar' },
+    'Kloset Duduk': { brand: 'Lokal / Economis', spec: 'Standar ekonomis' },
+    'Kloset Jongkok': { brand: 'Lokal', spec: 'Porselen ekonomis' },
+    'Kabel NYM 2x1.5mm': { brand: 'Lokal SNI', spec: 'SNI ekonomis' },
+    'Kabel NYM 3x2.5mm': { brand: 'Lokal SNI', spec: 'SNI ekonomis' },
+    'Kabel NYY 4x6mm': { brand: 'Lokal SNI', spec: 'SNI ekonomis' },
+    'Pipa Conduit': { brand: 'Lokal', spec: 'PVC standar' },
+    'Fitting Lampu': { brand: 'Lokal', spec: 'E27 ekonomis' },
+    'Saklar': { brand: 'Lokal', spec: 'Standar ekonomis' },
+    'Stop Kontak': { brand: 'Lokal', spec: 'Standar ekonomis' },
+    'Box Panel MCB': { brand: 'Lokal', spec: 'Standar ekonomis' },
+    'MCB 1 Phase': { brand: 'Lokal SNI', spec: 'Standar ekonomis' },
+    'Genteng Beton': { brand: 'Lokal', spec: 'Beton press ekonomis' },
+    'Genteng Keramik': { brand: 'Lokal', spec: 'Keramik ekonomis' },
+    'Spandek/Galvalum': { brand: 'Lokal', spec: 'Galvalum ekonomis' },
   },
 };
 
