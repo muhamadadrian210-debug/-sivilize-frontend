@@ -29,27 +29,45 @@ export interface RegionalPriceOverride {
   labor?: Record<string, number>;
 }
 
+// Harga material default (per satuan, harga pasar 2025 Indonesia)
+// Referensi: AHSP SNI, Harga Satuan Kota 2025, survey pasar
 const defaultMaterials = {
-  'Semen PC': 1250,
-  'Pasir Pasang': 325000,
-  'Pasir Beton': 350000,
-  'Krikil (Split)': 340000,
-  'Bata Merah': 1200,
-  'Besi Beton': 12500,
-  'Kawat Beton': 22000,
-  'Plamir': 18000,
-  'Cat Dasar': 45000,
-  'Cat Penutup': 65000,
-  'Air': 500,
+  // Semen: ~Rp 60.000-70.000/sak 50kg → per kg = ~1.300
+  'Semen PC': 1350,           // per kg
+  // Pasir pasang: Rp 250.000-350.000/m³ tergantung wilayah
+  'Pasir Pasang': 280000,     // per m³
+  // Pasir beton: Rp 300.000-400.000/m³
+  'Pasir Beton': 320000,      // per m³
+  // Krikil/split: Rp 300.000-380.000/m³
+  'Krikil (Split)': 330000,   // per m³
+  // Bata merah: Rp 700-900/buah (standar press)
+  'Bata Merah': 800,          // per buah
+  // Besi beton: Rp 13.000-16.000/kg (2025)
+  'Besi Beton': 14500,        // per kg
+  // Kawat beton: Rp 20.000-25.000/kg
+  'Kawat Beton': 22000,       // per kg
+  // Plamir: Rp 25.000-35.000/kg
+  'Plamir': 28000,            // per kg
+  // Cat dasar: Rp 50.000-70.000/kg
+  'Cat Dasar': 55000,         // per kg
+  // Cat penutup: Rp 70.000-100.000/kg
+  'Cat Penutup': 80000,       // per kg
+  // Air: per liter
+  'Air': 50,                  // per liter
 };
 
+// Upah tenaga kerja per OH (Orang Hari) - harga pasar 2025
+// Referensi: Standar Harga Konstruksi Kota 2025, survey lapangan
 const defaultLabor = {
-  'Pekerja': 120000,
-  'Tukang Batu': 150000,
-  'Tukang Besi': 150000,
-  'Tukang Cat': 140000,
-  'Kepala Tukang': 175000,
-  'Mandor': 200000,
+  'Pekerja': 150000,        // Rp 130.000-170.000/OH
+  'Tukang Batu': 200000,    // Rp 180.000-220.000/OH
+  'Tukang Besi': 200000,    // Rp 180.000-220.000/OH
+  'Tukang Cat': 185000,     // Rp 170.000-200.000/OH
+  'Tukang Kayu': 200000,    // Rp 180.000-220.000/OH
+  'Tukang Pipa': 195000,    // Rp 180.000-210.000/OH
+  'Tukang Listrik': 210000, // Rp 190.000-230.000/OH
+  'Kepala Tukang': 230000,  // Rp 210.000-250.000/OH
+  'Mandor': 270000,         // Rp 250.000-300.000/OH
 };
 
 export const PROVINCES: ProvinceOption[] = [
@@ -93,17 +111,34 @@ export const PROVINCES: ProvinceOption[] = [
   { id: 'papua-selatan', name: 'Papua Selatan', region: 'Papua', cities: ['Merauke', 'Agats', 'Tanah Merah'] },
 ];
 
-export const CITIES: CityPrices[] = PROVINCES.flatMap((province) =>
-  province.cities.map((cityName, index) => ({
+export const CITIES: CityPrices[] = PROVINCES.flatMap((province) => {
+  // Faktor penyesuaian harga per wilayah (biaya logistik & ketersediaan material)
+  const regionalFactor: Record<string, { mat: number; lab: number }> = {
+    'Jawa':           { mat: 1.00, lab: 1.00 },
+    'Sumatera':       { mat: 1.10, lab: 1.05 },
+    'Kalimantan':     { mat: 1.20, lab: 1.15 },
+    'Sulawesi':       { mat: 1.15, lab: 1.10 },
+    'Nusa Tenggara':  { mat: 1.25, lab: 1.15 },
+    'Maluku':         { mat: 1.35, lab: 1.20 },
+    'Papua':          { mat: 1.50, lab: 1.35 },
+  };
+
+  const factor = regionalFactor[province.region] || { mat: 1.10, lab: 1.05 };
+
+  return province.cities.map((cityName, index) => ({
     id: `${province.id}-${index + 1}`,
     name: cityName,
     provinceId: province.id,
     provinceName: province.name,
     region: province.region,
-    materials: { ...defaultMaterials },
-    labor: { ...defaultLabor },
-  }))
-);
+    materials: Object.fromEntries(
+      Object.entries(defaultMaterials).map(([k, v]) => [k, Math.round(v * factor.mat)])
+    ),
+    labor: Object.fromEntries(
+      Object.entries(defaultLabor).map(([k, v]) => [k, Math.round(v * factor.lab)])
+    ),
+  }));
+});
 
 export const DEFAULT_PROVINCE_ID = PROVINCES[0]?.id ?? '';
 export const DEFAULT_CITY_ID = CITIES[0]?.id ?? '';
