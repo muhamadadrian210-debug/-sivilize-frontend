@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Wind, Weight, Users, Building, HelpCircle, Calculator, Info } from 'lucide-react';
 
 const StructuralAnalysis = () => {
+  const [activeTooltip, setActiveTooltip] = useState<number | null>(null);
   const [params, setParams] = useState({
     buildingFunction: 'rumah',
     totalArea: 100,
@@ -60,19 +61,22 @@ const StructuralAnalysis = () => {
       name: 'Beban Mati (Dead Load)',
       description: `Berat sendiri struktur (beton, dinding ${params.wallType}, atap ${params.roofType}).`,
       icon: Weight,
-      value: `${Math.round(calculation.dead)} kg/m²`
+      value: `${Math.round(calculation.dead)} kg/m²`,
+      tooltip: `Beban Mati adalah berat permanen dari semua elemen struktur bangunan.\n\nKomponen:\n• Berat dinding (${params.wallType === 'bata-merah' ? 'Bata Merah: 250 kg/m²' : 'Bata Ringan: 120 kg/m²'})\n• Berat atap ${params.roofType}\n• Berat plat beton: 288 kg/m²\n\nReferensi: SNI 1727:2020 Pasal 3.1`
     },
     {
       name: 'Beban Hidup (Live Load)',
       description: `Beban dinamis penghuni dan furnitur untuk fungsi ${params.buildingFunction}.`,
       icon: Users,
-      value: `${Math.round(calculation.live)} kg/m²`
+      value: `${Math.round(calculation.live)} kg/m²`,
+      tooltip: `Beban Hidup adalah beban yang dapat berubah posisi dan besarnya.\n\nKomponen:\n• Berat penghuni dan aktivitas\n• Berat furnitur dan peralatan\n• Nilai standar rumah tinggal: 200 kg/m²\n\nReferensi: SNI 1727:2020 Tabel 4.3-1`
     },
     {
       name: 'Beban Angin (Wind Load)',
       description: `Tekanan angin berdasarkan kecepatan ${params.windSpeed} m/s.`,
       icon: Wind,
-      value: `${Math.round(calculation.wind)} kg/m²`
+      value: `${Math.round(calculation.wind)} kg/m²`,
+      tooltip: `Beban Angin dihitung berdasarkan kecepatan angin dasar di lokasi.\n\nRumus: q = V² / 16\nDimana V = kecepatan angin (${params.windSpeed} m/s)\n\nHasil: ${params.windSpeed}² / 16 = ${Math.round(calculation.wind)} kg/m²\n\nReferensi: SNI 1727:2020 Pasal 26`
     },
   ];
 
@@ -198,14 +202,31 @@ const StructuralAnalysis = () => {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: index * 0.1 }}
-                className="glass-card p-6 flex flex-col group hover:border-primary/40 transition-all border-border/50"
+                className="glass-card p-6 flex flex-col group hover:border-primary/40 transition-all border-border/50 relative"
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className="p-2 rounded-lg bg-primary/10 text-primary group-hover:scale-110 transition-transform">
                     <load.icon size={20} />
                   </div>
-                  <HelpCircle size={14} className="text-text-secondary cursor-pointer hover:text-white" />
+                  <button
+                    onClick={() => setActiveTooltip(activeTooltip === index ? null : index)}
+                    className="p-1 rounded-full hover:bg-white/10 transition-colors"
+                  >
+                    <HelpCircle size={14} className="text-text-secondary hover:text-primary transition-colors" />
+                  </button>
                 </div>
+
+                {/* Tooltip Popup */}
+                {activeTooltip === index && (
+                  <div className="absolute top-14 right-4 z-50 w-72 bg-[#121826] border border-primary/30 rounded-xl p-4 shadow-2xl">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-primary text-xs font-bold uppercase tracking-widest">Penjelasan</span>
+                      <button onClick={() => setActiveTooltip(null)} className="text-text-secondary hover:text-white text-xs">✕</button>
+                    </div>
+                    <p className="text-text-secondary text-xs leading-relaxed whitespace-pre-line">{load.tooltip}</p>
+                  </div>
+                )}
+
                 <h4 className="font-bold text-white text-sm mb-2">{load.name}</h4>
                 <p className="text-text-secondary text-[10px] leading-relaxed flex-1 mb-4 italic">{load.description}</p>
                 <div className="mt-auto pt-4 border-t border-border/50">
