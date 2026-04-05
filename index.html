@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="description" content="SIVILIZE-HUB PRO - Sistem RAB Rumah Tinggal Berbasis AHSP/SNI Standar Nasional Indonesia" />
+    <meta name="keywords" content="RAB, konstruksi, AHSP, SNI, budget, bangunan, Indonesia" />
+    <meta name="author" content="Muhamad Adrian" />
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="SIVILIZE-HUB PRO - Professional RAB System" />
+    <meta property="og:description" content="Sistem RAB Rumah Tinggal Berbasis AHSP/SNI Standar Nasional Indonesia" />
+    <meta property="og:image" content="/favicon.svg" />
+    <meta property="og:url" content="https://sivilize-hub-pro.vercel.app" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="SIVILIZE-HUB PRO" />
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="SIVILIZE-HUB PRO - Professional RAB System" />
+    <meta name="twitter:description" content="Sistem RAB Rumah Tinggal Berbasis AHSP/SNI Standar Nasional Indonesia" />
+    <meta name="twitter:image" content="/favicon.svg" />
+    <meta name="twitter:site" content="@sivilizehub" />
+    
+    <!-- Additional Meta Tags -->
+    <meta name="robots" content="index, follow" />
+    <meta name="googlebot" content="index, follow" />
+    <meta name="author" content="Muhamad Adrian" />
+    <meta name="application-name" content="SIVILIZE-HUB PRO" />
+    <meta name="apple-mobile-web-app-title" content="SIVILIZE-HUB PRO" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="msapplication-TileColor" content="#f97316" />
+    <meta name="theme-color" content="#f97316" />
+    
+    <!-- Browser Compatibility -->
+    <script>
+      // Polyfill for Promise.finally() for older browsers
+      if (!Promise.prototype.finally) {
+        Promise.prototype.finally = function(callback) {
+          var P = this.constructor;
+          return this.then(
+            function(value) { return P.resolve(callback()).then(function() { return value; }); },
+            function(reason) {
+              return P.resolve(callback()).then(function() { throw reason; });
+            }
+          );
+        };
+      }
+      
+      // Polyfill for Object.assign
+      if (typeof Object.assign !== 'function') {
+        Object.assign = function(target) {
+          'use strict';
+          if (target == null) {
+            throw new TypeError('Cannot convert undefined or null to object');
+          }
+          target = Object(target);
+          for (var index = 1; index < arguments.length; index++) {
+            var source = arguments[index];
+            if (source != null) {
+              for (var nextKey in source) {
+                if (Object.prototype.hasOwnProperty.call(source, nextKey)) {
+                  target[nextKey] = source[nextKey];
+                }
+              }
+            }
+          }
+          return target;
+        };
+      }
+      
+      // Polyfill for Array.includes
+      if (!Array.prototype.includes) {
+        Array.prototype.includes = function(searchElement /*, fromIndex*/) {
+          'use strict';
+          if (this == null) {
+            throw new TypeError('Array.prototype.includes called on null or undefined');
+          }
+          var O = Object(this);
+          var len = parseInt(O.length, 10) || 0;
+          if (len === 0) {
+            return false;
+          }
+          var n = parseInt(arguments[1], 10) || 0;
+          var k;
+          if (n >= 0) {
+            k = n;
+          } else {
+            k = len + n;
+            if (k < 0) {k = 0;}
+          }
+          var currentElement;
+          while (k < len) {
+            currentElement = O[k];
+            if (searchElement === currentElement ||
+               (searchElement !== searchElement && currentElement !== currentElement)) {
+              return true;
+            }
+            k++;
+          }
+          return false;
+        };
+      }
+    </script>
+    
+    <title>SIVILIZE-HUB PRO - Professional RAB System</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

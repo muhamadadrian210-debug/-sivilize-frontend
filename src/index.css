@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #0B0F1A;
+  --color-card: #121826;
+  --color-border: #1E293B;
+  --color-primary: #FF7A00;
+  --color-primary-hover: #FF8C1A;
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: #94A3B8;
+  --color-success: #22C55E;
+
+  --shadow-glow: 0 0 15px rgba(255, 122, 0, 0.3);
+  --shadow-glow-hover: 0 0 25px rgba(255, 122, 0, 0.5);
+}
+
+@layer base {
+  body {
+    @apply bg-background text-text-primary antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-card border border-border rounded-xl shadow-lg;
+  }
+  
+  .btn-primary {
+    @apply bg-primary hover:bg-primary-hover text-white px-6 py-2 rounded-lg transition-all duration-300 font-semibold shadow-glow hover:shadow-glow-hover active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply bg-transparent border border-border hover:bg-border text-text-secondary hover:text-white px-6 py-2 rounded-lg transition-all duration-300 font-semibold active:scale-95;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-background;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-border rounded-full hover:bg-text-secondary transition-colors;
+}

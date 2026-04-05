@@ -1,0 +1,22 @@
+# Browser compatibility for SIVILIZE-HUB PRO
+# Supports modern browsers including Microsoft Edge
+
+# Production browsers
+> 0.5%
+last 2 versions
+Firefox ESR
+not dead
+not IE 11
+
+# Specific browser support
+Chrome >= 60
+Firefox >= 60
+Safari >= 12
+Edge >= 79
+iOS >= 12
+Android >= 8
+
+# Development
+last 1 Chrome version
+last 1 Firefox version
+last 1 Safari version
