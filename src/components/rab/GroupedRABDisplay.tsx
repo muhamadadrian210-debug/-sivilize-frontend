@@ -252,7 +252,6 @@ const GroupedRABDisplay = ({
                                 ) : null;
                               })()}
                             </td>
-                            </td>
                             <td className="px-4 py-3 text-white font-bold text-sm">
                               {formatCurrency(item.total)}
                             </td>
