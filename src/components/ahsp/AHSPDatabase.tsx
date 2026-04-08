@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { 
   Search, 
-  Plus, 
   Edit2, 
   Trash2, 
   Copy,
@@ -9,7 +8,8 @@ import {
   Layers,
   HardHat,
   ShieldCheck,
-  Upload
+  Upload,
+  MapPin
 } from 'lucide-react';
 import { AHSP_TEMPLATES } from '../../data/ahsp';
 import { formatCurrency } from '../../utils/calculations';
@@ -26,8 +26,10 @@ import {
 } from '../../data/prices';
 import { calculateAHSPItem } from '../../utils/calculations';
 import { importRegionalPriceCsv, importRegionalPriceFromApi } from '../../services/regionalPriceDataset';
+import HSPKManager from './HSPKManager';
 
 const AHSPDatabase = () => {
+  const [mainTab, setMainTab] = useState<'ahsp' | 'hspk'>('ahsp');
   const [search, setSearch] = useState('');
   const [selectedProvince, setSelectedProvince] = useState(DEFAULT_PROVINCE_ID);
   const [selectedCity, setSelectedCity] = useState(DEFAULT_CITY_ID);
@@ -48,6 +50,23 @@ const AHSPDatabase = () => {
 
   return (
     <div className="space-y-8">
+      {/* Main Tab Switcher */}
+      <div className="flex items-center gap-2 bg-background border border-border p-1 rounded-xl w-fit">
+        <button onClick={() => setMainTab('ahsp')}
+          className={`px-5 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${mainTab === 'ahsp' ? 'bg-primary text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}>
+          <Layers size={16} /> Database AHSP
+        </button>
+        <button onClick={() => setMainTab('hspk')}
+          className={`px-5 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${mainTab === 'hspk' ? 'bg-primary text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}>
+          <MapPin size={16} /> HSPK Regional
+        </button>
+      </div>
+
+      {/* HSPK Manager */}
+      {mainTab === 'hspk' && <HSPKManager />}
+
+      {/* AHSP Content */}
+      {mainTab === 'ahsp' && <>
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h2 className="text-3xl font-bold text-white">AHSP Database</h2>
@@ -67,10 +86,6 @@ const AHSPDatabase = () => {
               </button>
             ))}
           </div>
-          <button className="btn-primary flex items-center gap-2">
-            <Plus size={18} />
-            <span>AHSP Baru</span>
-          </button>
         </div>
       </div>
 
@@ -283,6 +298,7 @@ const AHSPDatabase = () => {
           })}
         </div>
       </div>
+      </>}
     </div>
   );
 };
