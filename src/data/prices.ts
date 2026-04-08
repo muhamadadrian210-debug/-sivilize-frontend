@@ -100,6 +100,19 @@ const defaultMaterials: Record<string, number> = {
   'Genteng Beton': 8500,      // per buah (~14 buah/m²)
   'Genteng Keramik': 12000,   // per buah
   'Spandek/Galvalum': 85000,  // per m²
+  'Baja Ringan C75': 18500,   // per kg
+  'Reng Baja Ringan': 12000,  // per kg
+  'Sekrup Roofing': 850,      // per buah
+  'Sealant': 45000,           // per kg
+
+  // === PONDASI ===
+  'Batu Kali': 280000,        // per m³
+  'Pasir Urug': 180000,       // per m³
+
+  // === BEKISTING ===
+  'Kayu Bekisting': 3200000,  // per m³ (kayu kelas III)
+  'Paku': 22000,              // per kg
+  'Minyak Bekisting': 15000,  // per liter
 };
 
 // Upah tenaga kerja per OH (Orang Hari) - harga pasar 2025

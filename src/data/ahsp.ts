@@ -25,6 +25,56 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
     productivity: 1.5,
   },
   {
+    id: 'str-000',
+    category: 'Struktur',
+    name: 'Pondasi Batu Kali 1:4',
+    unit: 'm3',
+    materials: [
+      { name: 'Batu Kali', coeff: 1.2, unit: 'm3' },
+      { name: 'Semen PC', coeff: 136, unit: 'kg' },
+      { name: 'Pasir Pasang', coeff: 0.544, unit: 'm3' },
+    ],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 1.5, unit: 'OH' },
+      { name: 'Tukang Batu', coeff: 0.6, unit: 'OH' },
+      { name: 'Kepala Tukang', coeff: 0.06, unit: 'OH' },
+      { name: 'Mandor', coeff: 0.075, unit: 'OH' },
+    ],
+    productivity: 0.8,
+  },
+  {
+    id: 'str-004',
+    category: 'Struktur',
+    name: 'Bekisting Kolom/Balok/Plat',
+    unit: 'm2',
+    materials: [
+      { name: 'Kayu Bekisting', coeff: 0.04, unit: 'm3' },
+      { name: 'Paku', coeff: 0.4, unit: 'kg' },
+      { name: 'Minyak Bekisting', coeff: 0.2, unit: 'liter' },
+    ],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 0.33, unit: 'OH' },
+      { name: 'Tukang Kayu', coeff: 0.33, unit: 'OH' },
+      { name: 'Kepala Tukang', coeff: 0.033, unit: 'OH' },
+      { name: 'Mandor', coeff: 0.017, unit: 'OH' },
+    ],
+    productivity: 6,
+  },
+  {
+    id: 'str-005',
+    category: 'Struktur',
+    name: 'Urugan Pasir Bawah Pondasi (t=10cm)',
+    unit: 'm2',
+    materials: [
+      { name: 'Pasir Urug', coeff: 0.12, unit: 'm3' },
+    ],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 0.1, unit: 'OH' },
+      { name: 'Mandor', coeff: 0.005, unit: 'OH' },
+    ],
+    productivity: 20,
+  },
+  {
     id: 'str-002',
     category: 'Struktur',
     name: 'Beton K-225 (Site Mix)',
@@ -102,8 +152,9 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
     name: 'Pemasangan Rangka Atap Baja Ringan',
     unit: 'm2',
     materials: [
-      { name: 'Besi Beton', coeff: 7.5, unit: 'kg' },
-      { name: 'Kawat Beton', coeff: 0.05, unit: 'kg' },
+      { name: 'Baja Ringan C75', coeff: 5.2, unit: 'kg' },
+      { name: 'Sekrup Roofing', coeff: 12, unit: 'buah' },
+      { name: 'Reng Baja Ringan', coeff: 3.5, unit: 'kg' },
     ],
     laborCoefficients: [
       { name: 'Pekerja', coeff: 0.12, unit: 'OH' },
@@ -116,11 +167,12 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   {
     id: 'ars-004',
     category: 'Arsitektur',
-    name: 'Penutup Atap Genteng',
+    name: 'Penutup Atap Genteng Beton',
     unit: 'm2',
     materials: [
-      { name: 'Bata Merah', coeff: 3, unit: 'bh' },
-      { name: 'Semen PC', coeff: 1.2, unit: 'kg' },
+      { name: 'Genteng Beton', coeff: 14, unit: 'bh' },
+      { name: 'Semen PC', coeff: 1.5, unit: 'kg' },
+      { name: 'Pasir Pasang', coeff: 0.006, unit: 'm3' },
     ],
     laborCoefficients: [
       { name: 'Pekerja', coeff: 0.08, unit: 'OH' },
@@ -136,8 +188,9 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
     name: 'Penutup Atap Spandek/Galvalum',
     unit: 'm2',
     materials: [
-      { name: 'Besi Beton', coeff: 1.5, unit: 'kg' },
-      { name: 'Kawat Beton', coeff: 0.02, unit: 'kg' },
+      { name: 'Spandek/Galvalum', coeff: 1.05, unit: 'm2' },
+      { name: 'Sekrup Roofing', coeff: 8, unit: 'buah' },
+      { name: 'Sealant', coeff: 0.05, unit: 'kg' },
     ],
     laborCoefficients: [
       { name: 'Pekerja', coeff: 0.06, unit: 'OH' },
