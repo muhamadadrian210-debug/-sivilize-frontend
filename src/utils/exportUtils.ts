@@ -51,8 +51,8 @@ export const exportToPDF = (project: Partial<Project>, items: RABItem[], financi
     startY += 8;
 
     // Items in this category
-    const tableData = group.items.map((item: any) => [
-      item.no,
+    const tableData = group.items.map((item: RABItem) => [
+      item.id,
       item.name,
       item.volume.toFixed(2),
       item.unit,
@@ -106,7 +106,7 @@ export const exportToExcel = (project: Partial<Project>, items: RABItem[], finan
   const wb = XLSX.utils.book_new();
 
   // Main RAB sheet with grouping
-  const rabData: any[] = [];
+  const rabData: (string | number | undefined)[][] = [];
 
   // Add title and project info
   rabData.push(['RENCANA ANGGARAN BIAYA (RAB)']);
@@ -119,12 +119,11 @@ export const exportToExcel = (project: Partial<Project>, items: RABItem[], finan
   rabData.push(['No', 'Uraian Pekerjaan', 'Volume', 'Satuan', 'Harga Satuan', 'Total']);
 
   let itemNo = 1;
-  let grandTotal = 0;
 
   grouped.forEach((group) => {
     rabData.push([group.kategori]);
     
-    group.items.forEach((item: any) => {
+    group.items.forEach((item: RABItem) => {
       rabData.push([
         itemNo++,
         item.name,
@@ -137,7 +136,6 @@ export const exportToExcel = (project: Partial<Project>, items: RABItem[], finan
 
     rabData.push([`SUBTOTAL ${group.kategori}`, '', '', '', '', group.subtotal]);
     rabData.push([]);
-    grandTotal += group.subtotal;
   });
 
   // Add financial summary

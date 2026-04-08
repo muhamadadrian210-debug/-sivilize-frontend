@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import Sidebar from './components/common/Sidebar';
 import Navbar from './components/common/Navbar';
 import Footer from './components/common/Footer';
@@ -20,7 +21,15 @@ import AIChat from './components/common/AIChat';
 import AdminDashboard from './components/admin/AdminDashboard';
 
 function App() {
-  const { activeTab, isAuthenticated } = useStore();
+  const { activeTab, isAuthenticated, setAuthenticated } = useStore();
+
+  // Restore auth state from localStorage on app load
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      setAuthenticated(true);
+    }
+  }, [setAuthenticated]);
 
   if (!isAuthenticated) {
     return <ToastProvider><AuthPage /></ToastProvider>;

@@ -32,8 +32,11 @@ export function useLanguage(initialLanguage: 'en' | 'id' = 'id') {
 }
 
 // Helper to get nested value from object
-function getNestedValue(obj: any, path: string): string {
-  return path.split('.').reduce((current, prop) => current?.[prop], obj) || path;
+function getNestedValue(obj: Record<string, unknown>, path: string): string {
+  return path.split('.').reduce((current: unknown, prop) => {
+    if (current && typeof current === 'object') return (current as Record<string, unknown>)[prop];
+    return undefined;
+  }, obj as unknown) as string || path;
 }
 
 export default useLanguage;

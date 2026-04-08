@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { X, ChevronRight, Calculator, BookOpen, BarChart3, Layers, CheckCircle2 } from 'lucide-react';
 
 const STEPS = [
@@ -25,13 +25,10 @@ const STEPS = [
 ];
 
 const Onboarding = () => {
-  const [show, setShow] = useState(false);
+  const [show, setShow] = useState(() => {
+    return !localStorage.getItem('sivilize_onboarding_done');
+  });
   const [step, setStep] = useState(0);
-
-  useEffect(() => {
-    const seen = localStorage.getItem('sivilize_onboarding_done');
-    if (!seen) setShow(true);
-  }, []);
 
   const finish = () => {
     localStorage.setItem('sivilize_onboarding_done', '1');

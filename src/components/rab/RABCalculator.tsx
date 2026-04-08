@@ -1,6 +1,5 @@
-import { Fragment, useState, useMemo } from 'react';
+import { Fragment, useState, useMemo, useEffect } from 'react';
 import { 
-  Plus, 
   Trash2, 
   ChevronRight, 
   ChevronLeft, 
@@ -17,7 +16,8 @@ import {
   Sparkles,
   Upload,
   AlertCircle,
-  Users
+  Users,
+  Clock
 } from 'lucide-react';
 import { useStore, type RABItem, type Project } from '../../store/useStore';
 import { AHSP_TEMPLATES } from '../../data/ahsp';
@@ -39,16 +39,21 @@ import {
   getCostCategory 
 } from '../../utils/calculations';
 import { exportToPDF, exportToExcel } from '../../utils/exportUtils';
+import { validateRABItems } from '../../utils/ahspValidator';
+import { useAutoSave } from '../../hooks/useAutoSave';
 import MaterialSummary from './MaterialSummary';
 import ProjectTimeline from './ProjectTimeline';
 import GroupedRABDisplay from './GroupedRABDisplay';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const RABCalculator = () => {
-  const { addProject, setActiveTab } = useStore();
+  const { addProject, setActiveTab, addActivityLog, user } = useStore();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [autoSaveStatus, setAutoSaveStatus] = useState<string>('');
+  const [ahspWarnings, setAhspWarnings] = useState<{ id: string; warning: { level: string; message: string } | null }[]>([]);
+  const [tempProjectId] = useState(() => `temp_${Date.now()}`);
   const [aiMode, setAiMode] = useState(false);
   const [aiProgress, setAiProgress] = useState(0);
   const [activeSubTab, setActiveSubTab] = useState<'rab' | 'materials' | 'timeline'>('rab');
@@ -88,6 +93,30 @@ const RABCalculator = () => {
 
   const cityOptions = useMemo(() => getCitiesByProvince(selectedProvince), [selectedProvince]);
 
+  // Auto-save draft setiap 30 detik
+  useAutoSave({
+    projectId: tempProjectId,
+    data: { rabItems, financialSettings: financials },
+    intervalMs: 30000,
+    enabled: rabItems.length > 0,
+  });
+
+  // Update auto-save status indicator
+  useEffect(() => {
+    if (rabItems.length === 0) return;
+    const interval = setInterval(() => {
+      setAutoSaveStatus(`Tersimpan otomatis ${new Date().toLocaleTimeString('id-ID')}`);
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [rabItems.length]);
+
+  // Validasi AHSP setiap kali rabItems berubah
+  useEffect(() => {
+    if (rabItems.length === 0) return;
+    const warnings = validateRABItems(rabItems);
+    setAhspWarnings(warnings);
+  }, [rabItems]);
+
   const handleSaveProject = async () => {
     setSaving(true);
     try {
@@ -109,6 +138,16 @@ const RABCalculator = () => {
       const response = await projectService.createProject(payload);
       if (response.success) {
         addProject(response.data);
+        addActivityLog({
+          userId: user?.id || 'unknown',
+          userName: user?.name || 'Unknown',
+          action: 'create',
+          entity: 'project',
+          entityId: response.data.id,
+          entityName: projectData.name || 'Proyek Baru',
+          newValue: { grandTotal: summary.grandTotal, items: rabItems.length },
+          description: `RAB dibuat: ${projectData.name} — ${rabItems.length} item, total ${formatCurrency(summary.grandTotal)}`,
+        });
         setActiveTab('dashboard');
       }
     } catch (error) {
@@ -581,6 +620,30 @@ const RABCalculator = () => {
       case 3:
         return (
           <div className="space-y-8">
+            {/* Auto-save indicator */}
+            {autoSaveStatus && (
+              <div className="flex items-center gap-2 text-xs text-text-secondary">
+                <Clock size={12} className="text-success" />
+                <span>{autoSaveStatus}</span>
+              </div>
+            )}
+
+            {/* AHSP Warnings */}
+            {ahspWarnings.length > 0 && (
+              <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-4 space-y-2">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle size={16} className="text-yellow-400" />
+                  <p className="text-yellow-400 font-bold text-sm">Peringatan Validasi AHSP/PUPR 2022 ({ahspWarnings.length} item)</p>
+                </div>
+                {ahspWarnings.slice(0, 3).map(w => (
+                  <p key={w.id} className="text-yellow-300 text-xs pl-6">• {w.warning?.message}</p>
+                ))}
+                {ahspWarnings.length > 3 && (
+                  <p className="text-yellow-300 text-xs pl-6">...dan {ahspWarnings.length - 3} peringatan lainnya</p>
+                )}
+              </div>
+            )}
+
              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-center gap-2 bg-background border border-border p-1 rounded-xl">
                 <button 

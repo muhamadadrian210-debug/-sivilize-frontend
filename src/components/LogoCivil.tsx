@@ -100,4 +100,6 @@ const CivilEngineeringLogo: React.FC<CivilEngineeringLogoProps> = ({
   );
 };
 
+// Named export for backward compatibility
+export { CivilEngineeringLogo as LogoCivil };
 export default CivilEngineeringLogo;

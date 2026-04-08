@@ -1,13 +1,39 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-export type UserRole = 'admin' | 'user' | 'client';
+export type UserRole = 'admin' | 'estimator' | 'owner' | 'user' | 'client';
+
+// RBAC permissions map
+export const ROLE_PERMISSIONS: Record<UserRole, string[]> = {
+  admin:     ['read', 'write', 'delete', 'manage_users', 'export', 'audit'],
+  estimator: ['read', 'write', 'export'],
+  owner:     ['read', 'export'],
+  user:      ['read', 'write', 'export'],
+  client:    ['read'],
+};
+
+export const hasPermission = (role: UserRole, permission: string): boolean =>
+  ROLE_PERMISSIONS[role]?.includes(permission) ?? false;
 
 export interface User {
   id: string;
   name: string;
   email: string;
   role: UserRole;
+}
+
+export interface ActivityLog {
+  id: string;
+  timestamp: number;
+  userId: string;
+  userName: string;
+  action: 'create' | 'update' | 'delete' | 'export' | 'login' | 'logout';
+  entity: 'project' | 'rab_item' | 'daily_log' | 'user' | 'version';
+  entityId: string;
+  entityName: string;
+  oldValue?: unknown;
+  newValue?: unknown;
+  description: string;
 }
 
 export interface Project {
@@ -22,18 +48,19 @@ export interface Project {
   versions: ProjectVersion[];
   dailyLogs: DailyLog[];
   status: 'draft' | 'ongoing' | 'completed';
-  // Detail ruangan & bukaan
   bedroomCount?: number;
   bathroomCount?: number;
   doorCount?: number;
   windowCount?: number;
-  // Mekanikal & Elektrikal
   waterPointCount?: number;
   drainPointCount?: number;
   drinkingPointCount?: number;
   lightPointCount?: number;
   socketPointCount?: number;
   toiletType?: 'duduk' | 'jongkok';
+  // Auto-save draft
+  autoSaveDraft?: Partial<ProjectVersion>;
+  autoSavedAt?: number;
 }
 
 export interface ProjectVersion {
@@ -54,17 +81,16 @@ export interface ProjectVersion {
 
 export interface RABItem {
   id: string;
-  category: 'Struktur' | 'Persiapan' | 'Tanah' | 'Dinding' | 'Lantai' | 'Finishing' | 'Atap' | 'Lain-lain';
+  category: 'Struktur' | 'Persiapan' | 'Tanah' | 'Dinding' | 'Lantai' | 'Finishing' | 'Atap' | 'Arsitektur' | 'Mekanikal' | 'Elektrikal' | 'Sanitasi' | 'Lain-lain';
   name: string;
   volume: number;
   unit: string;
   unitPrice: number;
   total: number;
   analysis?: AHSPAnalysis;
-  // Tim kerja yang dialokasikan untuk pekerjaan ini
-  assignedTeam?: {
-    [key: string]: number; // e.g. { 'Pekerja': 4, 'Tukang Batu': 2 }
-  };
+  assignedTeam?: { [key: string]: number };
+  // AHSP validation
+  ahspWarning?: string;
 }
 
 export interface AHSPAnalysis {
@@ -73,10 +99,10 @@ export interface AHSPAnalysis {
 }
 
 export interface FinancialSettings {
-  overhead: number; // percentage
-  profit: number; // percentage
-  tax: number; // percentage
-  contingency: number; // percentage
+  overhead: number;
+  profit: number;
+  tax: number;
+  contingency: number;
 }
 
 export interface DailyLog {
@@ -94,7 +120,8 @@ interface AppState {
   activeTab: string;
   user: User | null;
   isAuthenticated: boolean;
-  
+  activityLogs: ActivityLog[];
+
   // Actions
   setProjects: (projects: Project[]) => void;
   setActiveProject: (id: string | null) => void;
@@ -106,18 +133,25 @@ interface AppState {
   updateProject: (id: string, updates: Partial<Project>) => void;
   deleteProject: (id: string) => void;
   logout: () => void;
+  // Activity log
+  addActivityLog: (log: Omit<ActivityLog, 'id' | 'timestamp'>) => void;
+  clearActivityLogs: () => void;
+  // Auto-save
+  saveAutoSaveDraft: (projectId: string, draft: Partial<ProjectVersion>) => void;
+  clearAutoSaveDraft: (projectId: string) => void;
 }
 
 export const useStore = create<AppState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       projects: [],
       activeProjectId: null,
       activeVersionId: null,
       userRole: 'admin',
       activeTab: 'dashboard',
       user: null,
-      isAuthenticated: !!localStorage.getItem('token'),
+      isAuthenticated: false,
+      activityLogs: [],
 
       setProjects: (projects) => set({ projects }),
       setActiveProject: (id) => set({ activeProjectId: id }),
@@ -125,18 +159,110 @@ export const useStore = create<AppState>()(
       setUserRole: (role) => set({ userRole: role }),
       setUser: (user) => set({ user, userRole: user?.role || 'user' }),
       setAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
-      addProject: (project) => set((state) => ({ projects: [...state.projects, project] })),
-      updateProject: (id, updates) => set((state) => ({
-        projects: state.projects.map((p) => (p.id === id ? { ...p, ...updates } : p)),
-      })),
-      deleteProject: (id) => set((state) => ({
-        projects: state.projects.filter((p) => p.id !== id),
-      })),
+
+      addProject: (project) => {
+        set((state) => ({ projects: [...state.projects, project] }));
+        const { user } = get();
+        get().addActivityLog({
+          userId: user?.id || 'unknown',
+          userName: user?.name || 'Unknown',
+          action: 'create',
+          entity: 'project',
+          entityId: project.id,
+          entityName: project.name,
+          newValue: { name: project.name, location: project.location },
+          description: `Membuat proyek baru: ${project.name}`,
+        });
+      },
+
+      updateProject: (id, updates) => {
+        const oldProject = get().projects.find(p => p.id === id);
+        set((state) => ({
+          projects: state.projects.map((p) => (p.id === id ? { ...p, ...updates } : p)),
+        }));
+        const { user } = get();
+        if (oldProject && updates.name !== undefined) {
+          get().addActivityLog({
+            userId: user?.id || 'unknown',
+            userName: user?.name || 'Unknown',
+            action: 'update',
+            entity: 'project',
+            entityId: id,
+            entityName: updates.name || oldProject.name,
+            oldValue: { name: oldProject.name, status: oldProject.status },
+            newValue: { name: updates.name, status: updates.status },
+            description: `Mengupdate proyek: ${oldProject.name}`,
+          });
+        }
+      },
+
+      deleteProject: (id) => {
+        const project = get().projects.find(p => p.id === id);
+        set((state) => ({ projects: state.projects.filter((p) => p.id !== id) }));
+        const { user } = get();
+        if (project) {
+          get().addActivityLog({
+            userId: user?.id || 'unknown',
+            userName: user?.name || 'Unknown',
+            action: 'delete',
+            entity: 'project',
+            entityId: id,
+            entityName: project.name,
+            oldValue: { name: project.name },
+            description: `Menghapus proyek: ${project.name}`,
+          });
+        }
+      },
+
       logout: () => {
+        const { user } = get();
+        get().addActivityLog({
+          userId: user?.id || 'unknown',
+          userName: user?.name || 'Unknown',
+          action: 'logout',
+          entity: 'user',
+          entityId: user?.id || 'unknown',
+          entityName: user?.name || 'Unknown',
+          description: `User logout: ${user?.name}`,
+        });
         localStorage.removeItem('token');
         localStorage.removeItem('sivilize_remember_me');
         set({ user: null, isAuthenticated: false, projects: [], activeProjectId: null });
-      }
+      },
+
+      addActivityLog: (log) => {
+        const newLog: ActivityLog = {
+          ...log,
+          id: `log_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+          timestamp: Date.now(),
+        };
+        set((state) => ({
+          // Keep max 500 logs
+          activityLogs: [newLog, ...state.activityLogs].slice(0, 500),
+        }));
+      },
+
+      clearActivityLogs: () => set({ activityLogs: [] }),
+
+      saveAutoSaveDraft: (projectId, draft) => {
+        set((state) => ({
+          projects: state.projects.map(p =>
+            p.id === projectId
+              ? { ...p, autoSaveDraft: draft, autoSavedAt: Date.now() }
+              : p
+          ),
+        }));
+      },
+
+      clearAutoSaveDraft: (projectId) => {
+        set((state) => ({
+          projects: state.projects.map(p =>
+            p.id === projectId
+              ? { ...p, autoSaveDraft: undefined, autoSavedAt: undefined }
+              : p
+          ),
+        }));
+      },
     }),
     {
       name: 'sivilize-hub-pro-storage',

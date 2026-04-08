@@ -1,14 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
-  Users, FolderOpen, Activity, Shield, Trash2,
+  Users, FolderOpen, Shield,
   RefreshCw, CheckCircle2, XCircle, AlertTriangle,
-  Eye, Ban, Crown, User, Server, Database,
-  TrendingUp, Clock, Globe, Lock
+  Crown, User, Server, Database,
+  TrendingUp, Lock, Clock
 } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { formatCurrency } from '../../utils/calculations';
 import api from '../../services/api';
-import { useToast } from '../common/Toast';
+import ActivityLogViewer from './ActivityLogViewer';
 
 interface SystemStatus {
   status: string;
@@ -28,43 +28,38 @@ interface UserData {
 
 const AdminDashboard = () => {
   const { projects, user } = useStore();
-  const { showToast } = useToast();
-  const [activeSection, setActiveSection] = useState<'overview' | 'users' | 'projects' | 'system'>('overview');
+  const [activeSection, setActiveSection] = useState<'overview' | 'users' | 'projects' | 'system' | 'audit'>('overview');
   const [systemStatus, setSystemStatus] = useState<SystemStatus | null>(null);
   const [users, setUsers] = useState<UserData[]>([]);
-  const [loadingSystem, setLoadingSystem] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
 
-  const fetchSystemStatus = async () => {
-    setLoadingSystem(true);
+  const fetchSystemStatus = useCallback(async () => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'}/health`);
       const data = await res.json();
       setSystemStatus(data);
     } catch {
       setSystemStatus({ status: 'error', db: 'Offline', uptime: 0, timestamp: new Date().toISOString() });
-    } finally {
-      setLoadingSystem(false);
     }
-  };
+  }, []);
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     setLoadingUsers(true);
     try {
       const res = await api.get('/auth/users');
       if (res.data.success) setUsers(res.data.data);
     } catch {
       // fallback: tampilkan user dari store saja
-      if (user) setUsers([user as any]);
+      if (user) setUsers([user as UserData]);
     } finally {
       setLoadingUsers(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     fetchSystemStatus();
     fetchUsers();
-  }, []);
+  }, [fetchSystemStatus, fetchUsers]);
 
   // Stats
   const totalProjects = projects.length;
@@ -114,10 +109,10 @@ const AdminDashboard = () => {
 
       {/* Nav Tabs */}
       <div className="flex gap-2 bg-background p-1 rounded-xl border border-border w-fit">
-        {(['overview', 'users', 'projects', 'system'] as const).map(tab => (
+        {(['overview', 'users', 'projects', 'system', 'audit'] as const).map(tab => (
           <button key={tab} onClick={() => setActiveSection(tab)}
             className={`px-4 py-2 rounded-lg text-sm font-bold capitalize transition-all ${activeSection === tab ? 'bg-primary text-white' : 'text-text-secondary hover:text-white'}`}>
-            {tab === 'overview' ? 'Ringkasan' : tab === 'users' ? 'Pengguna' : tab === 'projects' ? 'Proyek' : 'Sistem'}
+            {tab === 'overview' ? 'Ringkasan' : tab === 'users' ? 'Pengguna' : tab === 'projects' ? 'Proyek' : tab === 'audit' ? 'Audit Trail' : 'Sistem'}
           </button>
         ))}
       </div>
@@ -345,6 +340,12 @@ const AdminDashboard = () => {
               <p className="text-text-secondary text-xs mt-1">Halaman ini hanya bisa diakses oleh akun dengan role <span className="text-primary font-bold">admin</span>. Jangan bagikan akses admin ke siapapun.</p>
             </div>
           </div>
+        </div>
+      )}
+      {/* AUDIT TRAIL */}
+      {activeSection === 'audit' && (
+        <div className="glass-card p-6">
+          <ActivityLogViewer />
         </div>
       )}
     </div>

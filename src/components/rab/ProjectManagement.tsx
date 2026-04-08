@@ -45,7 +45,7 @@ const ProjectManagement = () => {
   const handleDuplicate = (project: Project) => {
     const copy: Project = {
       ...project,
-      id: Date.now().toString(),
+      id: globalThis.crypto?.randomUUID?.() ?? `copy-${project.id}`,
       name: `${project.name} (Salinan)`,
       status: 'draft',
       dailyLogs: [],

@@ -142,7 +142,7 @@ const GroupedRABDisplay = ({
         </div>
       ) : (
         <div className="space-y-4">
-          {grouped.map((group, groupIdx) => (
+          {grouped.map((group) => (
             <div key={group.kategori} className="glass-card overflow-hidden">
               {/* Category Header */}
               <button

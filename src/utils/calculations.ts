@@ -1,7 +1,7 @@
 import { type AHSPTemplate } from '../data/ahsp';
 import { CITIES, getMaterialPricesByGrade, getRegionalPriceOverride, type MaterialGrade } from '../data/prices';
 import { type RABItem, type FinancialSettings } from '../store/useStore';
-import { groupRABItems, calculateGroupedTotals } from './rabClassifier';
+import { groupRABItems } from './rabClassifier';
 
 export const calculateVolumeFromDimensions = (
   _type: string,
@@ -93,7 +93,7 @@ export const getGroupedRABItems = (items: RABItem[]) => {
 /**
  * Calculate totals from grouped RAB
  */
-export const calculateTotalFromGrouped = (grouped: any[], settings: FinancialSettings) => {
+export const calculateTotalFromGrouped = (grouped: { items: RABItem[] }[], settings: FinancialSettings) => {
   const flatItems = grouped.flatMap(g => g.items);
   return calculateTotalRAB(flatItems, settings);
 };

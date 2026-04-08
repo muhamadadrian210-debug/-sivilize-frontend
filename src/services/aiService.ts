@@ -1,5 +1,5 @@
 // Advanced AI Service with Context Awareness & Claude API
-import { faqDatabase, getTutorials } from '@/data/faqDatabase';
+import { faqDatabase, getTutorials, type FAQItem } from '@/data/faqDatabase';
 
 export interface UserContext {
   currentPage: string;
@@ -73,7 +73,7 @@ class AIService {
     return this.getFallbackResponse(userInput, context);
   }
 
-  private searchFAQ(userInput: string): any {
+  private searchFAQ(userInput: string): FAQItem | null {
     const input = userInput.toLowerCase();
     
     for (const faq of faqDatabase) {
@@ -91,7 +91,7 @@ class AIService {
     return null;
   }
 
-  private formatFAQResponse(faq: any): AIResponse {
+  private formatFAQResponse(faq: FAQItem): AIResponse {
     const answer = faq.answer[this.language] || faq.answer.en;
     return {
       text: answer,
@@ -101,9 +101,9 @@ class AIService {
     };
   }
 
-  private getRecommendations(category: string): any[] {
+  private getRecommendations(category: string): AIResponse['recommendations'] {
     const tutorials = getTutorials()[this.language];
-    const recommendations: any[] = [];
+    const recommendations: AIResponse['recommendations'] = [];
 
     // Add related tutorials
     const relatedTutorials = tutorials.filter(t => {
@@ -162,7 +162,7 @@ class AIService {
   private async getClaudeResponse(userInput: string, context: UserContext | null): Promise<AIResponse> {
     try {
       // Build context-aware prompt
-      let systemPrompt = this.buildSystemPrompt(context);
+      const systemPrompt = this.buildSystemPrompt(context);
       
       const response = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',

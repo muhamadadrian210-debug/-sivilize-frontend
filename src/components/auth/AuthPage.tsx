@@ -27,12 +27,12 @@ const AuthPage = () => {
     role: 'user'
   });
 
-  // Auto-fill if remember me was enabled
+  // Auto-fill email only if remember me was enabled (never store password)
   useEffect(() => {
     const saved = localStorage.getItem('sivilize_remember_me');
     if (saved) {
-      const { email, password } = JSON.parse(saved);
-      setFormData(prev => ({ ...prev, email, password }));
+      const { email } = JSON.parse(saved);
+      setFormData(prev => ({ ...prev, email }));
       setRememberMe(true);
     }
   }, []);
@@ -58,11 +58,10 @@ const AuthPage = () => {
         setUser(response.data);
         setAuthenticated(true);
 
-        // Save credentials if remember me is checked
+        // Save email only (never save password in localStorage)
         if (isLogin && rememberMe) {
           localStorage.setItem('sivilize_remember_me', JSON.stringify({
-            email: formData.email,
-            password: formData.password
+            email: formData.email
           }));
         } else if (isLogin) {
           // Clear if unchecked

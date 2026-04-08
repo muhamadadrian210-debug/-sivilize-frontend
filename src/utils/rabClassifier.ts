@@ -1,3 +1,5 @@
+import { type RABItem } from '../store/useStore';
+
 /**
  * RAB Item Auto-Classifier
  * Automatically categorizes work items based on keywords
@@ -12,6 +14,27 @@ export type RABCategory =
   | 'Pekerjaan Finishing'
   | 'Pekerjaan Atap'
   | 'Lain-lain';
+
+// RABItem category values (from store)
+type ItemCategory = 'Struktur' | 'Persiapan' | 'Tanah' | 'Dinding' | 'Lantai' | 'Finishing' | 'Atap' | 'Arsitektur' | 'Mekanikal' | 'Elektrikal' | 'Sanitasi' | 'Lain-lain';
+
+// Map item category to RABCategory
+const mapToRABCategory = (cat: ItemCategory | string): RABCategory => {
+  const map: Record<string, RABCategory> = {
+    'Struktur': 'Pekerjaan Struktur',
+    'Persiapan': 'Pekerjaan Persiapan',
+    'Tanah': 'Pekerjaan Tanah',
+    'Dinding': 'Pekerjaan Dinding',
+    'Lantai': 'Pekerjaan Lantai',
+    'Finishing': 'Pekerjaan Finishing',
+    'Atap': 'Pekerjaan Atap',
+    'Arsitektur': 'Pekerjaan Finishing',
+    'Mekanikal': 'Pekerjaan Finishing',
+    'Elektrikal': 'Pekerjaan Finishing',
+    'Sanitasi': 'Pekerjaan Finishing',
+  };
+  return map[cat] || 'Lain-lain';
+};
 
 interface ClassificationRule {
   category: RABCategory;
@@ -98,8 +121,8 @@ export const classifyRABItem = (description: string): RABCategory => {
  * @param items - Flat list of RAB items
  * @returns Grouped items with category summaries
  */
-export const groupRABItems = (items: any[]) => {
-  const grouped = new Map<RABCategory, any[]>();
+export const groupRABItems = (items: RABItem[]) => {
+  const grouped = new Map<RABCategory, RABItem[]>();
 
   // Initialize all categories
   const allCategories: RABCategory[] = [
@@ -117,7 +140,8 @@ export const groupRABItems = (items: any[]) => {
 
   // Classify and group items
   items.forEach(item => {
-    const category = item.category || classifyRABItem(item.name);
+    const rawCategory = item.category || classifyRABItem(item.name);
+    const category = mapToRABCategory(rawCategory);
     const itemsInCategory = grouped.get(category) || [];
     itemsInCategory.push(item);
     grouped.set(category, itemsInCategory);
@@ -142,7 +166,7 @@ export const groupRABItems = (items: any[]) => {
 /**
  * Calculate totals from grouped RAB items
  */
-export const calculateGroupedTotals = (grouped: any[]) => {
+export const calculateGroupedTotals = (grouped: { subtotal: number; totalItems: number }[]) => {
   const subtotal = grouped.reduce((sum, group) => sum + group.subtotal, 0);
   return {
     subtotal,

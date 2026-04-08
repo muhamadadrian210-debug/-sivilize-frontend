@@ -1,9 +1,9 @@
 import { useState, useMemo } from 'react';
 import { 
   Plus, Calendar, Image as ImageIcon, MessageSquare, 
-  Search, MoreVertical, CheckCircle2, BookOpen, X, Upload, AlertTriangle
+  Search, CheckCircle2, BookOpen, X, Upload
 } from 'lucide-react';
-import { useStore } from '../../store/useStore';
+import { useStore, type DailyLog as DailyLogType } from '../../store/useStore';
 import { useToast } from '../common/Toast';
 
 const STATUS_OPTIONS = ['Normal', 'Warning', 'Kendala'] as const;
@@ -35,7 +35,7 @@ const DailyLog = () => {
         ...log,
         projectName: p.name,
         projectId: p.id,
-        status: (log as any).status || 'Normal',
+        status: (log as DailyLogType & { status?: string }).status || 'Normal',
       }))
     ).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [projects]);
@@ -44,7 +44,7 @@ const DailyLog = () => {
     const matchText = log.text.toLowerCase().includes(filterText.toLowerCase()) ||
       log.projectName.toLowerCase().includes(filterText.toLowerCase());
     const matchDate = !filterDate || log.date === filterDate;
-    const matchStatus = filterStatus === 'Semua Status' || (log as any).status === filterStatus;
+    const matchStatus = filterStatus === 'Semua Status' || (log as DailyLogType & { status?: string }).status === filterStatus;
     return matchText && matchDate && matchStatus;
   });
 
@@ -237,8 +237,8 @@ const DailyLog = () => {
                         <p className="text-white font-bold text-sm">{log.date}</p>
                       </div>
                       <p className="text-primary text-[10px] font-black uppercase tracking-widest">{log.projectName}</p>
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${statusColor[(log as any).status as LogStatus] || statusColor.Normal}`}>
-                        {(log as any).status || 'Normal'}
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${statusColor[(log.status as LogStatus)] || statusColor.Normal}`}>
+                        {log.status || 'Normal'}
                       </span>
                     </div>
                   </div>

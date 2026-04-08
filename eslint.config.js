@@ -7,6 +7,19 @@ import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
   globalIgnores(['dist']),
+  // JSX files (plain JS React)
+  {
+    files: ['**/*.{js,jsx}'],
+    extends: [js.configs.recommended],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.browser,
+      parserOptions: {
+        ecmaFeatures: { jsx: true },
+      },
+    },
+  },
+  // TypeScript files
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
