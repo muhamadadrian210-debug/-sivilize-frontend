@@ -252,9 +252,6 @@ const RABCalculator = () => {
       const generated: RABItem[] = [];
       
       // Estimasi volume dasar rumah tinggal minimalis
-      const concreteVol = totalArea * 0.15; // Rough estimate for foundation/beams
-      const excavationVol = totalArea * 0.2;
-      const steelWeight = totalArea * 18;
       const wallArea = (Math.sqrt(totalArea) * 4) * 3 * projectData.floors!;
       const plasterArea = wallArea * 2;
       const paintArea = plasterArea;
@@ -284,8 +281,99 @@ const RABCalculator = () => {
         });
       };
       
-      // Pondasi - Struktur
+      // ── PONDASI — berdasarkan pilihan jenis tanah & pondasi ──
+      const perimeter = Math.sqrt(totalArea) * 4; // keliling estimasi
+      const foundationDepth = (() => {
+        switch (projectData.soilType) {
+          case 'keras':    return 0.6;
+          case 'sedang':   return 0.8;
+          case 'lunak':    return 1.0;
+          case 'gambut':   return 1.2;
+          case 'pasir':    return 0.8;
+          case 'berbatu':  return 0.5;
+          default:         return 0.7;
+        }
+      })();
+
+      // Galian tanah pondasi — selalu ada
+      const excavationVol = perimeter * 0.6 * foundationDepth;
       addItem('str-001', excavationVol, { 'Pekerja': 3, 'Mandor': 1 });
+
+      // Urugan pasir bawah pondasi
+      addItem('str-005', perimeter * 0.6, { 'Pekerja': 2, 'Mandor': 1 });
+
+      // Item pondasi sesuai pilihan
+      switch (projectData.foundationType) {
+        case 'batu-kali': {
+          // Pondasi batu kali: volume = keliling × lebar (0.6m) × tinggi (0.7m)
+          const batukaliVol = perimeter * 0.6 * 0.7;
+          addItem('str-000', batukaliVol, { 'Pekerja': 4, 'Tukang Batu': 2, 'Kepala Tukang': 1, 'Mandor': 1 });
+          // Sloof beton di atas pondasi batu kali
+          const sloofVol = perimeter * 0.15 * 0.2;
+          addItem('str-002', sloofVol, { 'Pekerja': 3, 'Tukang Batu': 2, 'Mandor': 1 });
+          addItem('str-003', sloofVol * 120, { 'Pekerja': 2, 'Tukang Besi': 2, 'Mandor': 1 });
+          addItem('str-004', perimeter * 2, { 'Pekerja': 2, 'Tukang Kayu': 2, 'Mandor': 1 });
+          break;
+        }
+        case 'footplate': {
+          // Footplate: jumlah titik kolom ≈ luas/16 (grid 4x4m)
+          const nFootplate = Math.ceil(totalArea / 16);
+          const footplateVol = nFootplate * 0.8 * 0.8 * 0.3; // 80x80x30cm per titik
+          addItem('str-002', footplateVol, { 'Pekerja': 4, 'Tukang Batu': 2, 'Kepala Tukang': 1, 'Mandor': 1 });
+          addItem('str-003', footplateVol * 150, { 'Pekerja': 2, 'Tukang Besi': 2, 'Mandor': 1 });
+          addItem('str-004', nFootplate * 4, { 'Pekerja': 2, 'Tukang Kayu': 2, 'Mandor': 1 });
+          // Sloof
+          const sloofVol = perimeter * 0.15 * 0.25;
+          addItem('str-002', sloofVol, { 'Pekerja': 3, 'Tukang Batu': 2, 'Mandor': 1 });
+          break;
+        }
+        case 'strauss-pile': {
+          // Strauss pile: jumlah titik ≈ luas/9 (grid 3x3m), kedalaman 4–6m
+          const nPile = Math.ceil(totalArea / 9);
+          const pileDepth = projectData.soilType === 'lunak' ? 5 : 4;
+          const pileVol = nPile * Math.PI * 0.15 * 0.15 * pileDepth; // diameter 30cm
+          addItem('str-002', pileVol, { 'Pekerja': 4, 'Tukang Batu': 2, 'Kepala Tukang': 1, 'Mandor': 1 });
+          addItem('str-003', pileVol * 180, { 'Pekerja': 2, 'Tukang Besi': 2, 'Mandor': 1 });
+          // Pile cap + sloof
+          const capVol = nPile * 0.6 * 0.6 * 0.3;
+          addItem('str-002', capVol, { 'Pekerja': 3, 'Tukang Batu': 2, 'Mandor': 1 });
+          break;
+        }
+        case 'raft': {
+          // Raft foundation: plat beton seluruh luas bangunan, tebal 25cm
+          const raftVol = totalArea * 0.25;
+          addItem('str-002', raftVol, { 'Pekerja': 6, 'Tukang Batu': 3, 'Kepala Tukang': 1, 'Mandor': 1 });
+          addItem('str-003', raftVol * 100, { 'Pekerja': 3, 'Tukang Besi': 3, 'Mandor': 1 });
+          addItem('str-004', totalArea * 1.2, { 'Pekerja': 3, 'Tukang Kayu': 3, 'Mandor': 1 });
+          break;
+        }
+        case 'tiang-pancang': {
+          // Tiang pancang: estimasi jumlah tiang
+          const nTiang = Math.ceil(totalArea / 12);
+          const tiangVol = nTiang * Math.PI * 0.15 * 0.15 * 8; // kedalaman 8m
+          addItem('str-002', tiangVol, { 'Pekerja': 4, 'Tukang Batu': 2, 'Kepala Tukang': 1, 'Mandor': 1 });
+          addItem('str-003', tiangVol * 200, { 'Pekerja': 2, 'Tukang Besi': 3, 'Mandor': 1 });
+          const capVol = nTiang * 0.8 * 0.8 * 0.4;
+          addItem('str-002', capVol, { 'Pekerja': 3, 'Tukang Batu': 2, 'Mandor': 1 });
+          break;
+        }
+        case 'sumuran': {
+          const nSumuran = Math.ceil(totalArea / 20);
+          const sumuranVol = nSumuran * Math.PI * 0.6 * 0.6 * 2; // diameter 1.2m, dalam 2m
+          addItem('str-002', sumuranVol, { 'Pekerja': 4, 'Tukang Batu': 2, 'Kepala Tukang': 1, 'Mandor': 1 });
+          addItem('str-003', sumuranVol * 80, { 'Pekerja': 2, 'Tukang Besi': 2, 'Mandor': 1 });
+          break;
+        }
+        default: {
+          // Default: batu kali jika tidak dipilih
+          const defaultVol = perimeter * 0.6 * 0.7;
+          addItem('str-000', defaultVol, { 'Pekerja': 4, 'Tukang Batu': 2, 'Mandor': 1 });
+        }
+      }
+
+      // Kolom & balok struktur atas
+      const concreteVol = totalArea * 0.12;
+      const steelWeight = totalArea * 18;
       addItem('str-002', concreteVol, { 'Pekerja': 4, 'Tukang Batu': 2, 'Kepala Tukang': 1, 'Mandor': 1 });
       addItem('str-003', steelWeight, { 'Pekerja': 2, 'Tukang Besi': 2, 'Mandor': 1 });
 
@@ -1019,6 +1107,29 @@ const RABCalculator = () => {
                             <span className="text-text-secondary">Subtotal Pekerjaan</span>
                             <span className="text-white">{formatCurrency(summary.subtotal)}</span>
                           </div>
+                          {/* Breakdown biaya pondasi */}
+                          {projectData.foundationType && (() => {
+                            const foundationItems = rabItems.filter(item =>
+                              item.category === 'Struktur' && (
+                                item.name.toLowerCase().includes('pondasi') ||
+                                item.name.toLowerCase().includes('galian') ||
+                                item.name.toLowerCase().includes('urugan') ||
+                                item.name.toLowerCase().includes('strauss') ||
+                                item.name.toLowerCase().includes('tiang') ||
+                                item.name.toLowerCase().includes('rakit') ||
+                                item.name.toLowerCase().includes('sumuran')
+                              )
+                            );
+                            const foundationCost = foundationItems.reduce((s, i) => s + i.total, 0);
+                            const foundLabel = FOUNDATION_TYPES.find(f => f.id === projectData.foundationType)?.label;
+                            if (foundationCost === 0) return null;
+                            return (
+                              <div className="flex justify-between text-sm bg-primary/5 px-2 py-1.5 rounded-lg border border-primary/10">
+                                <span className="text-primary text-xs">↳ Biaya Pondasi ({foundLabel})</span>
+                                <span className="text-primary font-bold text-xs">{formatCurrency(foundationCost)}</span>
+                              </div>
+                            );
+                          })()}
                           <div className="flex justify-between text-sm">
                             <span className="text-text-secondary">Overhead & Profit</span>
                             <span className="text-white">{formatCurrency(summary.overheadAmount + summary.profitAmount)}</span>
