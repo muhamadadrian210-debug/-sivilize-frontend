@@ -21,9 +21,15 @@ import Onboarding from './components/common/Onboarding';
 import AIChat from './components/common/AIChat';
 import AdminDashboard from './components/admin/AdminDashboard';
 import { checkTokenValidity } from './utils/security';
+import PrankPage from './pages/PrankPage';
 
 function App() {
   const { activeTab, isAuthenticated, setAuthenticated } = useStore();
+
+  // Tampilkan halaman prank jika URL /prank
+  if (window.location.pathname === '/prank') {
+    return <PrankPage />;
+  }
 
   // Restore auth state from localStorage on app load
   useEffect(() => {
