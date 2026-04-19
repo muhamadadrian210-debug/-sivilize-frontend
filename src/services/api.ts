@@ -26,6 +26,20 @@ api.interceptors.request.use(
   }
 );
 
+// Response interceptor — auto logout jika 401
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Token expired atau tidak valid — hapus dan redirect ke login
+      localStorage.removeItem('token');
+      // Trigger re-render dengan clear auth state
+      window.dispatchEvent(new CustomEvent('auth:logout'));
+    }
+    return Promise.reject(error);
+  }
+);
+
 type ApiResponse<T> = {
   success: boolean;
   data: T;

@@ -20,6 +20,7 @@ import { ToastProvider } from './components/common/Toast';
 import Onboarding from './components/common/Onboarding';
 import AIChat from './components/common/AIChat';
 import AdminDashboard from './components/admin/AdminDashboard';
+import { checkTokenValidity } from './utils/security';
 
 function App() {
   const { activeTab, isAuthenticated, setAuthenticated } = useStore();
@@ -27,10 +28,33 @@ function App() {
   // Restore auth state from localStorage on app load
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (token) {
+    if (token && checkTokenValidity()) {
       setAuthenticated(true);
+    } else if (token) {
+      // Token ada tapi expired — auto logout
+      localStorage.removeItem('token');
+      setAuthenticated(false);
     }
   }, [setAuthenticated]);
+
+  // Cek token validity setiap 5 menit
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const interval = setInterval(() => {
+      if (!checkTokenValidity()) {
+        setAuthenticated(false);
+      }
+    }, 5 * 60 * 1000);
+
+    // Listen event auto-logout dari API interceptor
+    const handleAutoLogout = () => setAuthenticated(false);
+    window.addEventListener('auth:logout', handleAutoLogout);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('auth:logout', handleAutoLogout);
+    };
+  }, [isAuthenticated, setAuthenticated]);
 
   if (!isAuthenticated) {
     return <ToastProvider><AuthPage /></ToastProvider>;
