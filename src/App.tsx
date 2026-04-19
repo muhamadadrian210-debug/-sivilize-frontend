@@ -75,7 +75,8 @@ function App() {
         <Sidebar />
         <Navbar />
         
-        <main className="pl-64 pt-20 transition-all duration-300 flex-1 flex flex-col">
+        {/* Desktop: pl-64 pt-20 | Mobile: pt-14 pb-16 (top bar + bottom nav) */}
+        <main className="lg:pl-64 lg:pt-20 pt-14 pb-16 lg:pb-0 transition-all duration-300 flex-1 flex flex-col">
           <div className="flex-1">
             <AnimatePresence mode="wait">
               <motion.div
@@ -84,7 +85,7 @@ function App() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
-                className="p-8"
+                className="p-4 lg:p-8"
               >
                 {renderContent()}
               </motion.div>

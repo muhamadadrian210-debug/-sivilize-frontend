@@ -12,7 +12,7 @@ const Navbar = () => {
   const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
-    <header className="h-20 bg-card/80 backdrop-blur-md border-b border-border fixed top-0 left-64 right-0 z-40 px-8 flex items-center justify-between">
+    <header className="hidden lg:flex h-20 bg-card/80 backdrop-blur-md border-b border-border fixed top-0 left-64 right-0 z-40 px-8 items-center justify-between">
       <div className="flex-1 max-w-xl">
         <div className="relative group">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary group-focus-within:text-primary transition-colors" size={18} />
