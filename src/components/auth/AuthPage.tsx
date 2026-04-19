@@ -6,7 +6,7 @@ import { useStore } from '../../store/useStore';
 import { LogoCivil as CivilEngineeringLogo } from '../LogoCivil';
 
 type AxiosLikeError = {
-  response?: { data?: { message?: string; resetToken?: string; resetUrl?: string } };
+  response?: { data?: { message?: string; resetToken?: string; resetUrl?: string; errors?: { message: string }[] } };
 };
 
 type AuthMode = 'login' | 'register' | 'forgot' | 'reset';
@@ -109,7 +109,13 @@ const AuthPage = () => {
       }
     } catch (err: unknown) {
       const axiosErr = err as AxiosLikeError;
-      setError(axiosErr.response?.data?.message || 'Terjadi kesalahan. Silakan coba lagi.');
+      // Tampilkan error detail dari backend jika ada
+      const errData = axiosErr.response?.data;
+      if (errData?.errors && Array.isArray(errData.errors)) {
+        setError(errData.errors.map((e: { message: string }) => e.message).join('\n'));
+      } else {
+        setError(errData?.message || 'Terjadi kesalahan. Silakan coba lagi.');
+      }
     } finally {
       setLoading(false);
     }
@@ -196,6 +202,11 @@ const AuthPage = () => {
                     <input type="password" required value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})}
                       className="w-full bg-background border border-border rounded-xl pl-10 pr-4 py-3 text-white focus:border-primary outline-none transition-all" placeholder="••••••••" />
                   </div>
+                  {mode === 'register' && (
+                    <p className="text-text-secondary text-[11px] mt-1">
+                      Min. 8 karakter, harus ada huruf besar, huruf kecil, angka, dan simbol (@$!%*?&_-#)
+                    </p>
+                  )}
                 </div>
               )}
 
