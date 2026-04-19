@@ -18,7 +18,11 @@ import {
   AlertCircle,
   Users,
   Clock,
-  Lightbulb
+  Lightbulb,
+  Printer,
+  GitCompare,
+  Share2,
+  Copy
 } from 'lucide-react';
 import { useStore, type RABItem, type Project } from '../../store/useStore';
 import { AHSP_TEMPLATES } from '../../data/ahsp';
@@ -50,6 +54,33 @@ import ProjectTimeline from './ProjectTimeline';
 import GroupedRABDisplay from './GroupedRABDisplay';
 import { motion, AnimatePresence } from 'framer-motion';
 import StickyTotalBar from '../common/StickyTotalBar';
+import RABPreviewModal from '../export/RABPreviewModal';
+import RABVersionComparison from './RABVersionComparison';
+import RABTemplateManager from './RABTemplateManager';
+import { useToast } from '../common/Toast';
+
+// Wrapper untuk RABTemplateManager agar bisa dipakai di RABCalculator
+const RABTemplateManagerWrapper = ({
+  rabItems,
+  financials,
+  onLoadTemplate,
+}: {
+  rabItems: import('../../store/useStore').RABItem[];
+  financials: import('../../store/useStore').FinancialSettings;
+  onLoadTemplate: (items: import('../../store/useStore').RABItem[], fin: import('../../store/useStore').FinancialSettings) => void;
+}) => {
+  const { showToast } = useToast();
+  return (
+    <RABTemplateManager
+      currentItems={rabItems}
+      currentFinancials={financials}
+      onLoadTemplate={(items, fin) => {
+        onLoadTemplate(items, fin);
+        showToast('Template berhasil dimuat ke RAB Calculator', 'success');
+      }}
+    />
+  );
+};
 
 // ── Data Jenis Tanah & Rekomendasi Pondasi ──────────────────
 const SOIL_TYPES = [
@@ -123,6 +154,7 @@ const LEVEL_LABEL = {
 
 const RABCalculator = () => {
   const { addProject, setActiveTab, addActivityLog, user } = useStore();
+  const { showToast } = useToast();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -135,6 +167,9 @@ const RABCalculator = () => {
   const [selectedProvince, setSelectedProvince] = useState(DEFAULT_PROVINCE_ID);
   const [materialGrade, setMaterialGrade] = useState<MaterialGrade>(DEFAULT_MATERIAL_GRADE);
   const [locationType, setLocationType] = useState<LocationType>('kota');
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [showComparison, setShowComparison] = useState(false);
+  const [shareLoading, setShareLoading] = useState(false);
 
   // Form State
   const [projectData, setProjectData] = useState<Partial<Project>>({
@@ -960,25 +995,45 @@ const RABCalculator = () => {
                 >
                   Timeline & Jadwal
                 </button>
+                <button 
+                  onClick={() => setActiveSubTab('template')}
+                  className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${activeSubTab === 'template' ? 'bg-primary text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}
+                >
+                  Template
+                </button>
               </div>
 
               <div className="flex items-center gap-3">
                 <button 
-                  onClick={() => exportToPDF(projectData, rabItems, financials, materialGrade, {
-                    preparedBy: user?.name,
-                    companyName: 'SIVILIZE HUB PRO',
-                  })}
-                  className="flex items-center gap-2 px-4 py-2 bg-red-500/10 text-red-500 border border-red-500/20 rounded-xl text-sm font-bold hover:bg-red-500/20 transition-all"
+                  onClick={() => setShowPreviewModal(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded-xl text-sm font-bold hover:bg-primary/20 transition-all"
                 >
-                  <FileDown size={16} />
-                  <span>PDF</span>
+                  <Printer size={16} />
+                  <span>Cetak / Export</span>
                 </button>
-                <button 
-                  onClick={() => exportToExcel(projectData, rabItems, financials, materialGrade)}
-                  className="flex items-center gap-2 px-4 py-2 bg-success/10 text-success border border-success/20 rounded-xl text-sm font-bold hover:bg-success/20 transition-all"
+                {/* Bandingkan Versi — tampil jika ada project yang sudah disimpan */}
+                <button
+                  onClick={() => setShowComparison(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-xl text-sm font-bold hover:bg-blue-500/20 transition-all"
                 >
-                  <FileText size={16} />
-                  <span>Excel</span>
+                  <GitCompare size={16} />
+                  <span className="hidden sm:inline">Bandingkan</span>
+                </button>
+                <button
+                  onClick={async () => {
+                    setShareLoading(true);
+                    try {
+                      // Simpan dulu jika belum ada project ID
+                      showToast('Fitur share memerlukan proyek yang sudah disimpan', 'info');
+                    } finally {
+                      setShareLoading(false);
+                    }
+                  }}
+                  disabled={shareLoading}
+                  className="flex items-center gap-2 px-4 py-2 bg-green-500/10 text-green-400 border border-green-500/20 rounded-xl text-sm font-bold hover:bg-green-500/20 transition-all"
+                >
+                  <Share2 size={16} />
+                  <span className="hidden sm:inline">Bagikan</span>
                 </button>
               </div>
             </div>
@@ -1233,6 +1288,23 @@ const RABCalculator = () => {
                   <ProjectTimeline items={rabItems} />
                 </motion.div>
               )}
+              {activeSubTab === 'template' && (
+                <motion.div
+                  key="template"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                >
+                  <RABTemplateManagerWrapper
+                    rabItems={rabItems}
+                    financials={financials}
+                    onLoadTemplate={(items, fin) => {
+                      setRabItems(items);
+                      setFinancials(fin);
+                    }}
+                  />
+                </motion.div>
+              )}
             </AnimatePresence>
           </div>
         );
@@ -1328,6 +1400,24 @@ const RABCalculator = () => {
         grandTotal={summary.grandTotal}
         itemCount={rabItems.length}
         onScrollToTop={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+      />
+    )}
+
+    {/* RAB Preview Modal */}
+    <RABPreviewModal
+      isOpen={showPreviewModal}
+      onClose={() => setShowPreviewModal(false)}
+      project={projectData}
+      items={rabItems}
+      financials={financials}
+      grade={materialGrade}
+    />
+
+    {/* RAB Version Comparison */}
+    {showComparison && (
+      <RABVersionComparison
+        projectId={tempProjectId}
+        onClose={() => setShowComparison(false)}
       />
     )}
     </>

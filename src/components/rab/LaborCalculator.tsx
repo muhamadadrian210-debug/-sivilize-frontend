@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Users, Plus, Trash2, CheckCircle2, Clock, DollarSign } from 'lucide-react';
+import { Users, Plus, Trash2, CheckCircle2, Clock, DollarSign, FileDown, FileText } from 'lucide-react';
 import { useStore, type LaborPayment } from '../../store/useStore';
 import { formatCurrency } from '../../utils/calculations';
 import { useToast } from '../common/Toast';
+import { exportLaborToPDF, exportLaborToExcel, aggregateLaborByWorker } from '../../utils/exportUtils';
 
 const DEFAULT_WAGES: Record<string, number> = {
   'Mandor': 270000, 'Kepala Tukang': 230000, 'Tukang Batu': 200000,
@@ -19,6 +20,8 @@ const LaborCalculator = ({ projectId }: LaborCalculatorProps) => {
   const { showToast } = useToast();
   const project = projects.find(p => p.id === projectId);
   const payments = project?.laborPayments || [];
+
+  const workerSummaries = aggregateLaborByWorker(payments);
 
   const [showForm, setShowForm] = useState(false);
   const [weekStart, setWeekStart] = useState('');
@@ -64,9 +67,27 @@ const LaborCalculator = ({ projectId }: LaborCalculatorProps) => {
           <Users size={18} className="text-primary" />
           <h3 className="text-white font-bold">Kalkulator Upah Tenaga Kerja</h3>
         </div>
-        <button onClick={() => setShowForm(!showForm)} className="btn-primary text-sm py-2 flex items-center gap-2">
-          <Plus size={14} /> Input Upah Minggu Ini
-        </button>
+        <div className="flex items-center gap-2">
+          {payments.length > 0 && (
+            <>
+              <button
+                onClick={() => exportLaborToPDF(payments, { projectName: project?.name || 'Proyek' })}
+                className="flex items-center gap-1.5 px-3 py-2 bg-red-500/10 text-red-400 border border-red-500/20 rounded-xl text-xs font-bold hover:bg-red-500/20 transition-all"
+              >
+                <FileDown size={13} /> Export PDF
+              </button>
+              <button
+                onClick={() => exportLaborToExcel(payments, { projectName: project?.name || 'Proyek' })}
+                className="flex items-center gap-1.5 px-3 py-2 bg-green-500/10 text-green-400 border border-green-500/20 rounded-xl text-xs font-bold hover:bg-green-500/20 transition-all"
+              >
+                <FileText size={13} /> Export Excel
+              </button>
+            </>
+          )}
+          <button onClick={() => setShowForm(!showForm)} className="btn-primary text-sm py-2 flex items-center gap-2">
+            <Plus size={14} /> Input Upah Minggu Ini
+          </button>
+        </div>
       </div>
 
       {/* Summary */}
@@ -142,6 +163,37 @@ const LaborCalculator = ({ projectId }: LaborCalculatorProps) => {
               <button onClick={() => setShowForm(false)} className="btn-secondary text-sm">Batal</button>
               <button onClick={handleSave} className="btn-primary text-sm">Simpan</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Worker Summary */}
+      {workerSummaries.length > 0 && (
+        <div className="glass-card p-5 space-y-3">
+          <p className="text-text-secondary text-xs font-bold uppercase tracking-widest">Ringkasan per Pekerja</p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="text-left py-2 text-text-secondary text-xs font-bold">Nama</th>
+                  <th className="text-left py-2 text-text-secondary text-xs font-bold">Jabatan</th>
+                  <th className="text-right py-2 text-text-secondary text-xs font-bold">Total Hari</th>
+                  <th className="text-right py-2 text-text-secondary text-xs font-bold">Minggu</th>
+                  <th className="text-right py-2 text-text-secondary text-xs font-bold">Total Upah</th>
+                </tr>
+              </thead>
+              <tbody>
+                {workerSummaries.map((w, i) => (
+                  <tr key={i} className="border-b border-border/30">
+                    <td className="py-2 text-white font-bold">{w.name}</td>
+                    <td className="py-2 text-text-secondary">{w.role}</td>
+                    <td className="py-2 text-right text-white">{w.totalDays}</td>
+                    <td className="py-2 text-right text-text-secondary">{w.weeksWorked}</td>
+                    <td className="py-2 text-right text-primary font-bold">{formatCurrency(w.totalAmount)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}

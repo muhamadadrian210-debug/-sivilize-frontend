@@ -19,6 +19,7 @@ export interface User {
   name: string;
   email: string;
   role: UserRole;
+  avatarUrl?: string;
 }
 
 export interface ActivityLog {
@@ -112,6 +113,12 @@ export interface Project {
   // Auto-save
   autoSaveDraft?: Partial<ProjectVersion>;
   autoSavedAt?: number;
+  // Progress realisasi manual per periode (key: periodIndex, value: 0-100)
+  manualProgress?: Record<number, number>;
+  // Share RAB
+  shareToken?: string;
+  shareTokenExpiry?: string;
+  shareEnabled?: boolean;
 }
 
 export interface ProjectVersion {
@@ -211,6 +218,10 @@ interface AppState {
   // Labor payment
   addLaborPayment: (projectId: string, payment: Omit<LaborPayment, 'id'>) => void;
   updateLaborPayment: (projectId: string, paymentId: string, updates: Partial<LaborPayment>) => void;
+  // Avatar
+  updateUserAvatar: (avatarUrl: string) => void;
+  // Kurva S manual progress
+  updateProjectProgress: (projectId: string, periodIndex: number, value: number) => void;
 }
 
 export const useStore = create<AppState>()(
@@ -412,6 +423,28 @@ export const useStore = create<AppState>()(
                   laborPayments: (p.laborPayments || []).map(lp =>
                     lp.id === paymentId ? { ...lp, ...updates } : lp
                   ),
+                }
+              : p
+          ),
+        }));
+      },
+
+      updateUserAvatar: (avatarUrl) => {
+        set((state) => ({
+          user: state.user ? { ...state.user, avatarUrl } : null,
+        }));
+      },
+
+      updateProjectProgress: (projectId, periodIndex, value) => {
+        set((state) => ({
+          projects: state.projects.map(p =>
+            p.id === projectId
+              ? {
+                  ...p,
+                  manualProgress: {
+                    ...(p.manualProgress || {}),
+                    [periodIndex]: value,
+                  },
                 }
               : p
           ),

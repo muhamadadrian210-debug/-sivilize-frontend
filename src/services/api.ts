@@ -90,6 +90,14 @@ export const authService = {
     const response = await api.put<ApiResponse<User>>('/auth/profile', data);
     return response.data;
   },
+  uploadAvatar: async (file: File) => {
+    const formData = new FormData();
+    formData.append('avatar', file);
+    const response = await api.post<ApiResponse<{ avatarUrl: string }>>('/auth/avatar', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
   forgotPassword: async (email: string) => {
     const response = await api.post<ApiResponse<{ resetToken?: string; resetUrl?: string }>>('/auth/forgot-password', { email });
     return response.data;
@@ -126,6 +134,14 @@ export const projectService = {
   },
   addVersion: async (projectId: string, versionData: unknown) => {
     const response = await api.post<ApiResponse<Project>>(`/projects/${projectId}/versions`, versionData);
+    return response.data;
+  },
+  generateShareLink: async (projectId: string, expiresInDays = 30) => {
+    const response = await api.post<ApiResponse<{ shareToken: string; shareUrl: string; expiresAt: string }>>(`/projects/${projectId}/share`, { expiresInDays });
+    return response.data;
+  },
+  getSharedProject: async (token: string) => {
+    const response = await api.get<ApiResponse<unknown>>(`/share/${token}`);
     return response.data;
   },
 };

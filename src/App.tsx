@@ -23,16 +23,24 @@ import AdminDashboard from './components/admin/AdminDashboard';
 import { checkTokenValidity } from './utils/security';
 import PrankPage from './pages/PrankPage';
 import LandingPage from './pages/LandingPage';
+import ShareView from './pages/ShareView';
 import { useDataSync } from './hooks/useDataSync';
+import { runNotificationEngine } from './utils/notificationEngine';
+import { LanguageProvider } from './contexts/LanguageContext';
 
 function App() {
-  const { activeTab, isAuthenticated, setAuthenticated } = useStore();
+  const { activeTab, isAuthenticated, setAuthenticated, projects, notifications, addNotification } = useStore();
   const [showAuth, setShowAuth] = useState(false);
   useDataSync(); // Sinkronisasi data proyek dengan server
 
   // Tampilkan halaman prank jika URL /prank
   if (window.location.pathname === '/prank') {
     return <PrankPage />;
+  }
+
+  // Tampilkan halaman share jika URL /share/:token
+  if (window.location.pathname.startsWith('/share/')) {
+    return <ShareView />;
   }
 
   // Restore auth state from localStorage on app load
@@ -65,6 +73,12 @@ function App() {
       window.removeEventListener('auth:logout', handleAutoLogout);
     };
   }, [isAuthenticated, setAuthenticated]);
+
+  // Notification engine — jalankan saat authenticated
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    runNotificationEngine(projects, notifications, addNotification);
+  }, [isAuthenticated, projects]);
 
   if (!isAuthenticated) {
     if (showAuth) {
@@ -105,33 +119,35 @@ function App() {
   };
 
   return (
-    <ToastProvider>
-      <Onboarding />
-      <AIChat />
-      <div className="min-h-screen bg-background text-text-primary flex flex-col">
-        <Sidebar />
-        <Navbar />
-        
-        {/* Desktop: pl-64 pt-20 | Mobile: pt-14 pb-16 (top bar + bottom nav) */}
-        <main className="lg:pl-64 lg:pt-20 pt-14 pb-16 lg:pb-0 transition-all duration-300 flex-1 flex flex-col">
-          <div className="flex-1">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeTab}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="p-4 lg:p-8"
-              >
-                {renderContent()}
-              </motion.div>
-            </AnimatePresence>
-          </div>
-          <Footer />
-        </main>
-      </div>
-    </ToastProvider>
+    <LanguageProvider>
+      <ToastProvider>
+        <Onboarding />
+        <AIChat />
+        <div className="min-h-screen bg-background text-text-primary flex flex-col">
+          <Sidebar />
+          <Navbar />
+          
+          {/* Desktop: pl-64 pt-20 | Mobile: pt-14 pb-16 (top bar + bottom nav) */}
+          <main className="lg:pl-64 lg:pt-20 pt-14 pb-16 lg:pb-0 transition-all duration-300 flex-1 flex flex-col">
+            <div className="flex-1">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeTab}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="p-4 lg:p-8"
+                >
+                  {renderContent()}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+            <Footer />
+          </main>
+        </div>
+      </ToastProvider>
+    </LanguageProvider>
   );
 }
 

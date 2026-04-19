@@ -319,3 +319,315 @@ export const exportToExcel = (
   const filename = `RAB_${(project.name || 'Proyek').replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.xlsx`;
   XLSX.writeFile(wb, filename);
 };
+
+// ============================================================
+// EXPORT KURVA S PDF
+// ============================================================
+import { type KurvaSChartPoint } from './kurvaSUtils';
+
+export interface KurvaSExportOptions {
+  companyName?: string;
+  preparedBy?: string;
+  projectNo?: string;
+}
+
+export const exportKurvaSPDF = (
+  project: Partial<Project>,
+  chartData: KurvaSChartPoint[],
+  options?: KurvaSExportOptions
+): void => {
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' }) as unknown as JsPDFWithAutoTable;
+  const pageW = 210;
+  const margin = 14;
+  const company = options?.companyName || 'SIVILIZE HUB PRO';
+  const preparedBy = options?.preparedBy || '-';
+  const projectNo = options?.projectNo || `SIV-${Date.now().toString().slice(-6)}`;
+
+  // KOP SURAT
+  doc.setDrawColor(255, 122, 0); doc.setLineWidth(1.5);
+  doc.line(margin, 12, pageW - margin, 12);
+  doc.setFillColor(255, 122, 0);
+  doc.roundedRect(margin, 15, 18, 18, 2, 2, 'F');
+  doc.setTextColor(255, 255, 255); doc.setFontSize(8); doc.setFont('helvetica', 'bold');
+  doc.text('SHP', margin + 9, 25, { align: 'center' });
+  doc.setTextColor(30, 30, 30); doc.setFontSize(14);
+  doc.text(company, margin + 22, 21);
+  doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(100, 100, 100);
+  doc.text('Platform Teknik Sipil Berbasis AI', margin + 22, 26);
+  doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 122, 0);
+  doc.text('KURVA S — PROGRESS PROYEK', pageW - margin, 19, { align: 'right' });
+  doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(100, 100, 100);
+  doc.text(`No. Dokumen: ${projectNo}`, pageW - margin, 24, { align: 'right' });
+  doc.text(`Tanggal Cetak: ${new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}`, pageW - margin, 28, { align: 'right' });
+  doc.setDrawColor(255, 122, 0); doc.setLineWidth(0.5);
+  doc.line(margin, 36, pageW - margin, 36);
+
+  // INFO PROYEK
+  let y = 42;
+  doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(80, 80, 80);
+  doc.text('Nama Proyek', margin, y);
+  doc.text('Lokasi', margin, y + 6);
+  doc.text('Tanggal Mulai', margin, y + 12);
+  doc.text('Tanggal Selesai', margin, y + 18);
+  doc.text('Dibuat Oleh', margin + 90, y);
+  doc.setFont('helvetica', 'normal'); doc.setTextColor(30, 30, 30);
+  doc.text(`: ${project.name || '-'}`, margin + 30, y);
+  doc.text(`: ${project.location || '-'}`, margin + 30, y + 6);
+  doc.text(`: ${project.startDate ? new Date(project.startDate).toLocaleDateString('id-ID') : '-'}`, margin + 30, y + 12);
+  doc.text(`: ${project.endDate ? new Date(project.endDate).toLocaleDateString('id-ID') : '-'}`, margin + 30, y + 18);
+  doc.text(`: ${preparedBy}`, margin + 120, y);
+  y += 28;
+
+  // TABEL DATA KURVA S
+  const tableData = chartData.map(point => [
+    point.label,
+    `${point.rencana.toFixed(1)}%`,
+    point.realisasi !== null ? `${point.realisasi.toFixed(1)}%` : '-',
+    point.realisasi !== null
+      ? `${(point.realisasi - point.rencana).toFixed(1)}%`
+      : '-',
+    point.isManual ? 'Manual' : point.realisasi !== null ? 'Log Harian' : '-',
+  ]);
+
+  (doc as unknown as JsPDFWithAutoTable).autoTable({
+    startY: y,
+    head: [['Periode', 'Rencana (%)', 'Realisasi (%)', 'Deviasi (%)', 'Sumber']],
+    body: tableData,
+    theme: 'grid',
+    styles: { fontSize: 8, cellPadding: 2.5, textColor: [30, 30, 30] },
+    headStyles: { fillColor: [255, 122, 0], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8.5 },
+    columnStyles: {
+      0: { cellWidth: 20, halign: 'center' },
+      1: { cellWidth: 30, halign: 'right' },
+      2: { cellWidth: 30, halign: 'right' },
+      3: { cellWidth: 30, halign: 'right' },
+      4: { cellWidth: 30, halign: 'center' },
+    },
+    didParseCell: (data: { section: string; column: { index: number }; cell: { raw: string; styles: { textColor: number[] } } }) => {
+      if (data.section === 'body' && data.column.index === 3) {
+        const val = parseFloat(data.cell.raw as string);
+        if (!isNaN(val)) {
+          data.cell.styles.textColor = val >= 0 ? [34, 197, 94] : [239, 68, 68];
+        }
+      }
+    },
+    margin: { left: margin, right: margin },
+  });
+
+  // FOOTER
+  const pageCount = (doc as unknown as { internal: { getNumberOfPages: () => number } }).internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(7); doc.setTextColor(150, 150, 150);
+    doc.text(`SIVILIZE HUB PRO — Halaman ${i} dari ${pageCount}`, pageW / 2, 290, { align: 'center' });
+  }
+
+  doc.save(`KurvaS_${(project.name || 'Proyek').replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
+};
+
+// ============================================================
+// EXPORT UPAH TENAGA KERJA
+// ============================================================
+import { type LaborPayment } from '../store/useStore';
+
+export interface LaborExportOptions {
+  projectName: string;
+  companyName?: string;
+  period?: string;
+}
+
+export interface WorkerSummary {
+  name: string;
+  role: string;
+  totalDays: number;
+  totalAmount: number;
+  weeksWorked: number;
+}
+
+export function aggregateLaborByWorker(payments: LaborPayment[]): WorkerSummary[] {
+  const workerMap = new Map<string, WorkerSummary>();
+
+  for (const payment of payments) {
+    for (const worker of payment.workers) {
+      const key = `${worker.name}__${worker.role}`;
+      const existing = workerMap.get(key);
+      if (existing) {
+        existing.totalDays += worker.days;
+        existing.totalAmount += worker.total;
+        existing.weeksWorked += 1;
+      } else {
+        workerMap.set(key, {
+          name: worker.name,
+          role: worker.role,
+          totalDays: worker.days,
+          totalAmount: worker.total,
+          weeksWorked: 1,
+        });
+      }
+    }
+  }
+
+  return Array.from(workerMap.values()).sort((a, b) => b.totalAmount - a.totalAmount);
+}
+
+export const exportLaborToPDF = (
+  payments: LaborPayment[],
+  options: LaborExportOptions
+): void => {
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' }) as unknown as JsPDFWithAutoTable;
+  const pageW = 210;
+  const margin = 14;
+  const company = options.companyName || 'SIVILIZE HUB PRO';
+  const today = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+
+  // KOP SURAT
+  doc.setDrawColor(255, 122, 0); doc.setLineWidth(1.5);
+  doc.line(margin, 12, pageW - margin, 12);
+  doc.setFillColor(255, 122, 0);
+  doc.roundedRect(margin, 15, 18, 18, 2, 2, 'F');
+  doc.setTextColor(255, 255, 255); doc.setFontSize(8); doc.setFont('helvetica', 'bold');
+  doc.text('SHP', margin + 9, 25, { align: 'center' });
+  doc.setTextColor(30, 30, 30); doc.setFontSize(14);
+  doc.text(company, margin + 22, 21);
+  doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 122, 0);
+  doc.text('DAFTAR UPAH TENAGA KERJA', pageW - margin, 19, { align: 'right' });
+  doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(100, 100, 100);
+  doc.text(`Proyek: ${options.projectName}`, pageW - margin, 24, { align: 'right' });
+  doc.text(`Tanggal: ${today}`, pageW - margin, 28, { align: 'right' });
+  doc.setDrawColor(255, 122, 0); doc.setLineWidth(0.5);
+  doc.line(margin, 36, pageW - margin, 36);
+
+  let y = 42;
+
+  // Tabel per minggu
+  for (const payment of payments) {
+    const weekLabel = `${new Date(payment.weekStart).toLocaleDateString('id-ID')} — ${new Date(payment.weekEnd).toLocaleDateString('id-ID')}`;
+    doc.setFillColor(52, 73, 94); doc.setTextColor(255, 255, 255);
+    doc.setFontSize(8.5); doc.setFont('helvetica', 'bold');
+    doc.rect(margin, y, pageW - margin * 2, 7, 'F');
+    doc.text(`Minggu: ${weekLabel}`, margin + 3, y + 5);
+    y += 7;
+
+    const tableData = payment.workers.map(w => [
+      w.name, w.role, w.days.toString(), toRp(w.dailyWage), toRp(w.total)
+    ]);
+    tableData.push(['', 'TOTAL MINGGU INI', '', '', toRp(payment.totalAmount)]);
+
+    (doc as unknown as JsPDFWithAutoTable).autoTable({
+      startY: y,
+      head: [['Nama', 'Jabatan', 'Hari', 'Upah/Hari', 'Total']],
+      body: tableData,
+      theme: 'grid',
+      styles: { fontSize: 7.5, cellPadding: 2, textColor: [30, 30, 30] },
+      headStyles: { fillColor: [52, 73, 94], textColor: [255, 255, 255], fontStyle: 'bold' },
+      columnStyles: {
+        0: { cellWidth: 40 }, 1: { cellWidth: 35 },
+        2: { cellWidth: 15, halign: 'center' },
+        3: { cellWidth: 35, halign: 'right' },
+        4: { cellWidth: 35, halign: 'right' },
+      },
+      didParseCell: (data: { row: { index: number }; section: string; cell: { styles: { fontStyle: string; fillColor: number[] } } }) => {
+        if (data.section === 'body' && data.row.index === tableData.length - 1) {
+          data.cell.styles.fontStyle = 'bold';
+          data.cell.styles.fillColor = [240, 240, 240];
+        }
+      },
+      margin: { left: margin, right: margin },
+    });
+    y = ((doc as unknown as JsPDFWithAutoTable).lastAutoTable?.finalY ?? y) + 6;
+
+    if (y > 250) { doc.addPage(); y = 20; }
+  }
+
+  // Summary total
+  const totalAll = payments.reduce((s, p) => s + p.totalAmount, 0);
+  const totalPaid = payments.filter(p => p.paid).reduce((s, p) => s + p.totalAmount, 0);
+  const totalUnpaid = totalAll - totalPaid;
+
+  y += 4;
+  doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 30, 30);
+  doc.text('RINGKASAN', margin, y); y += 6;
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+  doc.text(`Total Upah Keseluruhan: ${toRp(totalAll)}`, margin, y); y += 5;
+  doc.text(`Sudah Dibayar: ${toRp(totalPaid)}`, margin, y); y += 5;
+  doc.text(`Belum Dibayar: ${toRp(totalUnpaid)}`, margin, y); y += 10;
+
+  // Area tanda tangan mandor
+  doc.setDrawColor(200, 200, 200); doc.setLineWidth(0.3);
+  doc.rect(margin, y, 60, 25, 'S');
+  doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(80, 80, 80);
+  doc.text('Mandor', margin + 30, y + 5, { align: 'center' });
+  doc.line(margin + 5, y + 20, margin + 55, y + 20);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5);
+  doc.text('(Tanda Tangan)', margin + 30, y + 24, { align: 'center' });
+
+  // Footer
+  const pageCount = (doc as unknown as { internal: { getNumberOfPages: () => number } }).internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(7); doc.setTextColor(150, 150, 150);
+    doc.text(`SIVILIZE HUB PRO — Halaman ${i} dari ${pageCount}`, pageW / 2, 290, { align: 'center' });
+  }
+
+  doc.save(`Upah_${options.projectName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
+};
+
+export const exportLaborToExcel = (
+  payments: LaborPayment[],
+  options: LaborExportOptions
+): void => {
+  const wb = XLSX.utils.book_new();
+  const company = options.companyName || 'SIVILIZE HUB PRO';
+  const today = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+
+  // Sheet 1: Rekap per minggu
+  const data: (string | number)[][] = [
+    [company],
+    ['DAFTAR UPAH TENAGA KERJA'],
+    [`Proyek: ${options.projectName}`, '', '', '', `Tanggal: ${today}`],
+    [''],
+    ['Minggu', 'Nama', 'Jabatan', 'Hari Kerja', 'Upah/Hari', 'Total'],
+  ];
+
+  for (const payment of payments) {
+    const weekLabel = `${new Date(payment.weekStart).toLocaleDateString('id-ID')} — ${new Date(payment.weekEnd).toLocaleDateString('id-ID')}`;
+    for (const worker of payment.workers) {
+      data.push([weekLabel, worker.name, worker.role, worker.days, toRp(worker.dailyWage), toRp(worker.total)]);
+    }
+    data.push(['', '', '', '', 'SUBTOTAL', toRp(payment.totalAmount)]);
+    data.push(['']);
+  }
+
+  const totalAll = payments.reduce((s, p) => s + p.totalAmount, 0);
+  data.push(['', '', '', '', 'GRAND TOTAL', toRp(totalAll)]);
+
+  const ws1 = XLSX.utils.aoa_to_sheet(data);
+  ws1['!cols'] = [{ wch: 30 }, { wch: 20 }, { wch: 20 }, { wch: 12 }, { wch: 20 }, { wch: 20 }];
+  ws1['!merges'] = [
+    { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } },
+    { s: { r: 1, c: 0 }, e: { r: 1, c: 5 } },
+  ];
+  XLSX.utils.book_append_sheet(wb, ws1, 'Rekap per Minggu');
+
+  // Sheet 2: Rekap per pekerja (pivot)
+  const workerSummaries = aggregateLaborByWorker(payments);
+  const data2: (string | number)[][] = [
+    [company],
+    ['REKAP UPAH PER PEKERJA'],
+    [`Proyek: ${options.projectName}`],
+    [''],
+    ['Nama', 'Jabatan', 'Total Hari', 'Minggu Kerja', 'Total Upah'],
+    ...workerSummaries.map(w => [w.name, w.role, w.totalDays, w.weeksWorked, toRp(w.totalAmount)]),
+    [''],
+    ['', '', '', 'TOTAL', toRp(workerSummaries.reduce((s, w) => s + w.totalAmount, 0))],
+  ];
+  const ws2 = XLSX.utils.aoa_to_sheet(data2);
+  ws2['!cols'] = [{ wch: 25 }, { wch: 20 }, { wch: 12 }, { wch: 15 }, { wch: 20 }];
+  ws2['!merges'] = [
+    { s: { r: 0, c: 0 }, e: { r: 0, c: 4 } },
+    { s: { r: 1, c: 0 }, e: { r: 1, c: 4 } },
+  ];
+  XLSX.utils.book_append_sheet(wb, ws2, 'Rekap per Pekerja');
+
+  XLSX.writeFile(wb, `Upah_${options.projectName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.xlsx`);
+};

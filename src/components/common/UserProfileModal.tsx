@@ -1,35 +1,60 @@
 import { useState } from 'react';
-import { X, User, Mail, Lock, Save, Camera, CheckCircle2 } from 'lucide-react';
+import { X, User, Mail, Lock, Save, Camera, CheckCircle2, Database } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { authService } from '../../services/api';
 import { useToast } from './Toast';
+import BackupRestorePanel from '../settings/BackupRestorePanel';
 
 interface UserProfileModalProps {
   onClose: () => void;
 }
 
 const UserProfileModal = ({ onClose }: UserProfileModalProps) => {
-  const { user, setUser } = useStore();
+  const { user, setUser, updateUserAvatar } = useStore();
   const { showToast } = useToast();
-  const [tab, setTab] = useState<'profile' | 'password'>('profile');
+  const [tab, setTab] = useState<'profile' | 'password' | 'backup'>('profile');
   const [loading, setLoading] = useState(false);
-  const [avatar, setAvatar] = useState<string>(localStorage.getItem('sivilize_avatar') || '');
+  const [avatarPreview, setAvatarPreview] = useState<string>(
+    user?.avatarUrl
+      ? `${import.meta.env.VITE_API_URL?.replace('/api', '') || ''}${user.avatarUrl}`
+      : localStorage.getItem('sivilize_avatar') || ''
+  );
 
   const [profileData, setProfileData] = useState({ name: user?.name || '', email: user?.email || '' });
   const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
 
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 2 * 1024 * 1024) { showToast('Foto maksimal 2MB', 'warning'); return; }
+    if (!file.type.startsWith('image/')) { showToast('File harus berupa gambar', 'warning'); return; }
+
+    // Preview lokal dulu
     const reader = new FileReader();
     reader.onload = ev => {
       const result = ev.target?.result as string;
-      setAvatar(result);
-      localStorage.setItem('sivilize_avatar', result);
-      showToast('Foto profil diperbarui', 'success');
+      setAvatarPreview(result);
     };
     reader.readAsDataURL(file);
+
+    // Upload ke server
+    try {
+      const response = await authService.uploadAvatar(file);
+      if (response.success && response.data?.avatarUrl) {
+        updateUserAvatar(response.data.avatarUrl);
+        localStorage.setItem('sivilize_avatar', avatarPreview);
+        showToast('Foto profil diperbarui', 'success');
+      }
+    } catch {
+      // Fallback: simpan ke localStorage saja
+      const reader2 = new FileReader();
+      reader2.onload = ev => {
+        const result = ev.target?.result as string;
+        localStorage.setItem('sivilize_avatar', result);
+        showToast('Foto profil diperbarui (lokal)', 'success');
+      };
+      reader2.readAsDataURL(file);
+    }
   };
 
   const handleSaveProfile = async () => {
@@ -82,8 +107,8 @@ const UserProfileModal = ({ onClose }: UserProfileModalProps) => {
         <div className="flex items-center gap-4">
           <div className="relative">
             <div className="w-16 h-16 rounded-full bg-primary/20 border-2 border-primary overflow-hidden flex items-center justify-center">
-              {avatar ? (
-                <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
+              {avatarPreview ? (
+                <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
               ) : (
                 <span className="text-2xl font-black text-primary">{user?.name?.charAt(0).toUpperCase()}</span>
               )}
@@ -107,6 +132,9 @@ const UserProfileModal = ({ onClose }: UserProfileModalProps) => {
           </button>
           <button onClick={() => setTab('password')} className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${tab === 'password' ? 'bg-primary text-white' : 'text-text-secondary'}`}>
             Ubah Password
+          </button>
+          <button onClick={() => setTab('backup')} className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${tab === 'backup' ? 'bg-primary text-white' : 'text-text-secondary'}`}>
+            <Database size={13} className="inline mr-1" />Backup
           </button>
         </div>
 
@@ -156,6 +184,9 @@ const UserProfileModal = ({ onClose }: UserProfileModalProps) => {
               {loading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><CheckCircle2 size={16} /> Ubah Password</>}
             </button>
           </div>
+        )}
+        {tab === 'backup' && (
+          <BackupRestorePanel />
         )}
       </div>
     </div>
