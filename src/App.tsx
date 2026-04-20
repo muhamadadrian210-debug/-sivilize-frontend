@@ -43,6 +43,18 @@ function App() {
     return <ShareView />;
   }
 
+  // Wake up backend saat app load (handle Vercel cold start)
+  useEffect(() => {
+    const wakeUpBackend = async () => {
+      try {
+        await fetch(`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'https://sivilize-backend.vercel.app'}/health`);
+      } catch {
+        // Ignore — ini hanya untuk wake up server
+      }
+    };
+    wakeUpBackend();
+  }, []);
+
   // Restore auth state from localStorage on app load
   useEffect(() => {
     const token = localStorage.getItem('token');

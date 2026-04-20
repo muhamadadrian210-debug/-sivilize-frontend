@@ -109,10 +109,12 @@ const AuthPage = () => {
       }
     } catch (err: unknown) {
       const axiosErr = err as AxiosLikeError;
-      // Tampilkan error detail dari backend jika ada
       const errData = axiosErr.response?.data;
       if (errData?.errors && Array.isArray(errData.errors)) {
         setError(errData.errors.map((e: { message: string }) => e.message).join('\n'));
+      } else if (!axiosErr.response) {
+        // Network error / timeout — kemungkinan cold start
+        setError('Server sedang memuat, mohon tunggu 10 detik lalu coba lagi.');
       } else {
         setError(errData?.message || 'Terjadi kesalahan. Silakan coba lagi.');
       }

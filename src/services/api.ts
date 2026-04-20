@@ -6,7 +6,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'https://server-1rimpvmey-muhama
 
 const api = axios.create({
   baseURL: API_URL,
-  timeout: 15000,
+  timeout: 30000, // 30 detik — handle Vercel cold start
   headers: {
     'Content-Type': 'application/json',
   },
@@ -26,16 +26,31 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor — auto logout jika 401
+// Response interceptor — auto logout jika 401, retry jika timeout/cold start
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    const config = error.config;
+
+    // Auto logout jika 401
     if (error.response?.status === 401) {
-      // Token expired atau tidak valid — hapus dan redirect ke login
       localStorage.removeItem('token');
-      // Trigger re-render dengan clear auth state
       window.dispatchEvent(new CustomEvent('auth:logout'));
+      return Promise.reject(error);
     }
+
+    // Retry otomatis untuk network error / timeout (Vercel cold start)
+    if (!error.response && !config._retry) {
+      config._retry = true;
+      config._retryCount = (config._retryCount || 0) + 1;
+
+      if (config._retryCount <= 2) {
+        // Tunggu 2 detik lalu coba lagi
+        await new Promise(r => setTimeout(r, 2000));
+        return api(config);
+      }
+    }
+
     return Promise.reject(error);
   }
 );
