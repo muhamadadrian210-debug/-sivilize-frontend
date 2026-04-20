@@ -52,6 +52,10 @@ const StickyTotalBar = ({ subtotal, grandTotal, itemCount, onScrollToTop }: Stic
             </button>
           )}
         </div>
+        {/* Disclaimer */}
+        <p className="text-center text-[10px] text-text-secondary mt-1 pb-0.5">
+          * Estimasi berdasarkan AHSP Permen PUPR No.1/2022 & harga pasar 2026. Verifikasi harga lokal sebelum tender.
+        </p>
       </div>
     </div>
   );

@@ -42,17 +42,17 @@ export interface RegionalPriceOverride {
   labor?: Record<string, number>;
 }
 
-// Harga material default (per satuan, harga pasar 2025 Indonesia)
-// Referensi: AHSP SNI, Harga Satuan Kota 2025, survey pasar
+// Harga material default (per satuan, harga pasar 2026 Indonesia)
+// Referensi: AHSP SNI Permen PUPR No.1/2022, survey pasar 2026
 const defaultMaterials: Record<string, number> = {
   // === STRUKTUR ===
-  'Semen PC': 1350,           // per kg (~Rp 67.500/sak 50kg)
-  'Pasir Pasang': 280000,     // per mÂ³
-  'Pasir Beton': 320000,      // per mÂ³
-  'Krikil (Split)': 330000,   // per mÂ³
-  'Bata Merah': 800,          // per buah
-  'Besi Beton': 14500,        // per kg
-  'Kawat Beton': 22000,       // per kg
+  'Semen PC': 1450,           // per kg (~Rp 72.500/sak 50kg, update 2026)
+  'Pasir Pasang': 295000,     // per m³
+  'Pasir Beton': 335000,      // per m³
+  'Krikil (Split)': 345000,   // per m³
+  'Bata Merah': 850,          // per buah
+  'Besi Beton': 15500,        // per kg (update 2026)
+  'Kawat Beton': 23000,       // per kg
   'Air': 50,                  // per liter
 
   // === FINISHING - CAT ===
@@ -139,18 +139,18 @@ const defaultMaterials: Record<string, number> = {
   'Minyak Bekisting': 15000,  // per liter
 };
 
-// Upah tenaga kerja per OH (Orang Hari) - harga pasar 2025
-// Referensi: Standar Harga Konstruksi Kota 2025, survey lapangan
+// Upah tenaga kerja per OH (Orang Hari) - harga pasar 2026
+// Referensi: Standar Harga Konstruksi Kota 2026, survey lapangan
 const defaultLabor = {
-  'Pekerja': 150000,        // Rp 130.000-170.000/OH
-  'Tukang Batu': 200000,    // Rp 180.000-220.000/OH
-  'Tukang Besi': 200000,    // Rp 180.000-220.000/OH
-  'Tukang Cat': 185000,     // Rp 170.000-200.000/OH
-  'Tukang Kayu': 200000,    // Rp 180.000-220.000/OH
-  'Tukang Pipa': 195000,    // Rp 180.000-210.000/OH
-  'Tukang Listrik': 210000, // Rp 190.000-230.000/OH
-  'Kepala Tukang': 230000,  // Rp 210.000-250.000/OH
-  'Mandor': 270000,         // Rp 250.000-300.000/OH
+  'Pekerja': 165000,        // Rp 150.000-180.000/OH (naik dari 2025)
+  'Tukang Batu': 215000,    // Rp 200.000-230.000/OH
+  'Tukang Besi': 215000,    // Rp 200.000-230.000/OH
+  'Tukang Cat': 200000,     // Rp 185.000-215.000/OH
+  'Tukang Kayu': 215000,    // Rp 200.000-230.000/OH
+  'Tukang Pipa': 210000,    // Rp 195.000-225.000/OH
+  'Tukang Listrik': 225000, // Rp 210.000-240.000/OH
+  'Kepala Tukang': 250000,  // Rp 230.000-270.000/OH
+  'Mandor': 290000,         // Rp 270.000-320.000/OH
 };
 
 export const PROVINCES: ProvinceOption[] = [
