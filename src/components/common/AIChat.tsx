@@ -24,9 +24,13 @@ Kalau ditanya di luar konstruksi/RAB, tetap bantu tapi ingatkan fokus utama kamu
 
 const callGemini = async (messages: Message[], userInput: string): Promise<string> => {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-  if (!apiKey) throw new Error('Gemini API key tidak ditemukan');
+  
+  if (!apiKey) {
+    // Fallback cerdas tanpa API key
+    return getFallbackResponse(userInput);
+  }
 
-  // Build conversation history
+  // Build conversation history (max 10 pesan terakhir)
   const history = messages.slice(-10).map(m => ({
     role: m.sender === 'user' ? 'user' : 'model',
     parts: [{ text: m.text }]
@@ -51,9 +55,61 @@ const callGemini = async (messages: Message[], userInput: string): Promise<strin
     }
   );
 
-  if (!response.ok) throw new Error(`Gemini error: ${response.status}`);
+  if (!response.ok) {
+    const errData = await response.json().catch(() => ({}));
+    // Handle quota exceeded
+    if (response.status === 429) throw new Error('quota');
+    throw new Error(`Gemini error: ${response.status} - ${errData?.error?.message || ''}`);
+  }
+  
   const data = await response.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text || 'Maaf, tidak ada respons.';
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) throw new Error('empty_response');
+  return text;
+};
+
+// Fallback response berbasis keyword — aktif saat API key tidak ada atau quota habis
+const getFallbackResponse = (input: string): string => {
+  const q = input.toLowerCase();
+
+  if (q.includes('rab') || q.includes('rencana anggaran')) {
+    return 'RAB (Rencana Anggaran Biaya) adalah dokumen estimasi biaya konstruksi. Di SIVILIZE HUB PRO, lo bisa generate RAB otomatis di menu **Kalkulator RAB** — tinggal input dimensi bangunan, sistem langsung hitung semua item sesuai AHSP/SNI. 🏗️';
+  }
+  if (q.includes('pondasi') || q.includes('fondasi')) {
+    return 'Rekomendasi pondasi berdasarkan jenis tanah:\n• **Tanah keras** → Batu kali (paling ekonomis)\n• **Tanah sedang** → Footplate\n• **Tanah lunak** → Strauss pile\n• **Tanah gambut** → Tiang pancang (wajib)\n• **Tanah berbatu** → Batu kali / footplate\n\nDi Kalkulator RAB, pilih jenis tanah dan sistem otomatis rekomendasikan pondasi yang tepat!';
+  }
+  if (q.includes('beton') || q.includes('k-225') || q.includes('k225')) {
+    return 'Komposisi Beton K-225 per m³ (AHSP SNI):\n• Semen PC: 371 kg\n• Pasir beton: 0.498 m³\n• Krikil/split: 0.776 m³\n• Air: 215 liter\n\nUpah tenaga kerja:\n• Pekerja: 1.65 OH\n• Tukang batu: 0.275 OH\n• Mandor: 0.083 OH\n\nHarga satuan ~Rp 1.3-1.5 juta/m³ tergantung lokasi.';
+  }
+  if (q.includes('bata') || q.includes('pasangan dinding')) {
+    return 'Pasangan bata merah 1:4 per m²:\n• Bata merah: 70 buah\n• Semen PC: 11.5 kg\n• Pasir pasang: 0.043 m³\n\nUpah: Tukang batu 0.1 OH + Pekerja 0.3 OH\nProduktivitas: ~10 m²/hari per tim';
+  }
+  if (q.includes('ahsp') || q.includes('harga satuan')) {
+    return 'AHSP (Analisa Harga Satuan Pekerjaan) adalah standar perhitungan biaya konstruksi Indonesia berdasarkan **Permen PUPR No.1/2022**.\n\nSetiap item pekerjaan punya koefisien material + upah tenaga kerja. Di SIVILIZE, lo bisa klik **"Lihat Komposisi AHSP"** di setiap item RAB untuk lihat detail lengkapnya!';
+  }
+  if (q.includes('kurva s') || q.includes('progress')) {
+    return 'Kurva S adalah grafik progress rencana vs realisasi proyek. Fungsinya:\n• Laporan ke owner/bank\n• Deteksi keterlambatan lebih awal\n• Dasar klaim termin pembayaran\n\nDi SIVILIZE, isi tanggal mulai & selesai proyek, lalu update progress di Buku Harian — Kurva S otomatis terbentuk!';
+  }
+  if (q.includes('export') || q.includes('cetak') || q.includes('pdf') || q.includes('excel')) {
+    return 'Cara cetak/export RAB:\n1. Klik tombol **"Cetak / Export"** di halaman RAB\n2. Preview ringkasan RAB muncul\n3. Isi nama perusahaan & estimator\n4. Pilih **Download PDF** atau **Download Excel**\n\nPDF sudah include kop surat, tanda tangan, dan nomor dokumen profesional!';
+  }
+  if (q.includes('harga') || q.includes('material') || q.includes('semen') || q.includes('besi')) {
+    return 'Harga material di SIVILIZE sudah diupdate ke **2026** dan disesuaikan per provinsi:\n• Jawa: harga basis\n• Sumatera: +8-12%\n• Kalimantan: +15-28%\n• Papua Pegunungan: +85% (logistik udara)\n\nLo juga bisa override harga lokal sendiri di fitur Regional Price!';
+  }
+  if (q.includes('backup') || q.includes('restore') || q.includes('data hilang')) {
+    return 'Untuk backup data:\n1. Buka **Profil** → tab **Backup & Restore**\n2. Klik **Export Semua Data**\n3. File JSON tersimpan di HP/PC lo\n\nUntuk restore: upload file JSON yang sama. Data tidak akan hilang meski ganti HP!';
+  }
+  if (q.includes('share') || q.includes('bagikan') || q.includes('klien')) {
+    return 'Cara share RAB ke klien/owner:\n1. Buka proyek → klik **"Bagikan RAB"**\n2. Link read-only otomatis dibuat\n3. Kirim link ke klien via WA/email\n\nKlien bisa lihat RAB lengkap tanpa perlu daftar akun!';
+  }
+  if (q.includes('halo') || q.includes('hai') || q.includes('hi') || q.includes('hello')) {
+    return 'Halo Bro! 👋 Gue Kiro, AI assistant SIVILIZE HUB PRO.\n\nGue bisa bantu lo dengan:\n• Perhitungan RAB & AHSP\n• Rekomendasi pondasi & material\n• Cara pakai fitur SIVILIZE\n• Pertanyaan seputar konstruksi\n\nMau tanya apa?';
+  }
+  if (q.includes('terima kasih') || q.includes('makasih') || q.includes('thanks')) {
+    return 'Sama-sama Bro! 🙏 Kalau ada pertanyaan lain seputar RAB atau konstruksi, tanya aja. Semoga proyeknya lancar!';
+  }
+
+  return `Pertanyaan lo: "${input}"\n\nGue bisa bantu seputar:\n• **RAB & AHSP** — cara hitung, komposisi material\n• **Pondasi** — rekomendasi berdasarkan jenis tanah\n• **Material** — harga, spesifikasi, merek\n• **Fitur SIVILIZE** — cara pakai export, kurva S, backup\n• **Konstruksi umum** — beton, bata, atap, MEP\n\nCoba tanya lebih spesifik ya Bro! 💪`;
 };
 
 const AIChat = () => {
@@ -91,15 +147,18 @@ const AIChat = () => {
     try {
       const reply = await callGemini(messages, userText);
       setMessages(prev => [...prev, { sender: 'ai', text: reply, timestamp: new Date() }]);
-    } catch {
-      // Fallback ke response sederhana
-      const fallbacks: Record<string, string> = {
-        'rab': 'RAB (Rencana Anggaran Biaya) adalah dokumen estimasi biaya konstruksi. Di SIVILIZE, lo bisa generate RAB otomatis di menu Kalkulator RAB bro!',
-        'pondasi': 'Pilihan pondasi tergantung jenis tanah. Tanah keras → batu kali, tanah lunak → strauss pile, gambut → tiang pancang. Cek fitur rekomendasi pondasi di Kalkulator RAB!',
-        'harga': 'Harga material bervariasi per daerah. SIVILIZE udah punya database harga 34 provinsi + faktor regional untuk pelosok. Cek di AHSP Database → HSPK Regional.',
-      };
-      const key = Object.keys(fallbacks).find(k => userText.toLowerCase().includes(k));
-      const fallbackText = key ? fallbacks[key] : 'Maaf bro, koneksi ke AI lagi gangguan. Coba lagi ya!';
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : '';
+      let fallbackText: string;
+      
+      if (errMsg === 'quota') {
+        fallbackText = getFallbackResponse(userText);
+      } else if (errMsg.includes('API key')) {
+        fallbackText = getFallbackResponse(userText);
+      } else {
+        fallbackText = getFallbackResponse(userText);
+      }
+      
       setMessages(prev => [...prev, { sender: 'ai', text: fallbackText, timestamp: new Date() }]);
     } finally {
       setLoading(false);
@@ -146,7 +205,9 @@ const AIChat = () => {
               </div>
               <div>
                 <p className="text-white font-bold text-sm">Kiro AI</p>
-                <p className="text-white/70 text-[10px]">Powered by Gemini • Expert Konstruksi</p>
+                <p className="text-white/70 text-[10px]">
+                  {import.meta.env.VITE_GEMINI_API_KEY ? 'Powered by Gemini • Expert Konstruksi' : 'Mode Offline • Expert Konstruksi'}
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-2">
