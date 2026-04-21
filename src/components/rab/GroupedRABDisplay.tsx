@@ -93,10 +93,10 @@ const GroupedRABDisplay = ({
     'Atap':        5,
     'Lantai':      6,
     'Arsitektur':  7,
-    'Finishing':   8,
-    'Mekanikal':   9,
-    'Elektrikal':  10,
-    'Sanitasi':    11,
+    'Mekanikal':   8,
+    'Elektrikal':  9,
+    'Sanitasi':    10,
+    'Finishing':   11,  // Finishing selalu terakhir
     'Lain-lain':   12,
   };
 
