@@ -44,6 +44,33 @@ export const calculateAHSPItem = (
   return materialCost + laborCost;
 };
 
+/**
+ * Hitung harga satuan AHSP dengan breakdown material vs upah
+ */
+export const calculateAHSPItemDetailed = (
+  template: AHSPTemplate,
+  cityId: string,
+  grade: MaterialGrade = 'B',
+  customPrices?: { materials: { [key: string]: number }; labor: { [key: string]: number } }
+): { materialCost: number; laborCost: number; totalCost: number } => {
+  const city = CITIES.find((c) => c.id === cityId) || CITIES[0];
+  const officialOverride = getRegionalPriceOverride(cityId);
+  const materialPrices = customPrices?.materials || officialOverride?.materials || getMaterialPricesByGrade(cityId, grade);
+  const laborPrices = customPrices?.labor || officialOverride?.labor || city.labor;
+
+  const materialCost = template.materials.reduce((acc, mat) => {
+    const price = materialPrices[mat.name] || 0;
+    return acc + mat.coeff * price;
+  }, 0);
+
+  const laborCost = template.laborCoefficients.reduce((acc, lab) => {
+    const wage = laborPrices[lab.name] || 0;
+    return acc + lab.coeff * wage;
+  }, 0);
+
+  return { materialCost, laborCost, totalCost: materialCost + laborCost };
+};
+
 export const calculateTotalRAB = (
   items: RABItem[],
   settings: FinancialSettings
@@ -65,6 +92,52 @@ export const calculateTotalRAB = (
     contingencyAmount,
     taxAmount,
     grandTotal,
+  };
+};
+
+/**
+ * Hitung breakdown material vs upah dari semua RAB items
+ * Estimasi: rata-rata konstruksi Indonesia ~60% material, ~40% upah
+ */
+export const calculateRABBreakdown = (items: RABItem[]) => {
+  let totalMaterial = 0;
+  let totalLabor = 0;
+
+  items.forEach(item => {
+    // Gunakan data breakdown jika tersedia di item
+    if (item.analysis) {
+      const matCost = item.analysis.materials.reduce((s, m) => s + (m.coeff * m.price), 0) * item.volume;
+      const labCost = item.analysis.labor.reduce((s, l) => s + (l.coeff * l.wage), 0) * item.volume;
+      totalMaterial += matCost;
+      totalLabor += labCost;
+    } else {
+      // Estimasi berdasarkan kategori jika tidak ada data detail
+      const LABOR_RATIO: Record<string, number> = {
+        'Persiapan': 0.70,   // 70% upah (banyak tenaga kerja)
+        'Struktur': 0.35,    // 35% upah
+        'Tanah': 0.80,       // 80% upah (galian manual)
+        'Dinding': 0.40,     // 40% upah
+        'Lantai': 0.35,      // 35% upah
+        'Finishing': 0.50,   // 50% upah
+        'Atap': 0.30,        // 30% upah
+        'Arsitektur': 0.40,  // 40% upah
+        'Mekanikal': 0.45,   // 45% upah
+        'Elektrikal': 0.50,  // 50% upah
+        'Sanitasi': 0.40,    // 40% upah
+        'Lain-lain': 0.40,   // 40% upah
+      };
+      const laborRatio = LABOR_RATIO[item.category] || 0.40;
+      totalLabor += item.total * laborRatio;
+      totalMaterial += item.total * (1 - laborRatio);
+    }
+  });
+
+  const total = totalMaterial + totalLabor;
+  return {
+    totalMaterial,
+    totalLabor,
+    materialPercent: total > 0 ? (totalMaterial / total) * 100 : 0,
+    laborPercent: total > 0 ? (totalLabor / total) * 100 : 0,
   };
 };
 
