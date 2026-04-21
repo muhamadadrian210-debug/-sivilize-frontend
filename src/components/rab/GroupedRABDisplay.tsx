@@ -84,6 +84,22 @@ const GroupedRABDisplay = ({
 
   const totalMaterial = items.reduce((acc, item) => acc + item.total, 0) - totalUpah;
 
+  // Urutan kategori sesuai tahapan konstruksi yang benar
+  const CATEGORY_ORDER: Record<string, number> = {
+    'Persiapan':   1,
+    'Tanah':       2,
+    'Struktur':    3,
+    'Dinding':     4,
+    'Atap':        5,
+    'Lantai':      6,
+    'Arsitektur':  7,
+    'Finishing':   8,
+    'Mekanikal':   9,
+    'Elektrikal':  10,
+    'Sanitasi':    11,
+    'Lain-lain':   12,
+  };
+
   // Group items by category
   const groupItems = (): GroupedData[] => {
     const categories: { [key: string]: RABItem[] } = {};
@@ -101,7 +117,11 @@ const GroupedRABDisplay = ({
         subtotal: groupItems.reduce((sum, item) => sum + item.total, 0),
         totalItems: groupItems.length
       }))
-      .sort((a, b) => b.subtotal - a.subtotal);
+      .sort((a, b) => {
+        const orderA = CATEGORY_ORDER[a.kategori] ?? 99;
+        const orderB = CATEGORY_ORDER[b.kategori] ?? 99;
+        return orderA - orderB;
+      });
   };
 
   const grouped = groupItems();
