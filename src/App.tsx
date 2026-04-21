@@ -44,16 +44,24 @@ function App() {
     return <ShareView />;
   }
 
-  // Wake up backend saat app load (handle Vercel cold start)
+  // Wake up backend saat app load + keep-alive ping setiap 4 menit
   useEffect(() => {
-    const wakeUpBackend = async () => {
+    const BACKEND_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'https://sivilize-backend.vercel.app';
+
+    const ping = async () => {
       try {
-        await fetch(`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'https://sivilize-backend.vercel.app'}/health`);
+        await fetch(`${BACKEND_URL}/health`, { method: 'GET', cache: 'no-store' });
       } catch {
-        // Ignore — ini hanya untuk wake up server
+        // Ignore
       }
     };
-    wakeUpBackend();
+
+    // Ping langsung saat load
+    ping();
+
+    // Keep-alive: ping setiap 4 menit supaya backend tidak cold start
+    const interval = setInterval(ping, 4 * 60 * 1000);
+    return () => clearInterval(interval);
   }, []);
 
   // Restore auth state from localStorage on app load

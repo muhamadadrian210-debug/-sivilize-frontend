@@ -274,7 +274,10 @@ const AuthPage = () => {
               {/* Submit */}
               <button type="submit" disabled={loading} className="btn-primary w-full py-3 flex items-center justify-center gap-2 mt-4 group">
                 {loading ? (
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <div className="flex flex-col items-center gap-1">
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span className="text-xs text-white/70">Menghubungkan ke server...</span>
+                  </div>
                 ) : (
                   <>
                     <span>

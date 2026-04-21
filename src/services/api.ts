@@ -2,11 +2,11 @@ import axios from 'axios';
 import type { Project, User } from '../store/useStore';
 
 // Backend API URL - baca dari env variable, fallback ke URL production
-const API_URL = import.meta.env.VITE_API_URL || 'https://server-1rimpvmey-muhamadadrian210-2602s-projects.vercel.app/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://sivilize-backend.vercel.app/api';
 
 const api = axios.create({
   baseURL: API_URL,
-  timeout: 15000, // 15 detik
+  timeout: 20000, // 20 detik — cukup untuk cold start
   headers: {
     'Content-Type': 'application/json',
   },
@@ -44,9 +44,10 @@ api.interceptors.response.use(
       config._retry = true;
       config._retryCount = (config._retryCount || 0) + 1;
 
-      if (config._retryCount <= 1) {
-        // Tunggu 1 detik lalu coba lagi (hanya 1x retry)
-        await new Promise(r => setTimeout(r, 1000));
+      if (config._retryCount <= 2) {
+        // Cold start biasanya butuh 3–8 detik — tunggu lalu retry
+        const delay = config._retryCount === 1 ? 3000 : 5000;
+        await new Promise(r => setTimeout(r, delay));
         return api(config);
       }
     }
