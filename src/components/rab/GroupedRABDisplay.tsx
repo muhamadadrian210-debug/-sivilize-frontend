@@ -4,6 +4,7 @@ import { type RABItem } from '../../store/useStore';
 import { formatCurrency } from '../../utils/calculations';
 import { AHSP_TEMPLATES } from '../../data/ahsp';
 import { getMaterialPricesByGrade, type MaterialGrade } from '../../data/prices';
+import AHSPDetailPanel from './AHSPDetailPanel';
 
 interface GroupedRABDisplayProps {
   items: RABItem[];
@@ -193,7 +194,15 @@ const GroupedRABDisplay = ({
                         return (
                           <tr key={item.id} className="hover:bg-border/20 transition-colors">
                             <td className="px-4 py-3 text-text-secondary text-sm">{itemIdx + 1}</td>
-                            <td className="px-4 py-3 text-white font-medium text-sm">{item.name}</td>
+                            <td className="px-4 py-3 text-white font-medium text-sm">
+                              {item.name}
+                              {/* Detail AHSP expandable */}
+                              <AHSPDetailPanel
+                                item={item}
+                                cityId={cityId}
+                                grade={grade}
+                              />
+                            </td>
                             <td className="px-4 py-3">
                               <input
                                 type="number"
