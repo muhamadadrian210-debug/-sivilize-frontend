@@ -14,6 +14,7 @@ import TermsOfService from './components/legal/TermsOfService';
 import AboutUs from './components/legal/AboutUs';
 import Contact from './components/legal/Contact';
 import NotificationPanel from './components/common/NotificationPanel';
+import ProjectFeaturePage from './components/common/ProjectFeaturePage';
 import { useStore } from './store/useStore';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ToastProvider } from './components/common/Toast';
@@ -125,6 +126,12 @@ function App() {
         return <AdminDashboard />;
       case 'notifikasi':
         return <NotificationPanel />;
+      case 'financial':
+        return <ProjectFeaturePage feature="financial" />;
+      case 'kurva-s':
+        return <ProjectFeaturePage feature="kurva-s" />;
+      case 'upah':
+        return <ProjectFeaturePage feature="upah" />;
       default:
         return <Dashboard />;
     }
