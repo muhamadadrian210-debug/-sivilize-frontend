@@ -628,4 +628,402 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
     ],
     productivity: 1,
   },
+
+  // ══════════════════════════════════════════════════════════
+  // LANTAI — Keramik, Granit, Screed
+  // ══════════════════════════════════════════════════════════
+  {
+    id: 'lan-001',
+    category: 'Lantai',
+    name: 'Pasang Keramik Lantai 40x40 cm',
+    unit: 'm2',
+    materials: [
+      { name: 'Keramik 40x40', coeff: 1.08, unit: 'm2' },
+      { name: 'Semen PC', coeff: 9.0, unit: 'kg' },
+      { name: 'Pasir Pasang', coeff: 0.045, unit: 'm3' },
+      { name: 'Semen Warna', coeff: 0.3, unit: 'kg' },
+    ],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 0.25, unit: 'OH' },
+      { name: 'Tukang Batu', coeff: 0.25, unit: 'OH' },
+      { name: 'Kepala Tukang', coeff: 0.025, unit: 'OH' },
+      { name: 'Mandor', coeff: 0.013, unit: 'OH' },
+    ],
+    productivity: 8,
+  },
+  {
+    id: 'lan-002',
+    category: 'Lantai',
+    name: 'Pasang Keramik Lantai 60x60 cm',
+    unit: 'm2',
+    materials: [
+      { name: 'Keramik 60x60', coeff: 1.05, unit: 'm2' },
+      { name: 'Semen PC', coeff: 8.5, unit: 'kg' },
+      { name: 'Pasir Pasang', coeff: 0.04, unit: 'm3' },
+      { name: 'Semen Warna', coeff: 0.25, unit: 'kg' },
+    ],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 0.22, unit: 'OH' },
+      { name: 'Tukang Batu', coeff: 0.22, unit: 'OH' },
+      { name: 'Kepala Tukang', coeff: 0.022, unit: 'OH' },
+      { name: 'Mandor', coeff: 0.011, unit: 'OH' },
+    ],
+    productivity: 10,
+  },
+  {
+    id: 'lan-003',
+    category: 'Lantai',
+    name: 'Pasang Granit Lantai 60x60 cm',
+    unit: 'm2',
+    materials: [
+      { name: 'Granit 60x60', coeff: 1.05, unit: 'm2' },
+      { name: 'Semen PC', coeff: 8.5, unit: 'kg' },
+      { name: 'Pasir Pasang', coeff: 0.04, unit: 'm3' },
+      { name: 'Semen Warna', coeff: 0.2, unit: 'kg' },
+    ],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 0.20, unit: 'OH' },
+      { name: 'Tukang Batu', coeff: 0.30, unit: 'OH' },
+      { name: 'Kepala Tukang', coeff: 0.030, unit: 'OH' },
+      { name: 'Mandor', coeff: 0.015, unit: 'OH' },
+    ],
+    productivity: 8,
+  },
+  {
+    id: 'lan-004',
+    category: 'Lantai',
+    name: 'Screed Lantai (Rabat Beton) t=5cm',
+    unit: 'm2',
+    materials: [
+      { name: 'Semen PC', coeff: 8.32, unit: 'kg' },
+      { name: 'Pasir Beton', coeff: 0.046, unit: 'm3' },
+      { name: 'Krikil (Split)', coeff: 0.023, unit: 'm3' },
+    ],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 0.20, unit: 'OH' },
+      { name: 'Tukang Batu', coeff: 0.10, unit: 'OH' },
+      { name: 'Kepala Tukang', coeff: 0.010, unit: 'OH' },
+      { name: 'Mandor', coeff: 0.010, unit: 'OH' },
+    ],
+    productivity: 15,
+  },
+  {
+    id: 'lan-005',
+    category: 'Lantai',
+    name: 'Pasang Keramik Dinding KM/WC 25x40 cm',
+    unit: 'm2',
+    materials: [
+      { name: 'Keramik Dinding 25x40', coeff: 1.10, unit: 'm2' },
+      { name: 'Semen PC', coeff: 10.0, unit: 'kg' },
+      { name: 'Pasir Pasang', coeff: 0.048, unit: 'm3' },
+      { name: 'Semen Warna', coeff: 0.35, unit: 'kg' },
+    ],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 0.30, unit: 'OH' },
+      { name: 'Tukang Batu', coeff: 0.30, unit: 'OH' },
+      { name: 'Kepala Tukang', coeff: 0.030, unit: 'OH' },
+      { name: 'Mandor', coeff: 0.015, unit: 'OH' },
+    ],
+    productivity: 6,
+  },
+
+  // ══════════════════════════════════════════════════════════
+  // FINISHING TAMBAHAN — Acian, Waterproofing, Plafon
+  // ══════════════════════════════════════════════════════════
+  {
+    id: 'fin-002',
+    category: 'Finishing',
+    name: 'Acian Dinding (Finishing Halus)',
+    unit: 'm2',
+    materials: [
+      { name: 'Semen PC', coeff: 3.25, unit: 'kg' },
+      { name: 'Air', coeff: 1.0, unit: 'liter' },
+    ],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 0.10, unit: 'OH' },
+      { name: 'Tukang Batu', coeff: 0.20, unit: 'OH' },
+      { name: 'Kepala Tukang', coeff: 0.020, unit: 'OH' },
+      { name: 'Mandor', coeff: 0.010, unit: 'OH' },
+    ],
+    productivity: 12,
+  },
+  {
+    id: 'fin-003',
+    category: 'Finishing',
+    name: 'Waterproofing Coating (KM/WC/Atap Dak)',
+    unit: 'm2',
+    materials: [
+      { name: 'Waterproofing Coating', coeff: 1.5, unit: 'kg' },
+      { name: 'Semen PC', coeff: 1.0, unit: 'kg' },
+    ],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 0.10, unit: 'OH' },
+      { name: 'Tukang Batu', coeff: 0.15, unit: 'OH' },
+      { name: 'Kepala Tukang', coeff: 0.015, unit: 'OH' },
+      { name: 'Mandor', coeff: 0.008, unit: 'OH' },
+    ],
+    productivity: 15,
+  },
+  {
+    id: 'fin-004',
+    category: 'Finishing',
+    name: 'Plafon Gypsum Board 9mm + Rangka Metal Furing',
+    unit: 'm2',
+    materials: [
+      { name: 'Gypsum Board 9mm', coeff: 1.05, unit: 'm2' },
+      { name: 'Rangka Metal Furing', coeff: 1.2, unit: 'm2' },
+      { name: 'Sekrup Gypsum', coeff: 12, unit: 'buah' },
+      { name: 'Compound Gypsum', coeff: 0.5, unit: 'kg' },
+    ],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 0.15, unit: 'OH' },
+      { name: 'Tukang Kayu', coeff: 0.20, unit: 'OH' },
+      { name: 'Kepala Tukang', coeff: 0.020, unit: 'OH' },
+      { name: 'Mandor', coeff: 0.010, unit: 'OH' },
+    ],
+    productivity: 10,
+  },
+  {
+    id: 'fin-005',
+    category: 'Finishing',
+    name: 'Plafon GRC Board 4mm + Rangka Kayu',
+    unit: 'm2',
+    materials: [
+      { name: 'GRC Board 4mm', coeff: 1.05, unit: 'm2' },
+      { name: 'Kayu Kaso 5/7', coeff: 0.008, unit: 'm3' },
+      { name: 'Paku', coeff: 0.15, unit: 'kg' },
+    ],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 0.15, unit: 'OH' },
+      { name: 'Tukang Kayu', coeff: 0.20, unit: 'OH' },
+      { name: 'Kepala Tukang', coeff: 0.020, unit: 'OH' },
+      { name: 'Mandor', coeff: 0.010, unit: 'OH' },
+    ],
+    productivity: 10,
+  },
+  {
+    id: 'fin-006',
+    category: 'Finishing',
+    name: 'Pengecatan Ulang (Cat Lama, 2 Lapis)',
+    unit: 'm2',
+    materials: [
+      { name: 'Cat Penutup', coeff: 0.20, unit: 'kg' },
+      { name: 'Amplas', coeff: 0.1, unit: 'lembar' },
+    ],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 0.015, unit: 'OH' },
+      { name: 'Tukang Cat', coeff: 0.050, unit: 'OH' },
+      { name: 'Kepala Tukang', coeff: 0.005, unit: 'OH' },
+      { name: 'Mandor', coeff: 0.003, unit: 'OH' },
+    ],
+    productivity: 30,
+  },
+
+  // ══════════════════════════════════════════════════════════
+  // DINDING TAMBAHAN — Bata Ringan (Hebel), Partisi
+  // ══════════════════════════════════════════════════════════
+  {
+    id: 'din-001',
+    category: 'Dinding',
+    name: 'Pasangan Bata Ringan (Hebel/AAC) 10cm',
+    unit: 'm2',
+    materials: [
+      { name: 'Bata Ringan AAC 10cm', coeff: 8.33, unit: 'buah' },
+      { name: 'Mortar Perekat Bata Ringan', coeff: 11.5, unit: 'kg' },
+    ],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 0.20, unit: 'OH' },
+      { name: 'Tukang Batu', coeff: 0.10, unit: 'OH' },
+      { name: 'Kepala Tukang', coeff: 0.010, unit: 'OH' },
+      { name: 'Mandor', coeff: 0.010, unit: 'OH' },
+    ],
+    productivity: 12,
+  },
+  {
+    id: 'din-002',
+    category: 'Dinding',
+    name: 'Pasangan Bata Ringan (Hebel/AAC) 7.5cm',
+    unit: 'm2',
+    materials: [
+      { name: 'Bata Ringan AAC 7.5cm', coeff: 11.11, unit: 'buah' },
+      { name: 'Mortar Perekat Bata Ringan', coeff: 9.0, unit: 'kg' },
+    ],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 0.18, unit: 'OH' },
+      { name: 'Tukang Batu', coeff: 0.09, unit: 'OH' },
+      { name: 'Kepala Tukang', coeff: 0.009, unit: 'OH' },
+      { name: 'Mandor', coeff: 0.009, unit: 'OH' },
+    ],
+    productivity: 14,
+  },
+
+  // ══════════════════════════════════════════════════════════
+  // SANITASI TAMBAHAN — Wastafel, Shower, Floor Drain
+  // ══════════════════════════════════════════════════════════
+  {
+    id: 'san-003',
+    category: 'Sanitasi',
+    name: 'Pemasangan Wastafel (Per Unit)',
+    unit: 'unit',
+    materials: [
+      { name: 'Wastafel', coeff: 1, unit: 'unit' },
+      { name: 'Kran Air', coeff: 1, unit: 'buah' },
+      { name: 'Sifon Wastafel', coeff: 1, unit: 'buah' },
+      { name: 'Semen PC', coeff: 1.5, unit: 'kg' },
+    ],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 0.4, unit: 'OH' },
+      { name: 'Tukang Pipa', coeff: 0.8, unit: 'OH' },
+      { name: 'Kepala Tukang', coeff: 0.08, unit: 'OH' },
+      { name: 'Mandor', coeff: 0.04, unit: 'OH' },
+    ],
+    productivity: 2,
+  },
+  {
+    id: 'san-004',
+    category: 'Sanitasi',
+    name: 'Pemasangan Shower + Kran (Per Unit)',
+    unit: 'unit',
+    materials: [
+      { name: 'Shower Set', coeff: 1, unit: 'unit' },
+      { name: 'Kran Shower', coeff: 1, unit: 'buah' },
+      { name: 'Pipa PVC 1/2"', coeff: 2, unit: 'm' },
+    ],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 0.3, unit: 'OH' },
+      { name: 'Tukang Pipa', coeff: 0.6, unit: 'OH' },
+      { name: 'Kepala Tukang', coeff: 0.06, unit: 'OH' },
+      { name: 'Mandor', coeff: 0.03, unit: 'OH' },
+    ],
+    productivity: 3,
+  },
+  {
+    id: 'san-005',
+    category: 'Sanitasi',
+    name: 'Pemasangan Floor Drain (Per Titik)',
+    unit: 'titik',
+    materials: [
+      { name: 'Floor Drain Stainless', coeff: 1, unit: 'buah' },
+      { name: 'Pipa PVC 3"', coeff: 1, unit: 'm' },
+      { name: 'Semen PC', coeff: 0.5, unit: 'kg' },
+    ],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 0.2, unit: 'OH' },
+      { name: 'Tukang Pipa', coeff: 0.4, unit: 'OH' },
+      { name: 'Kepala Tukang', coeff: 0.04, unit: 'OH' },
+      { name: 'Mandor', coeff: 0.02, unit: 'OH' },
+    ],
+    productivity: 5,
+  },
+  {
+    id: 'san-006',
+    category: 'Sanitasi',
+    name: 'Pembuatan Septic Tank (Bata, 2m³)',
+    unit: 'unit',
+    materials: [
+      { name: 'Bata Merah', coeff: 500, unit: 'bh' },
+      { name: 'Semen PC', coeff: 100, unit: 'kg' },
+      { name: 'Pasir Pasang', coeff: 0.4, unit: 'm3' },
+      { name: 'Krikil (Split)', coeff: 0.2, unit: 'm3' },
+      { name: 'Pipa PVC 4"', coeff: 3, unit: 'm' },
+    ],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 6.0, unit: 'OH' },
+      { name: 'Tukang Batu', coeff: 3.0, unit: 'OH' },
+      { name: 'Kepala Tukang', coeff: 0.3, unit: 'OH' },
+      { name: 'Mandor', coeff: 0.3, unit: 'OH' },
+    ],
+    productivity: 0.2,
+  },
+
+  // ══════════════════════════════════════════════════════════
+  // ELEKTRIKAL TAMBAHAN — AC, Pompa Air
+  // ══════════════════════════════════════════════════════════
+  {
+    id: 'elk-004',
+    category: 'Elektrikal',
+    name: 'Instalasi AC Split (Per Unit, Termasuk Kabel & Pipa)',
+    unit: 'unit',
+    materials: [
+      { name: 'Kabel NYM 3x2.5mm', coeff: 6, unit: 'm' },
+      { name: 'Pipa AC 1/4"', coeff: 4, unit: 'm' },
+      { name: 'MCB 1 Phase', coeff: 1, unit: 'buah' },
+      { name: 'Bracket AC', coeff: 1, unit: 'set' },
+    ],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 0.5, unit: 'OH' },
+      { name: 'Tukang Listrik', coeff: 1.0, unit: 'OH' },
+      { name: 'Kepala Tukang', coeff: 0.1, unit: 'OH' },
+      { name: 'Mandor', coeff: 0.05, unit: 'OH' },
+    ],
+    productivity: 2,
+  },
+  {
+    id: 'elk-005',
+    category: 'Elektrikal',
+    name: 'Instalasi Pompa Air + Tangki (Per Unit)',
+    unit: 'unit',
+    materials: [
+      { name: 'Kabel NYM 3x2.5mm', coeff: 8, unit: 'm' },
+      { name: 'Pipa PVC 1/2"', coeff: 6, unit: 'm' },
+      { name: 'Fitting PVC', coeff: 6, unit: 'buah' },
+      { name: 'MCB 1 Phase', coeff: 1, unit: 'buah' },
+    ],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 0.5, unit: 'OH' },
+      { name: 'Tukang Listrik', coeff: 0.5, unit: 'OH' },
+      { name: 'Tukang Pipa', coeff: 0.5, unit: 'OH' },
+      { name: 'Kepala Tukang', coeff: 0.1, unit: 'OH' },
+      { name: 'Mandor', coeff: 0.05, unit: 'OH' },
+    ],
+    productivity: 1,
+  },
+
+  // ══════════════════════════════════════════════════════════
+  // TANAH & PONDASI TAMBAHAN
+  // ══════════════════════════════════════════════════════════
+  {
+    id: 'tan-001',
+    category: 'Tanah',
+    name: 'Urugan Tanah Kembali (Pemadatan Manual)',
+    unit: 'm3',
+    materials: [],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 0.5, unit: 'OH' },
+      { name: 'Mandor', coeff: 0.025, unit: 'OH' },
+    ],
+    productivity: 3,
+  },
+  {
+    id: 'tan-002',
+    category: 'Tanah',
+    name: 'Urugan Pasir Bawah Lantai (t=10cm)',
+    unit: 'm2',
+    materials: [
+      { name: 'Pasir Urug', coeff: 0.12, unit: 'm3' },
+    ],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 0.08, unit: 'OH' },
+      { name: 'Mandor', coeff: 0.004, unit: 'OH' },
+    ],
+    productivity: 25,
+  },
+  {
+    id: 'tan-003',
+    category: 'Tanah',
+    name: 'Pembuatan Drainase/Saluran Air (Per Meter)',
+    unit: 'm1',
+    materials: [
+      { name: 'Bata Merah', coeff: 35, unit: 'bh' },
+      { name: 'Semen PC', coeff: 8.0, unit: 'kg' },
+      { name: 'Pasir Pasang', coeff: 0.03, unit: 'm3' },
+    ],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 0.4, unit: 'OH' },
+      { name: 'Tukang Batu', coeff: 0.2, unit: 'OH' },
+      { name: 'Kepala Tukang', coeff: 0.02, unit: 'OH' },
+      { name: 'Mandor', coeff: 0.02, unit: 'OH' },
+    ],
+    productivity: 5,
+  },
 ];

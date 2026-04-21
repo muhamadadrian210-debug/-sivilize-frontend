@@ -123,9 +123,9 @@ const defaultMaterials: Record<string, number> = {
   'Pasir Urug': 180000,       // per mÂ³
 
   // === PERSIAPAN ===
-  'Kayu Kaso 5/7': 3500000,     // per mÂ³
-  'Papan Kayu 2/20': 3200000,   // per mÂ³
-  'Seng Gelombang': 85000,      // per mÂ²
+  'Kayu Kaso 5/7': 3500000,     // per m³
+  'Papan Kayu 2/20': 3200000,   // per m³
+  'Seng Gelombang': 85000,      // per m²
   // === K3 ===
   'Helm Proyek': 85000,         // per buah
   'Rompi Safety': 65000,        // per buah
@@ -134,9 +134,43 @@ const defaultMaterials: Record<string, number> = {
   'Kacamata Safety': 35000,     // per buah
   'Kotak P3K': 150000,          // per set
   'APAR (Alat Pemadam)': 350000,// per buah
-  'Kayu Bekisting': 3200000,  // per mÂ³ (kayu kelas III)
+  'Kayu Bekisting': 3200000,  // per m³ (kayu kelas III)
   'Paku': 22000,              // per kg
   'Minyak Bekisting': 15000,  // per liter
+
+  // === LANTAI & DINDING KERAMIK ===
+  'Keramik 40x40': 85000,       // per m² (standar grade B)
+  'Keramik 60x60': 120000,      // per m²
+  'Granit 60x60': 250000,       // per m²
+  'Keramik Dinding 25x40': 75000, // per m²
+  'Semen Warna': 18000,         // per kg
+  'Amplas': 5000,               // per lembar
+
+  // === FINISHING TAMBAHAN ===
+  'Waterproofing Coating': 85000, // per kg
+  'Gypsum Board 9mm': 65000,    // per m²
+  'Rangka Metal Furing': 45000, // per m²
+  'Sekrup Gypsum': 500,         // per buah
+  'Compound Gypsum': 25000,     // per kg
+  'GRC Board 4mm': 55000,       // per m²
+
+  // === BATA RINGAN ===
+  'Bata Ringan AAC 10cm': 12000,  // per buah (60x20x10cm)
+  'Bata Ringan AAC 7.5cm': 10000, // per buah (60x20x7.5cm)
+  'Mortar Perekat Bata Ringan': 2500, // per kg
+
+  // === SANITASI TAMBAHAN ===
+  'Wastafel': 450000,           // per unit (standar)
+  'Kran Air': 85000,            // per buah
+  'Sifon Wastafel': 55000,      // per buah
+  'Shower Set': 350000,         // per unit
+  'Kran Shower': 150000,        // per buah
+  'Floor Drain Stainless': 45000, // per buah
+  'Pipa AC 1/4"': 35000,        // per m
+  'Bracket AC': 85000,          // per set
+
+  // === DRAINASE ===
+  'Pasir Urug': 180000,         // per m³
 };
 
 // Upah tenaga kerja per OH (Orang Hari) - harga pasar 2026
@@ -195,18 +229,63 @@ export const PROVINCES: ProvinceOption[] = [
 ];
 
 export const CITIES: CityPrices[] = PROVINCES.flatMap((province) => {
-  // Faktor penyesuaian harga per wilayah (biaya logistik & ketersediaan material)
-  const regionalFactor: Record<string, { mat: number; lab: number }> = {
-    'Jawa':           { mat: 1.00, lab: 1.00 },
-    'Sumatera':       { mat: 1.10, lab: 1.05 },
-    'Kalimantan':     { mat: 1.20, lab: 1.15 },
-    'Sulawesi':       { mat: 1.15, lab: 1.10 },
-    'Nusa Tenggara':  { mat: 1.25, lab: 1.15 },
-    'Maluku':         { mat: 1.35, lab: 1.20 },
-    'Papua':          { mat: 1.50, lab: 1.35 },
+  // Faktor penyesuaian harga per PROVINSI — lebih akurat dari per region
+  // Berdasarkan: HSPK 2026, indeks kemahalan konstruksi BPS, survey lapangan
+  const provincialFactor: Record<string, { mat: number; lab: number }> = {
+    // ── JAWA ──────────────────────────────────────────────────
+    'jakarta':    { mat: 1.05, lab: 1.15 }, // Jakarta: material mahal, upah tinggi
+    'jabar':      { mat: 1.00, lab: 1.00 }, // Jawa Barat: basis referensi
+    'jateng':     { mat: 0.97, lab: 0.95 }, // Jawa Tengah: lebih murah
+    'yogyakarta': { mat: 0.98, lab: 0.97 }, // DIY: sedikit lebih murah
+    'jatim':      { mat: 0.98, lab: 0.97 }, // Jawa Timur: kompetitif
+    'banten':     { mat: 1.02, lab: 1.05 }, // Banten: dekat Jakarta
+
+    // ── SUMATERA ──────────────────────────────────────────────
+    'aceh':       { mat: 1.12, lab: 1.08 },
+    'sumut':      { mat: 1.08, lab: 1.05 }, // Medan relatif terjangkau
+    'sumbar':     { mat: 1.10, lab: 1.06 },
+    'riau':       { mat: 1.12, lab: 1.10 }, // Pekanbaru: biaya hidup tinggi
+    'kepri':      { mat: 1.18, lab: 1.15 }, // Batam: pulau, logistik mahal
+    'jambi':      { mat: 1.10, lab: 1.05 },
+    'sumsel':     { mat: 1.08, lab: 1.05 },
+    'bengkulu':   { mat: 1.15, lab: 1.08 },
+    'lampung':    { mat: 1.05, lab: 1.03 },
+    'babel':      { mat: 1.20, lab: 1.12 }, // Pulau, logistik mahal
+
+    // ── KALIMANTAN ────────────────────────────────────────────
+    'kalbar':     { mat: 1.18, lab: 1.12 },
+    'kalteng':    { mat: 1.22, lab: 1.18 },
+    'kalsel':     { mat: 1.15, lab: 1.12 },
+    'kaltim':     { mat: 1.20, lab: 1.20 }, // Balikpapan: upah tinggi (migas)
+    'kalut':      { mat: 1.28, lab: 1.20 }, // Terpencil
+
+    // ── SULAWESI ──────────────────────────────────────────────
+    'sulut':      { mat: 1.18, lab: 1.12 },
+    'gorontalo':  { mat: 1.20, lab: 1.12 },
+    'sulteng':    { mat: 1.18, lab: 1.12 },
+    'sulbar':     { mat: 1.22, lab: 1.15 },
+    'sulsel':     { mat: 1.12, lab: 1.10 }, // Makassar: hub regional
+    'sultra':     { mat: 1.20, lab: 1.15 },
+
+    // ── BALI & NUSA TENGGARA ──────────────────────────────────
+    'bali':       { mat: 1.10, lab: 1.08 }, // Bali: pariwisata, upah relatif tinggi
+    'ntb':        { mat: 1.22, lab: 1.15 },
+    'ntt':        { mat: 1.30, lab: 1.20 }, // NTT: logistik sangat mahal
+
+    // ── MALUKU ────────────────────────────────────────────────
+    'maluku':     { mat: 1.38, lab: 1.22 },
+    'malut':      { mat: 1.40, lab: 1.25 },
+
+    // ── PAPUA ─────────────────────────────────────────────────
+    'papua':           { mat: 1.55, lab: 1.40 }, // Jayapura: hub Papua
+    'papua-barat':     { mat: 1.58, lab: 1.42 },
+    'papua-barat-daya':{ mat: 1.55, lab: 1.38 }, // Sorong: relatif lebih terjangkau
+    'papua-tengah':    { mat: 1.70, lab: 1.55 }, // Mimika/Timika: sangat mahal
+    'papua-pegunungan':{ mat: 1.85, lab: 1.70 }, // Wamena: termahal, hanya bisa via udara
+    'papua-selatan':   { mat: 1.65, lab: 1.50 }, // Merauke: terpencil
   };
 
-  const factor = regionalFactor[province.region] || { mat: 1.10, lab: 1.05 };
+  const factor = provincialFactor[province.id] || { mat: 1.10, lab: 1.05 };
 
   return province.cities.map((cityName, index) => ({
     id: `${province.id}-${index + 1}`,
