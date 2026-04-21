@@ -10,7 +10,10 @@ import {
   ShieldCheck,
   Bell,
   X,
-  Menu
+  Menu,
+  TrendingUp,
+  LineChart,
+  Users
 } from 'lucide-react';
 import { useState } from 'react';
 import { useStore } from '../../store/useStore';
@@ -27,12 +30,15 @@ const Sidebar = () => {
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'kalkulator', label: 'Kalkulator RAB', icon: Calculator },
-    { id: 'analysis', label: 'Analisis Struktur', icon: BarChart3 },
-    { id: 'ahsp', label: 'AHSP Database', icon: Database },
-    { id: 'buku-harian', label: 'Buku Harian', icon: BookOpen },
-    { id: 'manajemen', label: 'Manajemen Proyek', icon: Settings },
+    { id: 'dashboard',  label: 'Dashboard',        icon: LayoutDashboard },
+    { id: 'kalkulator', label: 'Kalkulator RAB',   icon: Calculator },
+    { id: 'analysis',   label: 'Analisis Struktur', icon: BarChart3 },
+    { id: 'ahsp',       label: 'AHSP Database',    icon: Database },
+    { id: 'buku-harian',label: 'Buku Harian',      icon: BookOpen },
+    { id: 'manajemen',  label: 'Manajemen Proyek', icon: Settings },
+    { id: 'financial',  label: 'Lap. Keuangan',    icon: TrendingUp },
+    { id: 'kurvas',     label: 'Kurva S',          icon: LineChart },
+    { id: 'labor',      label: 'Upah Tukang',      icon: Users },
     ...(userRole === 'admin' ? [{ id: 'admin', label: 'Control Panel', icon: ShieldCheck }] : []),
   ];
 

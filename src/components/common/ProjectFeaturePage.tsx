@@ -1,6 +1,6 @@
 /**
- * ProjectFeaturePage — Wrapper untuk fitur yang butuh project dipilih dulu
- * Dipakai untuk: Financial Report, Kurva S, Upah Tukang
+ * ProjectFeaturePage — Wrapper halaman untuk fitur yang butuh project context
+ * Dipakai untuk: Financial Report, Kurva S, Labor Calculator
  */
 import { useState } from 'react';
 import { ChevronDown, FolderOpen } from 'lucide-react';
@@ -9,91 +9,72 @@ import FinancialReport from '../financial/FinancialReport';
 import KurvaS from '../rab/KurvaS';
 import LaborCalculator from '../rab/LaborCalculator';
 
-type FeatureType = 'financial' | 'kurva-s' | 'upah';
+type FeatureType = 'financial' | 'kurvas' | 'labor';
 
 interface ProjectFeaturePageProps {
   feature: FeatureType;
 }
 
-const FEATURE_LABELS: Record<FeatureType, string> = {
-  'financial': 'Laporan Keuangan',
-  'kurva-s': 'Kurva S & Progress',
-  'upah': 'Kalkulator Upah Tukang',
+const FEATURE_META: Record<FeatureType, { title: string; desc: string; icon: string }> = {
+  financial: { title: 'Laporan Keuangan', desc: 'Anggaran vs realisasi biaya per kategori', icon: '📊' },
+  kurvas:    { title: 'Kurva S',          desc: 'Rencana vs realisasi progress proyek',    icon: '📈' },
+  labor:     { title: 'Upah Tukang',      desc: 'Kalkulasi upah tenaga kerja mingguan',    icon: '👷' },
 };
 
 const ProjectFeaturePage = ({ feature }: ProjectFeaturePageProps) => {
-  const { projects, setActiveTab } = useStore();
-  const [selectedProjectId, setSelectedProjectId] = useState<string>(
-    projects.length > 0 ? projects[0].id : ''
-  );
+  const { projects } = useStore();
+  const meta = FEATURE_META[feature];
 
-  const selectedProject = projects.find(p => p.id === selectedProjectId);
+  // Default ke proyek pertama yang punya versi RAB
+  const projectsWithRAB = projects.filter(p => p.versions && p.versions.length > 0);
+  const [selectedId, setSelectedId] = useState<string>(projectsWithRAB[0]?.id ?? '');
 
-  if (projects.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
-        <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
-          <FolderOpen size={36} className="text-primary" />
-        </div>
-        <div className="text-center">
-          <h2 className="text-white font-bold text-xl mb-2">Belum Ada Proyek</h2>
-          <p className="text-text-secondary text-sm mb-6">
-            Buat proyek RAB terlebih dahulu untuk menggunakan {FEATURE_LABELS[feature]}.
-          </p>
-          <button
-            onClick={() => setActiveTab('kalkulator')}
-            className="btn-primary px-6 py-2"
-          >
-            Buat Proyek RAB
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const selectedProject = projects.find(p => p.id === selectedId);
 
   return (
     <div className="space-y-6">
-      {/* Header + Project Selector */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h2 className="text-2xl font-bold text-white">{FEATURE_LABELS[feature]}</h2>
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+            <span>{meta.icon}</span>
+            {meta.title}
+          </h2>
+          <p className="text-text-secondary text-sm mt-1">{meta.desc}</p>
+        </div>
 
-        {/* Dropdown pilih proyek */}
-        <div className="relative">
-          <div className="flex items-center gap-2 bg-card border border-border rounded-xl px-4 py-2.5 min-w-[220px]">
-            <FolderOpen size={16} className="text-primary shrink-0" />
-            <select
-              value={selectedProjectId}
-              onChange={e => setSelectedProjectId(e.target.value)}
-              className="bg-transparent text-white text-sm font-medium flex-1 outline-none appearance-none cursor-pointer"
-            >
-              {projects.map(p => (
-                <option key={p.id} value={p.id} className="bg-card">
-                  {p.name}
-                </option>
-              ))}
-            </select>
-            <ChevronDown size={14} className="text-text-secondary shrink-0" />
-          </div>
+        {/* Project selector */}
+        <div className="relative min-w-[260px]">
+          <FolderOpen size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
+          <select
+            value={selectedId}
+            onChange={e => setSelectedId(e.target.value)}
+            className="w-full bg-card border border-border rounded-xl pl-9 pr-4 py-2.5 text-white text-sm focus:border-primary outline-none appearance-none"
+          >
+            {projectsWithRAB.length === 0 && (
+              <option value="">Belum ada proyek</option>
+            )}
+            {projectsWithRAB.map(p => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+          </select>
+          <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none" />
         </div>
       </div>
 
-      {/* Feature Content */}
-      {selectedProject ? (
-        <>
-          {feature === 'financial' && (
-            <FinancialReport projectId={selectedProject.id} />
-          )}
-          {feature === 'kurva-s' && (
-            <KurvaS project={selectedProject} />
-          )}
-          {feature === 'upah' && (
-            <LaborCalculator projectId={selectedProject.id} />
-          )}
-        </>
-      ) : (
-        <div className="text-center py-12 text-text-secondary">
-          Pilih proyek di atas untuk melihat data.
+      {/* Content */}
+      {!selectedProject ? (
+        <div className="glass-card p-12 text-center space-y-3">
+          <p className="text-4xl">📂</p>
+          <p className="text-white font-bold">Belum ada proyek</p>
+          <p className="text-text-secondary text-sm">Buat proyek RAB terlebih dahulu di menu Kalkulator RAB</p>
         </div>
+      ) : (
+        <>
+          {feature === 'financial' && <FinancialReport projectId={selectedProject.id} />}
+          {feature === 'kurvas'    && <KurvaS project={selectedProject} />}
+          {feature === 'labor'     && <LaborCalculator projectId={selectedProject.id} />}
+        </>
       )}
     </div>
   );

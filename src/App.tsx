@@ -128,10 +128,10 @@ function App() {
         return <NotificationPanel />;
       case 'financial':
         return <ProjectFeaturePage feature="financial" />;
-      case 'kurva-s':
-        return <ProjectFeaturePage feature="kurva-s" />;
-      case 'upah':
-        return <ProjectFeaturePage feature="upah" />;
+      case 'kurvas':
+        return <ProjectFeaturePage feature="kurvas" />;
+      case 'labor':
+        return <ProjectFeaturePage feature="labor" />;
       default:
         return <Dashboard />;
     }
