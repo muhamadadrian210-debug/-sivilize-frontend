@@ -447,6 +447,23 @@ const RABCalculator = () => {
 
       // Finishing
       addItem('fin-001', paintArea, { 'Pekerja': 2, 'Tukang Cat': 2, 'Mandor': 1 });
+      // Acian dinding (setelah plesteran)
+      addItem('fin-002', plasterArea, { 'Pekerja': 2, 'Tukang Batu': 2, 'Mandor': 1 });
+      // Plafon gypsum (luas lantai × 1.1 untuk overhang)
+      const ceilingArea = totalArea * 1.1;
+      addItem('fin-004', ceilingArea, { 'Pekerja': 2, 'Tukang Kayu': 2, 'Mandor': 1 });
+
+      // Lantai — screed + keramik
+      // Screed bawah keramik
+      addItem('lan-004', totalArea, { 'Pekerja': 2, 'Tukang Batu': 1, 'Mandor': 1 });
+      // Keramik lantai 40x40 (ruang utama)
+      const mainFloorArea = totalArea * 0.75; // 75% area pakai keramik 40x40
+      addItem('lan-001', mainFloorArea, { 'Pekerja': 2, 'Tukang Batu': 2, 'Mandor': 1 });
+      // Keramik dinding KM/WC
+      const bathroomWallArea = bathroomCount * 12; // estimasi 12m² dinding per KM
+      if (bathroomCount > 0) {
+        addItem('lan-005', bathroomWallArea, { 'Pekerja': 1, 'Tukang Batu': 2, 'Mandor': 1 });
+      }
 
       // Bukaan - Pintu & Jendela
       const doorCount = projectData.doorCount ?? 4;
@@ -479,7 +496,13 @@ const RABCalculator = () => {
       if (bathroomCount > 0) {
         const toiletId = projectData.toiletType === 'jongkok' ? 'san-002' : 'san-001';
         addItem(toiletId, bathroomCount, { 'Pekerja': 1, 'Tukang Pipa': 1, 'Mandor': 1 });
+        // Wastafel per KM
+        addItem('san-003', bathroomCount, { 'Pekerja': 1, 'Tukang Pipa': 1, 'Mandor': 1 });
+        // Floor drain per KM
+        addItem('san-005', bathroomCount, { 'Pekerja': 1, 'Tukang Pipa': 1, 'Mandor': 1 });
       }
+      // Septic tank (1 unit per rumah)
+      addItem('san-006', 1, { 'Pekerja': 4, 'Tukang Batu': 2, 'Mandor': 1 });
 
       // Elektrikal
       const lightPts = projectData.lightPointCount ?? 10;
