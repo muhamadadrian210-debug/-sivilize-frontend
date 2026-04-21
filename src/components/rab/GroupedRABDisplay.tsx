@@ -3,7 +3,7 @@ import { Plus, Trash2, ChevronDown, ChevronUp, Info } from 'lucide-react';
 import { type RABItem } from '../../store/useStore';
 import { formatCurrency } from '../../utils/calculations';
 import { AHSP_TEMPLATES } from '../../data/ahsp';
-import { getMaterialPricesByGrade, type MaterialGrade } from '../../data/prices';
+import { getMaterialPricesByGrade, DEFAULT_LABOR_PRICES, type MaterialGrade } from '../../data/prices';
 import AHSPDetailPanel from './AHSPDetailPanel';
 
 interface GroupedRABDisplayProps {
@@ -41,11 +41,7 @@ const GroupedRABDisplay = ({
     if (!template) return null;
 
     const matPrices = getMaterialPricesByGrade(cityId, grade);
-    const laborPrices: Record<string, number> = {
-      'Pekerja': 150000, 'Tukang Batu': 200000, 'Tukang Besi': 200000,
-      'Tukang Cat': 185000, 'Tukang Kayu': 200000, 'Tukang Pipa': 195000,
-      'Tukang Listrik': 210000, 'Kepala Tukang': 230000, 'Mandor': 270000,
-    };
+    const laborPrices = DEFAULT_LABOR_PRICES;
 
     const matCost = template.materials.reduce((acc, m) => acc + m.coeff * (matPrices[m.name] || 0), 0);
     const laborCost = template.laborCoefficients.reduce((acc, l) => acc + l.coeff * (laborPrices[l.name] || 0), 0);
@@ -73,19 +69,16 @@ const GroupedRABDisplay = ({
   const totalUpah = items.reduce((acc, item) => {
     const template = AHSP_TEMPLATES.find(t => t.name === item.name);
     if (!template) return acc;
-    const laborPrices: Record<string, number> = {
-      'Pekerja': 150000, 'Tukang Batu': 200000, 'Tukang Besi': 200000,
-      'Tukang Cat': 185000, 'Tukang Kayu': 200000, 'Tukang Pipa': 195000,
-      'Tukang Listrik': 210000, 'Kepala Tukang': 230000, 'Mandor': 270000,
-    };
-    const laborCost = template.laborCoefficients.reduce((s, l) => s + l.coeff * (laborPrices[l.name] || 0), 0);
+    const laborCost = template.laborCoefficients.reduce((s, l) => s + l.coeff * (DEFAULT_LABOR_PRICES[l.name] || 0), 0);
     return acc + laborCost * item.volume;
   }, 0);
 
   const totalMaterial = items.reduce((acc, item) => acc + item.total, 0) - totalUpah;
 
   // Urutan kategori sesuai tahapan konstruksi profesional Indonesia
+  // Termasuk alias nama lama (dari data localStorage yang tersimpan sebelumnya)
   const CATEGORY_ORDER: Record<string, number> = {
+    // Nama baru (AHSP)
     'Persiapan':                  1,
     'Tanah & Pondasi':            2,
     'Struktur':                   3,
@@ -97,6 +90,15 @@ const GroupedRABDisplay = ({
     'Instalasi Air & Sanitasi':   9,
     'Finishing & Pengecatan':     10,
     'Lain-lain':                  11,
+    // Alias nama lama (backward compatibility)
+    'Arsitektur':                 4,
+    'Finishing':                  10,
+    'Elektrikal':                 8,
+    'Mekanikal':                  9,
+    'Sanitasi':                   9,
+    'Pondasi':                    2,
+    'Lantai':                     7,
+    'Bukaan':                     5,
   };
 
   // Group items by category

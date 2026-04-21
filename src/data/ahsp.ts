@@ -1026,4 +1026,115 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
     ],
     productivity: 5,
   },
+
+  // ══════════════════════════════════════════════════════════
+  // FINISHING EKSTERIOR — Cat luar, Plesteran luar, Waterproofing dinding
+  // ══════════════════════════════════════════════════════════
+  {
+    id: 'fin-007',
+    category: 'Finishing & Pengecatan',
+    name: 'Pengecatan Eksterior (Weathershield, 2 Lapis)',
+    unit: 'm2',
+    materials: [
+      { name: 'Cat Eksterior', coeff: 0.30, unit: 'kg' },
+      { name: 'Cat Dasar Eksterior', coeff: 0.12, unit: 'kg' },
+      { name: 'Plamir Eksterior', coeff: 0.08, unit: 'kg' },
+    ],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 0.025, unit: 'OH' },
+      { name: 'Tukang Cat', coeff: 0.070, unit: 'OH' },
+      { name: 'Kepala Tukang', coeff: 0.007, unit: 'OH' },
+      { name: 'Mandor', coeff: 0.004, unit: 'OH' },
+    ],
+    productivity: 20,
+  },
+  {
+    id: 'fin-008',
+    category: 'Finishing & Pengecatan',
+    name: 'Waterproofing Dinding Eksterior (Coating)',
+    unit: 'm2',
+    materials: [
+      { name: 'Waterproofing Coating', coeff: 1.2, unit: 'kg' },
+    ],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 0.08, unit: 'OH' },
+      { name: 'Tukang Batu', coeff: 0.12, unit: 'OH' },
+      { name: 'Kepala Tukang', coeff: 0.012, unit: 'OH' },
+      { name: 'Mandor', coeff: 0.006, unit: 'OH' },
+    ],
+    productivity: 18,
+  },
+
+  // ══════════════════════════════════════════════════════════
+  // TULANGAN DETAIL — per diameter besi
+  // ══════════════════════════════════════════════════════════
+  {
+    id: 'str-006',
+    category: 'Struktur',
+    name: 'Pembesian Kolom D13-150 (Tulangan Utama + Sengkang)',
+    unit: 'm1',
+    materials: [
+      { name: 'Besi Beton', coeff: 7.8, unit: 'kg' },   // 4D13 + sengkang D8-150
+      { name: 'Kawat Beton', coeff: 0.12, unit: 'kg' },
+    ],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 0.05, unit: 'OH' },
+      { name: 'Tukang Besi', coeff: 0.05, unit: 'OH' },
+      { name: 'Kepala Tukang', coeff: 0.005, unit: 'OH' },
+      { name: 'Mandor', coeff: 0.003, unit: 'OH' },
+    ],
+    productivity: 20,
+  },
+  {
+    id: 'str-007',
+    category: 'Struktur',
+    name: 'Pembesian Balok D13-200 (Tulangan Atas+Bawah + Sengkang)',
+    unit: 'm1',
+    materials: [
+      { name: 'Besi Beton', coeff: 9.2, unit: 'kg' },   // 3D13 atas + 3D13 bawah + sengkang D8-200
+      { name: 'Kawat Beton', coeff: 0.14, unit: 'kg' },
+    ],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 0.06, unit: 'OH' },
+      { name: 'Tukang Besi', coeff: 0.06, unit: 'OH' },
+      { name: 'Kepala Tukang', coeff: 0.006, unit: 'OH' },
+      { name: 'Mandor', coeff: 0.003, unit: 'OH' },
+    ],
+    productivity: 16,
+  },
+  {
+    id: 'str-008',
+    category: 'Struktur',
+    name: 'Pembesian Plat Lantai D10-150 (2 Arah)',
+    unit: 'm2',
+    materials: [
+      { name: 'Besi Beton', coeff: 8.5, unit: 'kg' },   // D10-150 dua arah
+      { name: 'Kawat Beton', coeff: 0.13, unit: 'kg' },
+    ],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 0.04, unit: 'OH' },
+      { name: 'Tukang Besi', coeff: 0.04, unit: 'OH' },
+      { name: 'Kepala Tukang', coeff: 0.004, unit: 'OH' },
+      { name: 'Mandor', coeff: 0.002, unit: 'OH' },
+    ],
+    productivity: 25,
+  },
+
+  // ══════════════════════════════════════════════════════════
+  // URUGAN PENINGGIAN LANTAI
+  // ══════════════════════════════════════════════════════════
+  {
+    id: 'tan-004',
+    category: 'Tanah & Pondasi',
+    name: 'Urugan Tanah Peninggian Lantai (Per 10cm)',
+    unit: 'm2',
+    materials: [
+      { name: 'Tanah Urug', coeff: 0.12, unit: 'm3' },
+    ],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 0.10, unit: 'OH' },
+      { name: 'Mandor', coeff: 0.005, unit: 'OH' },
+    ],
+    productivity: 20,
+  },
 ];

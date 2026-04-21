@@ -35,6 +35,8 @@ import {
   getCitiesByProvince,
   LOCATION_TYPE_OPTIONS,
   getLocationMultiplier,
+  getMaterialPricesByGrade,
+  DEFAULT_LABOR_PRICES,
   type MaterialGrade,
   type LocationType,
 } from '../../data/prices';
@@ -52,6 +54,8 @@ import { useAutoSave } from '../../hooks/useAutoSave';
 import MaterialSummary from './MaterialSummary';
 import ProjectTimeline from './ProjectTimeline';
 import GroupedRABDisplay from './GroupedRABDisplay';
+import RABSplitView from './RABSplitView';
+import MaterialPriceEditor from './MaterialPriceEditor';
 import { motion, AnimatePresence } from 'framer-motion';
 import StickyTotalBar from '../common/StickyTotalBar';
 import RABPreviewModal from '../export/RABPreviewModal';
@@ -163,13 +167,23 @@ const RABCalculator = () => {
   const [tempProjectId] = useState(() => `temp_${Date.now()}`);
   const [aiMode, setAiMode] = useState(false);
   const [aiProgress, setAiProgress] = useState(0);
-  const [activeSubTab, setActiveSubTab] = useState<'rab' | 'materials' | 'timeline' | 'template'>('rab');
+  const [activeSubTab, setActiveSubTab] = useState<'rab' | 'split' | 'materials' | 'prices' | 'timeline' | 'template'>('rab');
   const [selectedProvince, setSelectedProvince] = useState(DEFAULT_PROVINCE_ID);
   const [materialGrade, setMaterialGrade] = useState<MaterialGrade>(DEFAULT_MATERIAL_GRADE);
   const [locationType, setLocationType] = useState<LocationType>('kota');
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [showComparison, setShowComparison] = useState(false);
   const [shareLoading, setShareLoading] = useState(false);
+  const [customPrices, setCustomPrices] = useState<Record<string, number>>({});
+  // Konfigurasi tulangan — user bisa pilih diameter & jarak
+  const [rebarConfig, setRebarConfig] = useState({
+    kolomDiameter: 13,   // mm, D13
+    kolomSengkang: 150,  // mm jarak sengkang
+    balokDiameter: 13,   // mm
+    balokSengkang: 200,  // mm
+    platDiameter: 10,    // mm
+    platJarak: 150,      // mm
+  });
 
   // Form State
   const [projectData, setProjectData] = useState<Partial<Project>>({
@@ -178,13 +192,19 @@ const RABCalculator = () => {
     materialGrade: DEFAULT_MATERIAL_GRADE,
     type: 'rumah',
     roofModel: '2-air',
+    roofPitch: 30,
     floors: 1,
     dimensions: [{ length: 0, width: 0, height: 3 }],
+    wallLengths: [],
     status: 'draft',
     bedroomCount: 3,
     bathroomCount: 2,
     doorCount: 4,
     windowCount: 6,
+    doorWidth: 0.9,
+    doorHeight: 2.1,
+    windowWidth: 1.2,
+    windowHeight: 1.0,
     waterPointCount: 4,
     drainPointCount: 3,
     drinkingPointCount: 2,
@@ -235,9 +255,12 @@ const RABCalculator = () => {
     try {
       const versionId = globalThis.crypto?.randomUUID?.() ?? String(Date.now());
       const timestamp = Date.now();
-      const payload = {
+      const localProject = {
         ...projectData,
+        id: versionId,
         materialGrade,
+        createdAt: timestamp,
+        updatedAt: timestamp,
         versions: [{
           id: versionId,
           versionNum: 1,
@@ -246,26 +269,48 @@ const RABCalculator = () => {
           financialSettings: financials,
           summary: summary
         }]
-      };
-      
-      const response = await projectService.createProject(payload);
-      if (response.success) {
-        addProject(response.data);
-        addActivityLog({
-          userId: user?.id || 'unknown',
-          userName: user?.name || 'Unknown',
-          action: 'create',
-          entity: 'project',
-          entityId: response.data.id,
-          entityName: projectData.name || 'Proyek Baru',
-          newValue: { grandTotal: summary.grandTotal, items: rabItems.length },
-          description: `RAB dibuat: ${projectData.name} — ${rabItems.length} item, total ${formatCurrency(summary.grandTotal)}`,
-        });
-        setActiveTab('dashboard');
+      } as Project;
+
+      try {
+        const response = await projectService.createProject(localProject);
+        if (response.success) {
+          addProject(response.data);
+          addActivityLog({
+            userId: user?.id || 'unknown',
+            userName: user?.name || 'Unknown',
+            action: 'create',
+            entity: 'project',
+            entityId: response.data.id,
+            entityName: projectData.name || 'Proyek Baru',
+            newValue: { grandTotal: summary.grandTotal, items: rabItems.length },
+            description: `RAB dibuat: ${projectData.name} — ${rabItems.length} item, total ${formatCurrency(summary.grandTotal)}`,
+          });
+          showToast('Proyek berhasil disimpan', 'success');
+          setActiveTab('dashboard');
+          return;
+        }
+      } catch {
+        // Backend tidak tersedia — simpan lokal saja
+        console.warn('Backend tidak tersedia, menyimpan lokal');
       }
+
+      // Fallback: simpan ke local store
+      addProject(localProject);
+      addActivityLog({
+        userId: user?.id || 'unknown',
+        userName: user?.name || 'Unknown',
+        action: 'create',
+        entity: 'project',
+        entityId: versionId,
+        entityName: projectData.name || 'Proyek Baru',
+        newValue: { grandTotal: summary.grandTotal, items: rabItems.length },
+        description: `RAB dibuat (lokal): ${projectData.name} — ${rabItems.length} item, total ${formatCurrency(summary.grandTotal)}`,
+      });
+      showToast('Proyek disimpan secara lokal (backend tidak tersedia)', 'warning');
+      setActiveTab('dashboard');
     } catch (error) {
       console.error('Failed to save project', error);
-      alert('Gagal menyimpan proyek');
+      showToast('Gagal menyimpan proyek', 'error');
     } finally {
       setSaving(false);
     }
@@ -285,33 +330,112 @@ const RABCalculator = () => {
   const costPerM2 = totalArea > 0 ? summary.grandTotal / totalArea : 0;
   const category = getCostCategory(costPerM2);
 
-  // Auto-generate basic items based on dimensions
-  const handleGenerateRAB = () => {
+  // ── AUTO-RECALCULATE harga saat customPrices berubah ──────────
+  // Tidak perlu regenerate ulang — cukup update unitPrice & total per item
+  useEffect(() => {
+    if (rabItems.length === 0 || Object.keys(customPrices).length === 0) return;
+
+    const matOverride = { ...getMaterialPricesByGrade(projectData.location!, materialGrade), ...customPrices };
+    const laborOverride = Object.fromEntries(
+      Object.entries(DEFAULT_LABOR_PRICES).map(([k, v]) => [k, customPrices[`__labor__${k}`] ?? v])
+    );
+    const locationMult = getLocationMultiplier(locationType);
+
+    const recalculated = rabItems.map(item => {
+      const template = AHSP_TEMPLATES.find(t => t.name === item.name);
+      if (!template) return item;
+      const basePrice = calculateAHSPItem(template, projectData.location!, materialGrade, {
+        materials: matOverride,
+        labor: laborOverride,
+      });
+      const unitPrice = Math.round(basePrice * locationMult);
+      return { ...item, unitPrice, total: item.volume * unitPrice };
+    });
+
+    setRabItems(recalculated);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customPrices]);
+
+  // ── VALIDASI INPUT DIMENSI ────────────────────────────────────
+  const dimensionErrors = useMemo(() => {
+    const errors: string[] = [];
+    const dims = projectData.dimensions ?? [];
+    dims.forEach((d, i) => {
+      if (d.length <= 0) errors.push(`Lantai ${i + 1}: Panjang harus > 0`);
+      if (d.width  <= 0) errors.push(`Lantai ${i + 1}: Lebar harus > 0`);
+      if (d.height <= 0) errors.push(`Lantai ${i + 1}: Tinggi harus > 0`);
+      if (d.length > 200) errors.push(`Lantai ${i + 1}: Panjang tidak wajar (> 200m)`);
+      if (d.width  > 200) errors.push(`Lantai ${i + 1}: Lebar tidak wajar (> 200m)`);
+      if (d.height > 10)  errors.push(`Lantai ${i + 1}: Tinggi tidak wajar (> 10m)`);
+    });
+    if ((projectData.floors ?? 1) > 10) errors.push('Jumlah lantai tidak wajar (> 10)');
+    return errors;
+  }, [projectData.dimensions, projectData.floors]);
     setLoading(true);
     setTimeout(() => {
       const generated: RABItem[] = [];
-      
-      // Estimasi volume dasar rumah tinggal minimalis
-      const perimeter = Math.sqrt(totalArea) * 4;
-      const wallArea = perimeter * 3 * projectData.floors!;
+      const floors = projectData.floors ?? 1;
+      const dims = projectData.dimensions ?? [{ length: 10, width: 8, height: 3 }];
+
+      // ── PERIMETER: pakai input sisi dinding jika ada, fallback ke dimensi ──
+      const wallLengths = projectData.wallLengths;
+      const perimeter = (wallLengths && wallLengths.length > 0)
+        ? wallLengths.reduce((s, w) => s + w.panjang, 0)
+        : (dims[0].length + dims[0].width) * 2;
+
+      // ── TINGGI DINDING per lantai ──
+      const wallHeight = dims[0].height ?? 3;
+
+      // ── LUAS DINDING KOTOR (sebelum dikurangi bukaan) ──
+      const grossWallArea = perimeter * wallHeight * floors;
+
+      // ── PENGURANGAN BUKAAN (pintu & jendela) ──
+      const doorCount  = projectData.doorCount  ?? 4;
+      const windowCount = projectData.windowCount ?? 6;
+      const doorW   = projectData.doorWidth   ?? 0.9;
+      const doorH   = projectData.doorHeight  ?? 2.1;
+      const winW    = projectData.windowWidth  ?? 1.2;
+      const winH    = projectData.windowHeight ?? 1.0;
+      const openingArea = (doorCount * doorW * doorH) + (windowCount * winW * winH);
+
+      // ── LUAS DINDING BERSIH (untuk pasangan bata & plesteran) ──
+      const wallArea = Math.max(0, grossWallArea - openingArea);
+
+      // Plesteran = 2 sisi (dalam + luar), acian = sama dengan plesteran
       const plasterArea = wallArea * 2;
-      const paintArea = plasterArea;
-      const roofAreaFactorMap: Record<NonNullable<Project['roofModel']>, number> = {
-        '1-air': 1.1,
-        '2-air': 1.2,
-        '3-air': 1.3,
-        '4-air': 1.35,
-        dak: 1.0,
+      const paintArea   = plasterArea;
+
+      // ── LUAS ATAP dengan kemiringan nyata ──
+      // Faktor kemiringan: luas atap miring = luas lantai / cos(sudut)
+      const pitchDeg = projectData.roofPitch ?? 30; // default 30°
+      const pitchRad = (pitchDeg * Math.PI) / 180;
+      const slopeFactor = 1 / Math.cos(pitchRad); // misal 30° → 1.155
+      const roofModelOverhangMap: Record<NonNullable<Project['roofModel']>, number> = {
+        '1-air': 1.05, '2-air': 1.10, '3-air': 1.15, '4-air': 1.20, dak: 1.00,
       };
-      const roofArea = totalArea * (roofAreaFactorMap[projectData.roofModel || '2-air']);
-      
+      const overhangFactor = roofModelOverhangMap[projectData.roofModel || '2-air'];
+      const roofArea = totalArea * slopeFactor * overhangFactor;
+
       const templates = AHSP_TEMPLATES;
       const locationMult = getLocationMultiplier(locationType);
       const addItem = (templateId: string, volume: number, team: Record<string, number>) => {
         const template = templates.find((t) => t.id === templateId);
         if (!template) return;
-        // Harga satuan × location multiplier untuk ongkos angkut
-        const basePrice = calculateAHSPItem(template, projectData.location!, materialGrade);
+        // Harga satuan × location multiplier, dengan custom prices jika ada
+        const matOverride = Object.keys(customPrices).length > 0
+          ? { ...getMaterialPricesByGrade(projectData.location!, materialGrade), ...customPrices }
+          : undefined;
+        const laborOverride = Object.keys(customPrices).some(k => k.startsWith('__labor__'))
+          ? Object.fromEntries(
+              Object.entries(DEFAULT_LABOR_PRICES).map(([k, v]) => [k, customPrices[`__labor__${k}`] ?? v])
+            )
+          : undefined;
+        const basePrice = calculateAHSPItem(
+          template,
+          projectData.location!,
+          materialGrade,
+          matOverride || laborOverride ? { materials: matOverride ?? {}, labor: laborOverride ?? {} } : undefined
+        );
         const unitPrice = Math.round(basePrice * locationMult);
         generated.push({
           id: `${generated.length + 1}`,
@@ -430,20 +554,126 @@ const RABCalculator = () => {
         }
       }
 
-      // Kolom & balok struktur atas
-      const concreteVol = totalArea * 0.12;
-      const steelWeight = totalArea * 18;
-      addItem('str-002', concreteVol, { 'Pekerja': 4, 'Tukang Batu': 2, 'Kepala Tukang': 1, 'Mandor': 1 });
-      addItem('str-003', steelWeight, { 'Pekerja': 2, 'Tukang Besi': 2, 'Mandor': 1 });
+      // ── URUGAN TANAH KEMBALI (sering terlupakan) ──────────────
+      // Volume urugan = volume galian - volume pondasi
+      const foundationDepthVal = (() => {
+        switch (projectData.soilType) {
+          case 'keras': return 0.6; case 'sedang': return 0.8;
+          case 'lunak': return 1.0; case 'gambut': return 1.2;
+          case 'pasir': return 0.8; case 'berbatu': return 0.5;
+          default: return 0.7;
+        }
+      })();
+      const galianVol = perimeter * 0.6 * foundationDepthVal;
+      const pondasiVol = perimeter * 0.6 * 0.5; // estimasi volume pondasi
+      const uruganKembali = Math.max(0, galianVol - pondasiVol);
+      if (uruganKembali > 0) {
+        // Gunakan item galian tanah sebagai proxy untuk urugan kembali
+        // (tidak ada template khusus, pakai pekerja manual)
+        generated.push({
+          id: `${generated.length + 1}`,
+          category: 'Tanah & Pondasi',
+          name: 'Urugan Tanah Kembali & Pemadatan',
+          unit: 'm3',
+          volume: uruganKembali,
+          unitPrice: Math.round(165000 * 0.5 * getLocationMultiplier(locationType)), // ~0.5 OH pekerja/m³
+          total: uruganKembali * Math.round(165000 * 0.5 * getLocationMultiplier(locationType)),
+          assignedTeam: { 'Pekerja': 3, 'Mandor': 1 },
+        });
+      }
 
-      // Arsitektur
-      addItem('ars-001', wallArea, { 'Pekerja': 3, 'Tukang Batu': 2, 'Mandor': 1 });
-      addItem('ars-002', plasterArea, { 'Pekerja': 3, 'Tukang Batu': 2, 'Mandor': 1 });
+      // ── STRUKTUR ATAS — Kolom, Balok, Ring Balk, Plat Lantai ──
+      // Dimensi standar SNI rumah tinggal:
+      // Kolom: 15x15cm (1 lantai) atau 20x20cm (2 lantai)
+      // Balok induk: 15x25cm, balok anak: 12x20cm
+      // Ring balk: 12x15cm
+      const floors = projectData.floors ?? 1;
+      const kolomDim = floors >= 2 ? 0.20 : 0.15; // sisi kolom (m)
+      const kolomH = (projectData.dimensions?.[0]?.height ?? 3); // tinggi per lantai
+
+      // Estimasi jumlah kolom: grid 3x3m → 1 kolom per 9m²
+      const nKolom = Math.ceil(totalArea / 9);
+
+      // Volume kolom per lantai = n × dim² × tinggi
+      const volKolomPerLantai = nKolom * kolomDim * kolomDim * kolomH;
+      const volKolomTotal = volKolomPerLantai * floors;
+
+      // Balok induk: keliling + tengah (estimasi panjang = perimeter + √area × 2)
+      const panjangBalokInduk = perimeter + Math.sqrt(totalArea) * 2;
+      const volBalokInduk = panjangBalokInduk * 0.15 * 0.25 * floors;
+
+      // Balok anak: grid 3m → panjang ≈ √area × (√area/3)
+      const panjangBalokAnak = Math.sqrt(totalArea) * Math.ceil(Math.sqrt(totalArea) / 3);
+      const volBalokAnak = panjangBalokAnak * 0.12 * 0.20 * floors;
+
+      // Ring balk: keliling per lantai
+      const volRingBalk = perimeter * 0.12 * 0.15 * floors;
+
+      // Plat lantai (hanya jika 2+ lantai): tebal 12cm
+      const volPlatLantai = floors >= 2 ? totalArea * (floors - 1) * 0.12 : 0;
+
+      // Total beton struktur atas
+      const concreteVolStruktur = volKolomTotal + volBalokInduk + volBalokAnak + volRingBalk + volPlatLantai;
+
+      // Besi tulangan: kolom 200kg/m³, balok 150kg/m³, plat 100kg/m³
+      const steelKolom = volKolomTotal * 200;
+      const steelBalok = (volBalokInduk + volBalokAnak + volRingBalk) * 150;
+      const steelPlat = volPlatLantai * 100;
+      const steelWeight = steelKolom + steelBalok + steelPlat;
+
+      // Bekisting: kolom (4 sisi), balok (3 sisi), plat (bawah)
+      const bekistingKolom = nKolom * 4 * kolomDim * kolomH * floors;
+      const bekistingBalok = (panjangBalokInduk + panjangBalokAnak) * 0.7 * floors; // 3 sisi rata-rata
+      const bekistingPlat = volPlatLantai > 0 ? totalArea * (floors - 1) : 0;
+      const totalBekisting = bekistingKolom + bekistingBalok + bekistingPlat;
+
+      addItem('str-002', concreteVolStruktur, { 'Pekerja': 4, 'Tukang Batu': 2, 'Kepala Tukang': 1, 'Mandor': 1 });
+
+      // ── TULANGAN DETAIL per elemen (lebih akurat dari estimasi kg/m³) ──
+      // Berat besi per meter = (diameter²/162) kg/m (rumus standar)
+      const beratPerMeterKolom = (rebarConfig.kolomDiameter ** 2 / 162);
+      const beratPerMeterBalok = (rebarConfig.balokDiameter ** 2 / 162);
+      const beratPerMeterPlat  = (rebarConfig.platDiameter ** 2 / 162);
+
+      // Kolom: 4 tulangan utama + sengkang
+      const nTulanganKolom = 4;
+      const panjangSengkangPerM = (1000 / rebarConfig.kolomSengkang) * (kolomDim * 4 + 0.1); // keliling + overlap
+      const beratKolomPerM = (nTulanganKolom * beratPerMeterKolom) + (panjangSengkangPerM * (rebarConfig.kolomDiameter * 0.6 / 162));
+      const totalPanjangKolom = nKolom * kolomH * floors;
+      // Gunakan str-003 (pembesian kg) dengan berat yang dihitung
+      addItem('str-003', totalPanjangKolom * beratKolomPerM * 1.05, { 'Pekerja': 2, 'Tukang Besi': 2, 'Mandor': 1 });
+
+      // Balok: 3 tulangan atas + 3 bawah + sengkang
+      const nTulanganBalok = 6;
+      const panjangSengkangBalokPerM = (1000 / rebarConfig.balokSengkang) * (0.15 * 2 + 0.25 * 2 + 0.1);
+      const beratBalokPerM = (nTulanganBalok * beratPerMeterBalok) + (panjangSengkangBalokPerM * (rebarConfig.balokDiameter * 0.6 / 162));
+      const totalPanjangBalok = (panjangBalokInduk + panjangBalokAnak) * floors;
+      addItem('str-003', totalPanjangBalok * beratBalokPerM * 1.05, { 'Pekerja': 2, 'Tukang Besi': 2, 'Mandor': 1 });
+
+      // Plat lantai: tulangan 2 arah
+      if (volPlatLantai > 0) {
+        const platArea = totalArea * (floors - 1);
+        const nBatangPerM2 = (1000 / rebarConfig.platJarak) * 2; // 2 arah
+        const beratPlatPerM2 = nBatangPerM2 * beratPerMeterPlat;
+        addItem('str-003', platArea * beratPlatPerM2 * 1.05, { 'Pekerja': 2, 'Tukang Besi': 2, 'Mandor': 1 });
+      }
+
+      // Bekisting
+      addItem('str-004', totalBekisting, { 'Pekerja': 2, 'Tukang Kayu': 2, 'Mandor': 1 });
+
+      // ── RANGKA ATAP ──────────────────────────────────────────
+      // Baja ringan: luas atap × faktor kemiringan
+      // Genteng/penutup: luas atap
       addItem('ars-003', roofArea, { 'Pekerja': 2, 'Tukang Besi': 2, 'Mandor': 1 });
       addItem(projectData.roofModel === 'dak' ? 'str-002' : 'ars-004', roofArea, { 'Pekerja': 2, 'Tukang Batu': 2, 'Mandor': 1 });
       if (projectData.roofModel !== 'dak') {
+        // Nok/bubungan: estimasi panjang = √area
         addItem('ars-005', roofArea * 0.6, { 'Pekerja': 2, 'Tukang Besi': 1, 'Mandor': 1 });
       }
+
+      // ── ARSITEKTUR — Dinding, Plesteran ──────────────────────
+      addItem('ars-001', wallArea, { 'Pekerja': 3, 'Tukang Batu': 2, 'Mandor': 1 });
+      addItem('ars-002', plasterArea, { 'Pekerja': 3, 'Tukang Batu': 2, 'Mandor': 1 });
 
       // Finishing
       addItem('fin-001', paintArea, { 'Pekerja': 2, 'Tukang Cat': 2, 'Mandor': 1 });
@@ -454,32 +684,27 @@ const RABCalculator = () => {
       addItem('fin-004', ceilingArea, { 'Pekerja': 2, 'Tukang Kayu': 2, 'Mandor': 1 });
 
       // Lantai — screed + keramik
-      // Screed bawah keramik
       addItem('lan-004', totalArea, { 'Pekerja': 2, 'Tukang Batu': 1, 'Mandor': 1 });
-      // Keramik lantai 40x40 (ruang utama)
-      const mainFloorArea = totalArea * 0.75; // 75% area pakai keramik 40x40
+      const mainFloorArea = totalArea * 0.75;
       addItem('lan-001', mainFloorArea, { 'Pekerja': 2, 'Tukang Batu': 2, 'Mandor': 1 });
+
+      // Bukaan - Pintu & Jendela (deklarasi di sini, sudah ada di atas untuk openingArea)
+      const bathroomCount = projectData.bathroomCount ?? 2;
+
       // Keramik dinding KM/WC
-      const bathroomWallArea = bathroomCount * 12; // estimasi 12m² dinding per KM
+      const bathroomWallArea = bathroomCount * 12;
       if (bathroomCount > 0) {
         addItem('lan-005', bathroomWallArea, { 'Pekerja': 1, 'Tukang Batu': 2, 'Mandor': 1 });
       }
-
-      // Bukaan - Pintu & Jendela
-      const doorCount = projectData.doorCount ?? 4;
-      const windowCount = projectData.windowCount ?? 6;
-      const bathroomCount = projectData.bathroomCount ?? 2;
 
       // Pintu utama + kamar tidur (kurangi pintu kamar mandi)
       const mainDoors = Math.max(0, doorCount - bathroomCount);
       if (mainDoors > 0) {
         addItem('buk-001', mainDoors, { 'Pekerja': 1, 'Tukang Kayu': 2, 'Mandor': 1 });
       }
-      // Pintu kamar mandi
       if (bathroomCount > 0) {
         addItem('buk-003', bathroomCount, { 'Pekerja': 1, 'Tukang Kayu': 1, 'Mandor': 1 });
       }
-      // Jendela
       if (windowCount > 0) {
         addItem('buk-002', windowCount, { 'Pekerja': 1, 'Tukang Kayu': 2, 'Mandor': 1 });
       }
@@ -510,6 +735,36 @@ const RABCalculator = () => {
       if (lightPts > 0) addItem('elk-001', lightPts, { 'Pekerja': 1, 'Tukang Listrik': 2, 'Mandor': 1 });
       if (socketPts > 0) addItem('elk-002', socketPts, { 'Pekerja': 1, 'Tukang Listrik': 2, 'Mandor': 1 });
       addItem('elk-003', 1, { 'Pekerja': 1, 'Tukang Listrik': 2, 'Mandor': 1 });
+
+      // ── PEKERJAAN YANG SERING TERLUPAKAN ─────────────────────
+
+      // Urugan pasir bawah lantai (sebelum screed)
+      addItem('tan-002', totalArea, { 'Pekerja': 2, 'Mandor': 1 });
+
+      // Urugan peninggian lantai (default 20cm = 2× item per 10cm)
+      addItem('tan-004', totalArea, { 'Pekerja': 3, 'Mandor': 1 });
+      addItem('tan-004', totalArea, { 'Pekerja': 3, 'Mandor': 1 });
+
+      // Drainase keliling bangunan
+      addItem('tan-003', perimeter, { 'Pekerja': 2, 'Tukang Batu': 1, 'Mandor': 1 });
+
+      // Waterproofing KM/WC (lantai + dinding bawah 1.5m)
+      if (bathroomCount > 0) {
+        const kmFloorArea = bathroomCount * 4;   // estimasi 2×2m per KM
+        const kmWallWpArea = bathroomCount * 6;  // 1.5m tinggi × 4 sisi
+        addItem('fin-003', kmFloorArea + kmWallWpArea, { 'Pekerja': 1, 'Tukang Batu': 1, 'Mandor': 1 });
+      }
+      // Waterproofing atap dak (jika model dak)
+      if (projectData.roofModel === 'dak') {
+        addItem('fin-003', totalArea, { 'Pekerja': 2, 'Tukang Batu': 1, 'Mandor': 1 });
+      }
+
+      // Cat eksterior (dinding luar saja = ~50% dari total luas dinding)
+      const exteriorWallArea = wallArea * 0.5;
+      addItem('fin-007', exteriorWallArea, { 'Pekerja': 2, 'Tukang Cat': 2, 'Mandor': 1 });
+
+      // Waterproofing dinding eksterior bawah (1m dari tanah, keliling bangunan)
+      addItem('fin-008', perimeter * 1.0, { 'Pekerja': 1, 'Tukang Batu': 1, 'Mandor': 1 });
 
       setRabItems(generated);
       setLoading(false);
@@ -907,6 +1162,19 @@ const RABCalculator = () => {
               <Layers size={20} className="text-primary" />
               Dimensi Per Lantai
             </h3>
+
+            {/* ── VALIDASI ERROR ── */}
+            {dimensionErrors.length > 0 && (
+              <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 space-y-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <AlertTriangle size={16} className="text-red-400" />
+                  <p className="text-red-400 font-bold text-sm">Periksa Input Dimensi</p>
+                </div>
+                {dimensionErrors.map((err, i) => (
+                  <p key={i} className="text-red-300 text-xs pl-6">• {err}</p>
+                ))}
+              </div>
+            )}
             <div className="space-y-4">
               {projectData.dimensions?.map((dim, index) => (
                 <div key={index} className="bg-background/50 border border-border p-4 rounded-xl grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -969,6 +1237,253 @@ const RABCalculator = () => {
               </div>
               <Info className="text-primary opacity-50" size={32} />
             </div>
+
+            {/* ── INPUT PANJANG SISI DINDING (opsional, lebih akurat) ── */}
+            <div className="border-t border-border pt-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                    <Layers size={14} className="text-primary" />
+                    Panjang Sisi Dinding
+                    <span className="text-[10px] bg-green-500/10 text-green-400 px-2 py-0.5 rounded-full font-bold">+Akurasi</span>
+                  </h4>
+                  <p className="text-text-secondary text-xs mt-0.5">Isi untuk hasil lebih akurat. Kosongkan = pakai estimasi dari dimensi lantai.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const current = projectData.wallLengths ?? [];
+                    setProjectData({ ...projectData, wallLengths: [...current, { sisi: `Sisi ${current.length + 1}`, panjang: 0 }] });
+                  }}
+                  className="flex items-center gap-1 px-3 py-1.5 bg-primary/10 text-primary border border-primary/20 rounded-lg text-xs font-bold hover:bg-primary/20 transition-all"
+                >
+                  + Tambah Sisi
+                </button>
+              </div>
+              {(projectData.wallLengths ?? []).length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {(projectData.wallLengths ?? []).map((w, i) => (
+                    <div key={i} className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <input
+                          type="text"
+                          value={w.sisi}
+                          onChange={(e) => {
+                            const wl = [...(projectData.wallLengths ?? [])];
+                            wl[i] = { ...wl[i], sisi: e.target.value };
+                            setProjectData({ ...projectData, wallLengths: wl });
+                          }}
+                          className="text-xs text-text-secondary bg-transparent border-none outline-none w-full"
+                          placeholder="Nama sisi"
+                        />
+                        <button type="button" onClick={() => {
+                          const wl = (projectData.wallLengths ?? []).filter((_, idx) => idx !== i);
+                          setProjectData({ ...projectData, wallLengths: wl });
+                        }} className="text-red-400 hover:text-red-300 text-xs ml-1">✕</button>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.1"
+                          value={w.panjang}
+                          onChange={(e) => {
+                            const wl = [...(projectData.wallLengths ?? [])];
+                            wl[i] = { ...wl[i], panjang: parseFloat(e.target.value) || 0 };
+                            setProjectData({ ...projectData, wallLengths: wl });
+                          }}
+                          className="w-full bg-background border border-border rounded-lg px-3 py-2 text-white focus:border-primary outline-none text-sm"
+                        />
+                        <span className="text-text-secondary text-xs shrink-0">m</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {(projectData.wallLengths ?? []).length > 0 && (
+                <div className="flex items-center gap-2 text-xs text-primary bg-primary/5 border border-primary/20 rounded-lg px-3 py-2">
+                  <Info size={12} />
+                  Total keliling: <span className="font-bold">{(projectData.wallLengths ?? []).reduce((s, w) => s + w.panjang, 0).toFixed(1)} m</span>
+                  {' '}vs estimasi: <span className="font-bold">{((projectData.dimensions?.[0]?.length ?? 0) + (projectData.dimensions?.[0]?.width ?? 0)) * 2} m</span>
+                </div>
+              )}
+            </div>
+
+            {/* ── UKURAN BUKAAN & KEMIRINGAN ATAP ── */}
+            <div className="border-t border-border pt-6 space-y-4">
+              <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                <Info size={14} className="text-primary" />
+                Detail Bukaan & Atap
+                <span className="text-[10px] bg-green-500/10 text-green-400 px-2 py-0.5 rounded-full font-bold">Pengurang Luas Dinding</span>
+              </h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs text-text-secondary font-bold">Lebar Pintu (m)</label>
+                  <input type="number" min="0.6" max="2" step="0.05"
+                    value={projectData.doorWidth ?? 0.9}
+                    onChange={(e) => setProjectData({ ...projectData, doorWidth: parseFloat(e.target.value) || 0.9 })}
+                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-white focus:border-primary outline-none text-sm"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs text-text-secondary font-bold">Tinggi Pintu (m)</label>
+                  <input type="number" min="1.8" max="3" step="0.05"
+                    value={projectData.doorHeight ?? 2.1}
+                    onChange={(e) => setProjectData({ ...projectData, doorHeight: parseFloat(e.target.value) || 2.1 })}
+                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-white focus:border-primary outline-none text-sm"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs text-text-secondary font-bold">Lebar Jendela (m)</label>
+                  <input type="number" min="0.4" max="3" step="0.05"
+                    value={projectData.windowWidth ?? 1.2}
+                    onChange={(e) => setProjectData({ ...projectData, windowWidth: parseFloat(e.target.value) || 1.2 })}
+                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-white focus:border-primary outline-none text-sm"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs text-text-secondary font-bold">Tinggi Jendela (m)</label>
+                  <input type="number" min="0.4" max="2" step="0.05"
+                    value={projectData.windowHeight ?? 1.0}
+                    onChange={(e) => setProjectData({ ...projectData, windowHeight: parseFloat(e.target.value) || 1.0 })}
+                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-white focus:border-primary outline-none text-sm"
+                  />
+                </div>
+                <div className="space-y-1 md:col-span-2">
+                  <label className="text-xs text-text-secondary font-bold">Kemiringan Atap (derajat)</label>
+                  <div className="flex items-center gap-3">
+                    <input type="range" min="15" max="45" step="5"
+                      value={projectData.roofPitch ?? 30}
+                      onChange={(e) => setProjectData({ ...projectData, roofPitch: parseInt(e.target.value) })}
+                      className="flex-1 accent-primary"
+                    />
+                    <span className="text-white font-bold text-sm w-12 text-center">{projectData.roofPitch ?? 30}°</span>
+                  </div>
+                  <p className="text-text-secondary text-[10px]">
+                    Standar: 30° (genteng), 15° (spandek), 0° (dak). Makin curam = luas atap makin besar.
+                  </p>
+                </div>
+              </div>
+
+              {/* Preview pengurangan luas dinding */}
+              {(() => {
+                const dW = projectData.doorWidth ?? 0.9;
+                const dH = projectData.doorHeight ?? 2.1;
+                const wW = projectData.windowWidth ?? 1.2;
+                const wH = projectData.windowHeight ?? 1.0;
+                const dC = projectData.doorCount ?? 4;
+                const wC = projectData.windowCount ?? 6;
+                const opening = (dC * dW * dH) + (wC * wW * wH);
+                const wallH = projectData.dimensions?.[0]?.height ?? 3;
+                const wl = projectData.wallLengths;
+                const perim = (wl && wl.length > 0)
+                  ? wl.reduce((s, w) => s + w.panjang, 0)
+                  : ((projectData.dimensions?.[0]?.length ?? 0) + (projectData.dimensions?.[0]?.width ?? 0)) * 2;
+                const gross = perim * wallH * (projectData.floors ?? 1);
+                const net = Math.max(0, gross - opening);
+                return (
+                  <div className="bg-green-500/5 border border-green-500/20 rounded-xl p-3 text-xs space-y-1">
+                    <p className="text-green-400 font-bold">Preview Luas Dinding</p>
+                    <div className="flex gap-6 text-text-secondary">
+                      <span>Kotor: <span className="text-white font-bold">{gross.toFixed(1)} m²</span></span>
+                      <span>Bukaan: <span className="text-red-400 font-bold">-{opening.toFixed(1)} m²</span></span>
+                      <span>Bersih: <span className="text-green-400 font-bold">{net.toFixed(1)} m²</span></span>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* ── KONFIGURASI TULANGAN ── */}
+            <div className="border-t border-border pt-6 space-y-4">
+              <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                <AlertCircle size={14} className="text-primary" />
+                Konfigurasi Tulangan Besi
+                <span className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-full font-bold">Akurasi Besi</span>
+              </h4>
+              <p className="text-text-secondary text-xs">Sesuaikan dengan gambar struktur. Default = SNI rumah tinggal 1–2 lantai.</p>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {/* Kolom */}
+                <div className="space-y-2 bg-background/50 border border-border rounded-xl p-3">
+                  <p className="text-xs font-bold text-blue-400 uppercase tracking-widest">Kolom</p>
+                  <div className="space-y-1">
+                    <label className="text-[10px] text-text-secondary">Diameter Utama (mm)</label>
+                    <select value={rebarConfig.kolomDiameter}
+                      onChange={e => setRebarConfig(r => ({ ...r, kolomDiameter: +e.target.value }))}
+                      className="w-full bg-background border border-border rounded-lg px-2 py-1.5 text-white text-xs focus:border-primary outline-none"
+                    >
+                      {[10,12,13,16,19,22].map(d => <option key={d} value={d}>D{d}</option>)}
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] text-text-secondary">Jarak Sengkang (mm)</label>
+                    <select value={rebarConfig.kolomSengkang}
+                      onChange={e => setRebarConfig(r => ({ ...r, kolomSengkang: +e.target.value }))}
+                      className="w-full bg-background border border-border rounded-lg px-2 py-1.5 text-white text-xs focus:border-primary outline-none"
+                    >
+                      {[100,125,150,200].map(s => <option key={s} value={s}>{s} mm</option>)}
+                    </select>
+                  </div>
+                </div>
+                {/* Balok */}
+                <div className="space-y-2 bg-background/50 border border-border rounded-xl p-3">
+                  <p className="text-xs font-bold text-orange-400 uppercase tracking-widest">Balok</p>
+                  <div className="space-y-1">
+                    <label className="text-[10px] text-text-secondary">Diameter Utama (mm)</label>
+                    <select value={rebarConfig.balokDiameter}
+                      onChange={e => setRebarConfig(r => ({ ...r, balokDiameter: +e.target.value }))}
+                      className="w-full bg-background border border-border rounded-lg px-2 py-1.5 text-white text-xs focus:border-primary outline-none"
+                    >
+                      {[10,12,13,16,19,22].map(d => <option key={d} value={d}>D{d}</option>)}
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] text-text-secondary">Jarak Sengkang (mm)</label>
+                    <select value={rebarConfig.balokSengkang}
+                      onChange={e => setRebarConfig(r => ({ ...r, balokSengkang: +e.target.value }))}
+                      className="w-full bg-background border border-border rounded-lg px-2 py-1.5 text-white text-xs focus:border-primary outline-none"
+                    >
+                      {[100,125,150,200].map(s => <option key={s} value={s}>{s} mm</option>)}
+                    </select>
+                  </div>
+                </div>
+                {/* Plat Lantai */}
+                <div className="space-y-2 bg-background/50 border border-border rounded-xl p-3">
+                  <p className="text-xs font-bold text-green-400 uppercase tracking-widest">Plat Lantai</p>
+                  <div className="space-y-1">
+                    <label className="text-[10px] text-text-secondary">Diameter (mm)</label>
+                    <select value={rebarConfig.platDiameter}
+                      onChange={e => setRebarConfig(r => ({ ...r, platDiameter: +e.target.value }))}
+                      className="w-full bg-background border border-border rounded-lg px-2 py-1.5 text-white text-xs focus:border-primary outline-none"
+                    >
+                      {[8,10,12,13].map(d => <option key={d} value={d}>D{d}</option>)}
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] text-text-secondary">Jarak Tulangan (mm)</label>
+                    <select value={rebarConfig.platJarak}
+                      onChange={e => setRebarConfig(r => ({ ...r, platJarak: +e.target.value }))}
+                      className="w-full bg-background border border-border rounded-lg px-2 py-1.5 text-white text-xs focus:border-primary outline-none"
+                    >
+                      {[100,125,150,200].map(s => <option key={s} value={s}>{s} mm</option>)}
+                    </select>
+                  </div>
+                </div>
+              </div>
+              {/* Preview berat besi */}
+              {(() => {
+                const bk = (rebarConfig.kolomDiameter ** 2 / 162);
+                const bb = (rebarConfig.balokDiameter ** 2 / 162);
+                const bp = (rebarConfig.platDiameter ** 2 / 162);
+                return (
+                  <div className="flex gap-4 text-xs text-text-secondary bg-background/50 border border-border rounded-xl p-3">
+                    <span>Kolom: <span className="text-blue-400 font-bold">{bk.toFixed(2)} kg/m</span></span>
+                    <span>Balok: <span className="text-orange-400 font-bold">{bb.toFixed(2)} kg/m</span></span>
+                    <span>Plat: <span className="text-green-400 font-bold">{bp.toFixed(2)} kg/m²</span></span>
+                  </div>
+                );
+              })()}
+            </div>
           </div>
         );
       case 3:
@@ -1007,10 +1522,22 @@ const RABCalculator = () => {
                   Breakdown RAB
                 </button>
                 <button 
+                  onClick={() => setActiveSubTab('split')}
+                  className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${activeSubTab === 'split' ? 'bg-primary text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}
+                >
+                  Material / Pekerja
+                </button>
+                <button 
                   onClick={() => setActiveSubTab('materials')}
                   className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${activeSubTab === 'materials' ? 'bg-primary text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}
                 >
                   Kebutuhan Material
+                </button>
+                <button
+                  onClick={() => setActiveSubTab('prices')}
+                  className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${activeSubTab === 'prices' ? 'bg-yellow-500 text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}
+                >
+                  Update Harga
                 </button>
                 <button 
                   onClick={() => setActiveSubTab('timeline')}
@@ -1291,6 +1818,38 @@ const RABCalculator = () => {
                   </div>
                 </motion.div>
               )}
+              {activeSubTab === 'split' && (
+                <motion.div
+                  key="split"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                >
+                  <RABSplitView
+                    items={rabItems}
+                    cityId={projectData.location || ''}
+                    grade={materialGrade}
+                  />
+                </motion.div>
+              )}
+              {activeSubTab === 'prices' && (
+                <motion.div
+                  key="prices"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                >
+                  <MaterialPriceEditor
+                    cityId={projectData.location || ''}
+                    grade={materialGrade}
+                    customPrices={customPrices}
+                    onUpdate={(prices) => {
+                      setCustomPrices(prices);
+                      showToast('Harga diperbarui. Klik "Hasilkan RAB" ulang untuk menerapkan.', 'info');
+                    }}
+                  />
+                </motion.div>
+              )}
               {activeSubTab === 'materials' && (
                 <motion.div 
                   key="materials"
@@ -1384,15 +1943,19 @@ const RABCalculator = () => {
           {step < 3 ? (
             <button 
               onClick={step === 2 ? handleGenerateRAB : nextStep}
-              className="btn-primary flex items-center gap-2 min-w-[160px] justify-center"
-              disabled={loading}
+              className="btn-primary flex items-center gap-2 min-w-[160px] justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={loading || (step === 2 && dimensionErrors.length > 0)}
+              title={step === 2 && dimensionErrors.length > 0 ? dimensionErrors[0] : undefined}
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <>
                   <span>{step === 2 ? 'Hasilkan RAB' : 'Lanjut'}</span>
-                  <ChevronRight size={20} />
+                  {step === 2 && dimensionErrors.length > 0
+                    ? <AlertTriangle size={16} className="text-red-300" />
+                    : <ChevronRight size={20} />
+                  }
                 </>
               )}
             </button>

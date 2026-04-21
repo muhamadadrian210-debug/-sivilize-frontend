@@ -4,12 +4,9 @@ import { useStore, type LaborPayment } from '../../store/useStore';
 import { formatCurrency } from '../../utils/calculations';
 import { useToast } from '../common/Toast';
 import { exportLaborToPDF, exportLaborToExcel, aggregateLaborByWorker } from '../../utils/exportUtils';
+import { DEFAULT_LABOR_PRICES } from '../../data/prices';
 
-const DEFAULT_WAGES: Record<string, number> = {
-  'Mandor': 270000, 'Kepala Tukang': 230000, 'Tukang Batu': 200000,
-  'Tukang Besi': 200000, 'Tukang Kayu': 200000, 'Tukang Cat': 185000,
-  'Tukang Pipa': 195000, 'Tukang Listrik': 210000, 'Pekerja': 150000,
-};
+const DEFAULT_WAGES = DEFAULT_LABOR_PRICES;
 
 interface LaborCalculatorProps {
   projectId: string;

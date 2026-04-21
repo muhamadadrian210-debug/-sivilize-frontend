@@ -6,7 +6,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'https://server-1rimpvmey-muhama
 
 const api = axios.create({
   baseURL: API_URL,
-  timeout: 30000, // 30 detik — handle Vercel cold start
+  timeout: 15000, // 15 detik
   headers: {
     'Content-Type': 'application/json',
   },
@@ -44,9 +44,9 @@ api.interceptors.response.use(
       config._retry = true;
       config._retryCount = (config._retryCount || 0) + 1;
 
-      if (config._retryCount <= 2) {
-        // Tunggu 2 detik lalu coba lagi
-        await new Promise(r => setTimeout(r, 2000));
+      if (config._retryCount <= 1) {
+        // Tunggu 1 detik lalu coba lagi (hanya 1x retry)
+        await new Promise(r => setTimeout(r, 1000));
         return api(config);
       }
     }

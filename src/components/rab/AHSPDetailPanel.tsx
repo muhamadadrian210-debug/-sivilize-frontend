@@ -7,7 +7,7 @@ import { Package, Users, ChevronDown, ChevronUp, BookOpen } from 'lucide-react';
 import { useState } from 'react';
 import { type RABItem } from '../../store/useStore';
 import { AHSP_TEMPLATES } from '../../data/ahsp';
-import { getMaterialPricesByGrade, type MaterialGrade } from '../../data/prices';
+import { getMaterialPricesByGrade, DEFAULT_LABOR_PRICES, type MaterialGrade } from '../../data/prices';
 import { formatCurrency } from '../../utils/calculations';
 
 interface AHSPDetailPanelProps {
@@ -15,18 +15,6 @@ interface AHSPDetailPanelProps {
   cityId: string;
   grade: MaterialGrade;
 }
-
-const LABOR_PRICES_2026: Record<string, number> = {
-  'Pekerja': 165000,
-  'Tukang Batu': 215000,
-  'Tukang Besi': 215000,
-  'Tukang Cat': 200000,
-  'Tukang Kayu': 215000,
-  'Tukang Pipa': 210000,
-  'Tukang Listrik': 225000,
-  'Kepala Tukang': 250000,
-  'Mandor': 290000,
-};
 
 const AHSPDetailPanel = ({ item, cityId, grade }: AHSPDetailPanelProps) => {
   const [open, setOpen] = useState(false);
@@ -44,7 +32,7 @@ const AHSPDetailPanel = ({ item, cityId, grade }: AHSPDetailPanelProps) => {
   });
 
   const laborRows = template.laborCoefficients.map(l => {
-    const upah = LABOR_PRICES_2026[l.name] || 0;
+    const upah = DEFAULT_LABOR_PRICES[l.name] || 0;
     const total = l.coeff * upah;
     return { nama: l.name, koef: l.coeff, satuan: l.unit, upah, total };
   });

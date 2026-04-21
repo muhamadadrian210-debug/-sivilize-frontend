@@ -88,6 +88,10 @@ export interface Project {
   roofModel?: '1-air' | '2-air' | '3-air' | '4-air' | 'dak';
   floors: number;
   dimensions: { length: number; width: number; height: number }[];
+  // Panjang dinding per sisi (lebih akurat dari asumsi persegi)
+  wallLengths?: { sisi: string; panjang: number }[];
+  // Kemiringan atap dalam derajat (default 30°)
+  roofPitch?: number;
   versions: ProjectVersion[];
   dailyLogs: DailyLog[];
   status: 'draft' | 'ongoing' | 'completed';
@@ -97,6 +101,11 @@ export interface Project {
   bathroomCount?: number;
   doorCount?: number;
   windowCount?: number;
+  // Ukuran rata-rata bukaan untuk pengurangan luas dinding
+  doorWidth?: number;   // meter, default 0.9
+  doorHeight?: number;  // meter, default 2.1
+  windowWidth?: number; // meter, default 1.2
+  windowHeight?: number;// meter, default 1.0
   waterPointCount?: number;
   drainPointCount?: number;
   drinkingPointCount?: number;
@@ -106,6 +115,8 @@ export interface Project {
   soilType?: 'keras' | 'sedang' | 'lunak' | 'gambut' | 'pasir' | 'berbatu';
   foundationType?: 'batu-kali' | 'footplate' | 'tiang-pancang' | 'strauss-pile' | 'raft' | 'sumuran';
   locationType?: 'kota' | 'pinggiran' | 'pelosok' | 'sangat-terpencil';
+  // Harga material custom (override harga default)
+  customMaterialPrices?: Record<string, number>;
   // Realisasi biaya
   costRealizations?: CostRealization[];
   // Pembayaran upah

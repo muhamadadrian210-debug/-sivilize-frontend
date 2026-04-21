@@ -171,11 +171,17 @@ const defaultMaterials: Record<string, number> = {
 
   // === DRAINASE ===
   'Pasir Urug': 180000,         // per m³
+  // === EKSTERIOR ===
+  'Cat Eksterior': 95000,           // per kg (weathershield)
+  'Cat Dasar Eksterior': 60000,     // per kg
+  'Plamir Eksterior': 32000,        // per kg
+  // === TANAH URUG ===
+  'Tanah Urug': 120000,             // per m³
 };
 
 // Upah tenaga kerja per OH (Orang Hari) - harga pasar 2026
 // Referensi: Standar Harga Konstruksi Kota 2026, survey lapangan
-const defaultLabor = {
+export const DEFAULT_LABOR_PRICES: Record<string, number> = {
   'Pekerja': 165000,        // Rp 150.000-180.000/OH (naik dari 2025)
   'Tukang Batu': 215000,    // Rp 200.000-230.000/OH
   'Tukang Besi': 215000,    // Rp 200.000-230.000/OH
@@ -186,6 +192,9 @@ const defaultLabor = {
   'Kepala Tukang': 250000,  // Rp 230.000-270.000/OH
   'Mandor': 290000,         // Rp 270.000-320.000/OH
 };
+
+// backward compat alias
+const defaultLabor = DEFAULT_LABOR_PRICES;
 
 export const PROVINCES: ProvinceOption[] = [
   { id: 'aceh', name: 'Aceh', region: 'Sumatera', cities: ['Banda Aceh','Sabang','Langsa','Lhokseumawe','Subulussalam','Aceh Besar','Pidie','Pidie Jaya','Bireuen','Aceh Utara','Aceh Timur','Aceh Tamiang','Aceh Tengah','Bener Meriah','Gayo Lues','Aceh Tenggara','Aceh Selatan','Aceh Barat Daya','Nagan Raya','Aceh Barat','Aceh Jaya','Simeulue','Aceh Singkil'] },
