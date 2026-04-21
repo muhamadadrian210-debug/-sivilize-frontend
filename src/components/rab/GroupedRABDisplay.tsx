@@ -84,20 +84,19 @@ const GroupedRABDisplay = ({
 
   const totalMaterial = items.reduce((acc, item) => acc + item.total, 0) - totalUpah;
 
-  // Urutan kategori sesuai tahapan konstruksi yang benar
+  // Urutan kategori sesuai tahapan konstruksi profesional Indonesia
   const CATEGORY_ORDER: Record<string, number> = {
-    'Persiapan':   1,
-    'Tanah':       2,
-    'Struktur':    3,
-    'Dinding':     4,
-    'Atap':        5,
-    'Lantai':      6,
-    'Arsitektur':  7,
-    'Mekanikal':   8,
-    'Elektrikal':  9,
-    'Sanitasi':    10,
-    'Finishing':   11,  // Finishing selalu terakhir
-    'Lain-lain':   12,
+    'Persiapan':                  1,
+    'Tanah & Pondasi':            2,
+    'Struktur':                   3,
+    'Dinding & Plesteran':        4,
+    'Kusen, Pintu & Jendela':     5,
+    'Atap & Plafon':              6,
+    'Lantai & Keramik':           7,
+    'Instalasi Listrik':          8,
+    'Instalasi Air & Sanitasi':   9,
+    'Finishing & Pengecatan':     10,
+    'Lain-lain':                  11,
   };
 
   // Group items by category

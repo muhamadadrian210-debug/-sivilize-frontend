@@ -1,6 +1,6 @@
 export interface AHSPTemplate {
   id: string;
-  category: 'Struktur' | 'Persiapan' | 'Tanah' | 'Dinding' | 'Lantai' | 'Finishing' | 'Atap' | 'Arsitektur' | 'Mekanikal' | 'Elektrikal' | 'Sanitasi' | 'Lain-lain';
+  category: 'Persiapan' | 'Tanah & Pondasi' | 'Struktur' | 'Dinding & Plesteran' | 'Kusen, Pintu & Jendela' | 'Atap & Plafon' | 'Lantai & Keramik' | 'Instalasi Listrik' | 'Instalasi Air & Sanitasi' | 'Finishing & Pengecatan' | 'Lain-lain';
   name: string;
   unit: string;
   materials: { name: string; coeff: number; unit: string }[];
@@ -213,7 +213,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   // STRUKTUR
   {
     id: 'str-001',
-    category: 'Struktur',
+    category: 'Tanah & Pondasi',
     name: 'Galian Tanah Pondasi',
     unit: 'm3',
     materials: [],
@@ -225,7 +225,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   },
   {
     id: 'str-000',
-    category: 'Struktur',
+    category: 'Tanah & Pondasi',
     name: 'Pondasi Batu Kali 1:4',
     unit: 'm3',
     materials: [
@@ -261,7 +261,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   },
   {
     id: 'str-005',
-    category: 'Struktur',
+    category: 'Tanah & Pondasi',
     name: 'Urugan Pasir Bawah Pondasi (t=10cm)',
     unit: 'm2',
     materials: [
@@ -312,7 +312,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   // ARSITEKTUR
   {
     id: 'ars-001',
-    category: 'Arsitektur',
+    category: 'Dinding & Plesteran',
     name: 'Pasangan Bata Merah 1:4',
     unit: 'm2',
     materials: [
@@ -330,7 +330,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   },
   {
     id: 'ars-002',
-    category: 'Arsitektur',
+    category: 'Dinding & Plesteran',
     name: 'Plesteran 1:4 Tebal 15mm',
     unit: 'm2',
     materials: [
@@ -347,7 +347,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   },
   {
     id: 'ars-003',
-    category: 'Arsitektur',
+    category: 'Atap & Plafon',
     name: 'Pemasangan Rangka Atap Baja Ringan',
     unit: 'm2',
     materials: [
@@ -365,7 +365,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   },
   {
     id: 'ars-004',
-    category: 'Arsitektur',
+    category: 'Atap & Plafon',
     name: 'Penutup Atap Genteng Beton',
     unit: 'm2',
     materials: [
@@ -383,7 +383,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   },
   {
     id: 'ars-005',
-    category: 'Arsitektur',
+    category: 'Atap & Plafon',
     name: 'Penutup Atap Spandek/Galvalum',
     unit: 'm2',
     materials: [
@@ -402,7 +402,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   // FINISHING
   {
     id: 'fin-001',
-    category: 'Finishing',
+    category: 'Finishing & Pengecatan',
     name: 'Pengecatan Tembok Baru (1 Lapis Plamir, 1 Lapis Dasar, 2 Lapis Penutup)',
     unit: 'm2',
     materials: [
@@ -421,7 +421,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   // BUKAAN
   {
     id: 'buk-001',
-    category: 'Arsitektur',
+    category: 'Kusen, Pintu & Jendela',
     name: 'Kusen + Daun Pintu Kayu (Per Unit)',
     unit: 'unit',
     materials: [
@@ -441,7 +441,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   },
   {
     id: 'buk-002',
-    category: 'Arsitektur',
+    category: 'Kusen, Pintu & Jendela',
     name: 'Kusen + Daun Jendela Kayu (Per Unit)',
     unit: 'unit',
     materials: [
@@ -462,7 +462,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   },
   {
     id: 'buk-003',
-    category: 'Arsitektur',
+    category: 'Kusen, Pintu & Jendela',
     name: 'Pintu Kamar Mandi (PVC/Aluminium)',
     unit: 'unit',
     materials: [
@@ -482,7 +482,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   // MEKANIKAL - PLUMBING
   {
     id: 'mek-001',
-    category: 'Mekanikal',
+    category: 'Instalasi Air & Sanitasi',
     name: 'Instalasi Pipa Air Bersih PVC (Per Titik)',
     unit: 'titik',
     materials: [
@@ -500,7 +500,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   },
   {
     id: 'mek-002',
-    category: 'Mekanikal',
+    category: 'Instalasi Air & Sanitasi',
     name: 'Instalasi Pipa Air Kotor PVC (Per Titik)',
     unit: 'titik',
     materials: [
@@ -519,7 +519,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   },
   {
     id: 'mek-003',
-    category: 'Mekanikal',
+    category: 'Instalasi Air & Sanitasi',
     name: 'Instalasi Pipa Air Konsumsi/Minum (Per Titik)',
     unit: 'titik',
     materials: [
@@ -537,7 +537,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   // SANITASI
   {
     id: 'san-001',
-    category: 'Sanitasi',
+    category: 'Instalasi Air & Sanitasi',
     name: 'Pemasangan Kloset Duduk (Per Unit)',
     unit: 'unit',
     materials: [
@@ -556,7 +556,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   },
   {
     id: 'san-002',
-    category: 'Sanitasi',
+    category: 'Instalasi Air & Sanitasi',
     name: 'Pemasangan Kloset Jongkok (Per Unit)',
     unit: 'unit',
     materials: [
@@ -575,7 +575,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   // ELEKTRIKAL
   {
     id: 'elk-001',
-    category: 'Elektrikal',
+    category: 'Instalasi Listrik',
     name: 'Instalasi Titik Lampu (Per Titik)',
     unit: 'titik',
     materials: [
@@ -594,7 +594,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   },
   {
     id: 'elk-002',
-    category: 'Elektrikal',
+    category: 'Instalasi Listrik',
     name: 'Instalasi Stop Kontak (Per Titik)',
     unit: 'titik',
     materials: [
@@ -612,7 +612,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   },
   {
     id: 'elk-003',
-    category: 'Elektrikal',
+    category: 'Instalasi Listrik',
     name: 'Pemasangan Panel MCB + Instalasi Utama',
     unit: 'unit',
     materials: [
@@ -634,7 +634,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   // ══════════════════════════════════════════════════════════
   {
     id: 'lan-001',
-    category: 'Lantai',
+    category: 'Lantai & Keramik',
     name: 'Pasang Keramik Lantai 40x40 cm',
     unit: 'm2',
     materials: [
@@ -653,7 +653,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   },
   {
     id: 'lan-002',
-    category: 'Lantai',
+    category: 'Lantai & Keramik',
     name: 'Pasang Keramik Lantai 60x60 cm',
     unit: 'm2',
     materials: [
@@ -672,7 +672,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   },
   {
     id: 'lan-003',
-    category: 'Lantai',
+    category: 'Lantai & Keramik',
     name: 'Pasang Granit Lantai 60x60 cm',
     unit: 'm2',
     materials: [
@@ -691,7 +691,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   },
   {
     id: 'lan-004',
-    category: 'Lantai',
+    category: 'Lantai & Keramik',
     name: 'Screed Lantai (Rabat Beton) t=5cm',
     unit: 'm2',
     materials: [
@@ -709,7 +709,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   },
   {
     id: 'lan-005',
-    category: 'Lantai',
+    category: 'Lantai & Keramik',
     name: 'Pasang Keramik Dinding KM/WC 25x40 cm',
     unit: 'm2',
     materials: [
@@ -732,7 +732,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   // ══════════════════════════════════════════════════════════
   {
     id: 'fin-002',
-    category: 'Finishing',
+    category: 'Finishing & Pengecatan',
     name: 'Acian Dinding (Finishing Halus)',
     unit: 'm2',
     materials: [
@@ -749,7 +749,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   },
   {
     id: 'fin-003',
-    category: 'Finishing',
+    category: 'Finishing & Pengecatan',
     name: 'Waterproofing Coating (KM/WC/Atap Dak)',
     unit: 'm2',
     materials: [
@@ -766,7 +766,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   },
   {
     id: 'fin-004',
-    category: 'Finishing',
+    category: 'Atap & Plafon',
     name: 'Plafon Gypsum Board 9mm + Rangka Metal Furing',
     unit: 'm2',
     materials: [
@@ -785,7 +785,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   },
   {
     id: 'fin-005',
-    category: 'Finishing',
+    category: 'Atap & Plafon',
     name: 'Plafon GRC Board 4mm + Rangka Kayu',
     unit: 'm2',
     materials: [
@@ -803,7 +803,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   },
   {
     id: 'fin-006',
-    category: 'Finishing',
+    category: 'Finishing & Pengecatan',
     name: 'Pengecatan Ulang (Cat Lama, 2 Lapis)',
     unit: 'm2',
     materials: [
@@ -824,7 +824,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   // ══════════════════════════════════════════════════════════
   {
     id: 'din-001',
-    category: 'Dinding',
+    category: 'Dinding & Plesteran',
     name: 'Pasangan Bata Ringan (Hebel/AAC) 10cm',
     unit: 'm2',
     materials: [
@@ -841,7 +841,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   },
   {
     id: 'din-002',
-    category: 'Dinding',
+    category: 'Dinding & Plesteran',
     name: 'Pasangan Bata Ringan (Hebel/AAC) 7.5cm',
     unit: 'm2',
     materials: [
@@ -862,7 +862,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   // ══════════════════════════════════════════════════════════
   {
     id: 'san-003',
-    category: 'Sanitasi',
+    category: 'Instalasi Air & Sanitasi',
     name: 'Pemasangan Wastafel (Per Unit)',
     unit: 'unit',
     materials: [
@@ -881,7 +881,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   },
   {
     id: 'san-004',
-    category: 'Sanitasi',
+    category: 'Instalasi Air & Sanitasi',
     name: 'Pemasangan Shower + Kran (Per Unit)',
     unit: 'unit',
     materials: [
@@ -899,7 +899,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   },
   {
     id: 'san-005',
-    category: 'Sanitasi',
+    category: 'Instalasi Air & Sanitasi',
     name: 'Pemasangan Floor Drain (Per Titik)',
     unit: 'titik',
     materials: [
@@ -917,7 +917,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   },
   {
     id: 'san-006',
-    category: 'Sanitasi',
+    category: 'Instalasi Air & Sanitasi',
     name: 'Pembuatan Septic Tank (Bata, 2m³)',
     unit: 'unit',
     materials: [
@@ -941,7 +941,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   // ══════════════════════════════════════════════════════════
   {
     id: 'elk-004',
-    category: 'Elektrikal',
+    category: 'Instalasi Listrik',
     name: 'Instalasi AC Split (Per Unit, Termasuk Kabel & Pipa)',
     unit: 'unit',
     materials: [
@@ -960,7 +960,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   },
   {
     id: 'elk-005',
-    category: 'Elektrikal',
+    category: 'Instalasi Listrik',
     name: 'Instalasi Pompa Air + Tangki (Per Unit)',
     unit: 'unit',
     materials: [
@@ -984,7 +984,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   // ══════════════════════════════════════════════════════════
   {
     id: 'tan-001',
-    category: 'Tanah',
+    category: 'Tanah & Pondasi',
     name: 'Urugan Tanah Kembali (Pemadatan Manual)',
     unit: 'm3',
     materials: [],
@@ -996,7 +996,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   },
   {
     id: 'tan-002',
-    category: 'Tanah',
+    category: 'Tanah & Pondasi',
     name: 'Urugan Pasir Bawah Lantai (t=10cm)',
     unit: 'm2',
     materials: [
@@ -1010,7 +1010,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   },
   {
     id: 'tan-003',
-    category: 'Tanah',
+    category: 'Tanah & Pondasi',
     name: 'Pembuatan Drainase/Saluran Air (Per Meter)',
     unit: 'm1',
     materials: [

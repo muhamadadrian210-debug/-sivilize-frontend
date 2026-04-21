@@ -140,7 +140,7 @@ export interface ProjectVersion {
 
 export interface RABItem {
   id: string;
-  category: 'Struktur' | 'Persiapan' | 'Tanah' | 'Dinding' | 'Lantai' | 'Finishing' | 'Atap' | 'Arsitektur' | 'Mekanikal' | 'Elektrikal' | 'Sanitasi' | 'Lain-lain';
+  category: 'Persiapan' | 'Tanah & Pondasi' | 'Struktur' | 'Dinding & Plesteran' | 'Kusen, Pintu & Jendela' | 'Atap & Plafon' | 'Lantai & Keramik' | 'Instalasi Listrik' | 'Instalasi Air & Sanitasi' | 'Finishing & Pengecatan' | 'Lain-lain';
   name: string;
   volume: number;
   unit: string;

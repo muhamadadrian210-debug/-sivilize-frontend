@@ -6,32 +6,44 @@ import { type RABItem } from '../store/useStore';
  */
 
 export type RABCategory = 
-  | 'Pekerjaan Struktur'
-  | 'Pekerjaan Persiapan'
-  | 'Pekerjaan Tanah'
-  | 'Pekerjaan Dinding'
-  | 'Pekerjaan Lantai'
-  | 'Pekerjaan Finishing'
-  | 'Pekerjaan Atap'
+  | 'Persiapan'
+  | 'Tanah & Pondasi'
+  | 'Struktur'
+  | 'Dinding & Plesteran'
+  | 'Kusen, Pintu & Jendela'
+  | 'Atap & Plafon'
+  | 'Lantai & Keramik'
+  | 'Instalasi Listrik'
+  | 'Instalasi Air & Sanitasi'
+  | 'Finishing & Pengecatan'
   | 'Lain-lain';
 
 // RABItem category values (from store)
-type ItemCategory = 'Struktur' | 'Persiapan' | 'Tanah' | 'Dinding' | 'Lantai' | 'Finishing' | 'Atap' | 'Arsitektur' | 'Mekanikal' | 'Elektrikal' | 'Sanitasi' | 'Lain-lain';
+type ItemCategory = 'Persiapan' | 'Tanah & Pondasi' | 'Struktur' | 'Dinding & Plesteran' | 'Kusen, Pintu & Jendela' | 'Atap & Plafon' | 'Lantai & Keramik' | 'Instalasi Listrik' | 'Instalasi Air & Sanitasi' | 'Finishing & Pengecatan' | 'Lain-lain';
 
 // Map item category to RABCategory
 const mapToRABCategory = (cat: ItemCategory | string): RABCategory => {
   const map: Record<string, RABCategory> = {
-    'Struktur': 'Pekerjaan Struktur',
-    'Persiapan': 'Pekerjaan Persiapan',
-    'Tanah': 'Pekerjaan Tanah',
-    'Dinding': 'Pekerjaan Dinding',
-    'Lantai': 'Pekerjaan Lantai',
-    'Finishing': 'Pekerjaan Finishing',
-    'Atap': 'Pekerjaan Atap',
-    'Arsitektur': 'Pekerjaan Finishing',
-    'Mekanikal': 'Pekerjaan Finishing',
-    'Elektrikal': 'Pekerjaan Finishing',
-    'Sanitasi': 'Pekerjaan Finishing',
+    'Persiapan':                'Persiapan',
+    'Tanah & Pondasi':          'Tanah & Pondasi',
+    'Struktur':                 'Struktur',
+    'Dinding & Plesteran':      'Dinding & Plesteran',
+    'Kusen, Pintu & Jendela':   'Kusen, Pintu & Jendela',
+    'Atap & Plafon':            'Atap & Plafon',
+    'Lantai & Keramik':         'Lantai & Keramik',
+    'Instalasi Listrik':        'Instalasi Listrik',
+    'Instalasi Air & Sanitasi': 'Instalasi Air & Sanitasi',
+    'Finishing & Pengecatan':   'Finishing & Pengecatan',
+    // Legacy mappings for backward compatibility
+    'Tanah':       'Tanah & Pondasi',
+    'Dinding':     'Dinding & Plesteran',
+    'Arsitektur':  'Dinding & Plesteran',
+    'Atap':        'Atap & Plafon',
+    'Lantai':      'Lantai & Keramik',
+    'Mekanikal':   'Instalasi Air & Sanitasi',
+    'Elektrikal':  'Instalasi Listrik',
+    'Sanitasi':    'Instalasi Air & Sanitasi',
+    'Finishing':   'Finishing & Pengecatan',
   };
   return map[cat] || 'Lain-lain';
 };
@@ -43,54 +55,81 @@ interface ClassificationRule {
 
 const CLASSIFICATION_RULES: ClassificationRule[] = [
   {
-    category: 'Pekerjaan Struktur',
+    category: 'Persiapan',
     keywords: [
-      'galian', 'penggalian', 'pondasi', 'caisson', 'tiang', 'pasak',
-      'beton', 'pengecoran', 'bekisting', 'pembesian', 'baja', 'tulangan',
-      'kolom', 'balok', 'plat', 'dek', 'struktur'
+      'persiapan', 'pembersihan', 'survey', 'marking', 'mobilisasi',
+      'akses', 'jalan kerja', 'gudang', 'kantor', 'pagar', 'signage',
+      'bowplank', 'bouwplank', 'patok', 'k3', 'p3k', 'helm', 'rompi',
+      'papan nama', 'direksi keet', 'listrik kerja', 'air kerja'
     ]
   },
   {
-    category: 'Pekerjaan Persiapan',
+    category: 'Tanah & Pondasi',
     keywords: [
-      'persiapan', 'pembersihan', 'survey', 'marking', 'pemasangan', 'mobilisasi',
-      'akses', 'jalan kerja', 'gudang', 'kantor', 'pagar', 'signage'
+      'galian', 'penggalian', 'urugan', 'timbunan', 'tanah', 'lempung',
+      'pemadatan', 'grading', 'drainase', 'saluran', 'sump pit',
+      'pondasi', 'batu kali', 'footplat', 'footplate', 'strauss', 'tiang pancang',
+      'pasir urug', 'pasir bawah'
     ]
   },
   {
-    category: 'Pekerjaan Tanah',
+    category: 'Struktur',
     keywords: [
-      'urugan', 'timbunan', 'tanah', 'lempung', 'pasir', 'batu',
-      'pemadatan', 'grading', 'drainase', 'saluran', 'sump pit'
+      'beton', 'pengecoran', 'bekisting', 'pembesian', 'baja tulangan',
+      'kolom', 'balok', 'plat lantai', 'sloof', 'ring balok',
+      'k-225', 'k225', 'besi beton', 'kawat beton'
     ]
   },
   {
-    category: 'Pekerjaan Dinding',
+    category: 'Dinding & Plesteran',
     keywords: [
-      'pasangan', 'bata', 'bak', 'plesteran', 'plester', 'adukan',
-      'dinding', 'tembok', 'mor', 'spesi', 'mortar'
+      'pasangan bata', 'bata merah', 'bata ringan', 'hebel', 'aac',
+      'plesteran', 'plester', 'adukan', 'dinding', 'tembok', 'mortar', 'spesi'
     ]
   },
   {
-    category: 'Pekerjaan Lantai',
+    category: 'Kusen, Pintu & Jendela',
     keywords: [
-      'keramik', 'granit', 'marmer', 'ubin', 'lantai', 'penutup lantai',
-      'quarry tile', 'homogenous', 'vinyl', 'wooden', 'kayu'
+      'kusen', 'pintu', 'jendela', 'daun pintu', 'daun jendela',
+      'engsel', 'kunci', 'grendel', 'kaca', 'aluminium frame'
     ]
   },
   {
-    category: 'Pekerjaan Finishing',
-    keywords: [
-      'pengecatan', 'cat', 'finishing', 'polish', 'coating', 'waterproof',
-      'membrane', 'sealant', 'kaca', 'pintu', 'jendela', 'kusen',
-      'saniter', 'fixture', 'lampu', 'elektrik', 'pipa', 'instalasi'
-    ]
-  },
-  {
-    category: 'Pekerjaan Atap',
+    category: 'Atap & Plafon',
     keywords: [
       'atap', 'genteng', 'roofing', 'rangka atap', 'talang', 'gutter',
-      'downspout', 'shingles', 'aspal', 'membran', 'metal'
+      'spandek', 'galvalum', 'baja ringan', 'reng',
+      'plafon', 'gypsum', 'grc board', 'metal furing', 'eternit'
+    ]
+  },
+  {
+    category: 'Lantai & Keramik',
+    keywords: [
+      'keramik', 'granit', 'marmer', 'ubin', 'lantai', 'penutup lantai',
+      'homogenous', 'vinyl', 'screed', 'rabat beton'
+    ]
+  },
+  {
+    category: 'Instalasi Listrik',
+    keywords: [
+      'listrik', 'elektrikal', 'kabel', 'titik lampu', 'stop kontak',
+      'panel mcb', 'mcb', 'saklar', 'fitting lampu', 'conduit',
+      'ac split', 'pompa air', 'instalasi listrik'
+    ]
+  },
+  {
+    category: 'Instalasi Air & Sanitasi',
+    keywords: [
+      'pipa', 'plumbing', 'air bersih', 'air kotor', 'sanitasi',
+      'kloset', 'wastafel', 'shower', 'floor drain', 'septic tank',
+      'bak mandi', 'kran', 'fitting pvc', 'lem pvc'
+    ]
+  },
+  {
+    category: 'Finishing & Pengecatan',
+    keywords: [
+      'pengecatan', 'cat', 'finishing', 'polish', 'coating', 'waterproof',
+      'membrane', 'sealant', 'acian', 'plamir', 'amplas'
     ]
   }
 ];
@@ -126,13 +165,16 @@ export const groupRABItems = (items: RABItem[]) => {
 
   // Initialize all categories
   const allCategories: RABCategory[] = [
-    'Pekerjaan Persiapan',
-    'Pekerjaan Tanah',
-    'Pekerjaan Struktur',
-    'Pekerjaan Dinding',
-    'Pekerjaan Lantai',
-    'Pekerjaan Finishing',
-    'Pekerjaan Atap',
+    'Persiapan',
+    'Tanah & Pondasi',
+    'Struktur',
+    'Dinding & Plesteran',
+    'Kusen, Pintu & Jendela',
+    'Atap & Plafon',
+    'Lantai & Keramik',
+    'Instalasi Listrik',
+    'Instalasi Air & Sanitasi',
+    'Finishing & Pengecatan',
     'Lain-lain'
   ];
 

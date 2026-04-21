@@ -9,18 +9,17 @@ export interface KurvaSChartPoint {
 
 // Distribusi pekerjaan per minggu berdasarkan kategori
 const CATEGORY_WEEK_MAP: Record<string, number[]> = {
-  'Persiapan':   [1, 2],
-  'Struktur':    [2, 3, 4, 5, 6, 7, 8],
-  'Tanah':       [2, 3, 4],
-  'Dinding':     [6, 7, 8, 9, 10],
-  'Atap':        [9, 10, 11],
-  'Arsitektur':  [7, 8, 9, 10, 11, 12],
-  'Lantai':      [10, 11, 12],
-  'Finishing':   [11, 12, 13, 14, 15, 16],
-  'Mekanikal':   [8, 9, 10, 11, 12],
-  'Elektrikal':  [10, 11, 12, 13],
-  'Sanitasi':    [10, 11, 12],
-  'Lain-lain':   [1, 2, 3, 4],
+  'Persiapan':                [1, 2],
+  'Tanah & Pondasi':          [2, 3, 4],
+  'Struktur':                 [3, 4, 5, 6, 7, 8],
+  'Dinding & Plesteran':      [6, 7, 8, 9, 10],
+  'Kusen, Pintu & Jendela':   [8, 9, 10, 11],
+  'Atap & Plafon':            [9, 10, 11, 12],
+  'Lantai & Keramik':         [10, 11, 12],
+  'Instalasi Listrik':        [10, 11, 12, 13],
+  'Instalasi Air & Sanitasi': [9, 10, 11, 12],
+  'Finishing & Pengecatan':   [12, 13, 14, 15, 16],
+  'Lain-lain':                [1, 2, 3, 4],
 };
 
 /**
