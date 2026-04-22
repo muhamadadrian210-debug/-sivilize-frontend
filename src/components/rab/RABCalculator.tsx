@@ -775,6 +775,60 @@ const RABCalculator = () => {
   const nextStep = () => setStep(s => s + 1);
   const prevStep = () => setStep(s => s - 1);
 
+  // ── Computed values untuk step 2 preview (di luar JSX agar tidak bingungkan parser) ──
+  const wallPreview = (() => {
+    const dW = projectData.doorWidth ?? 0.9;
+    const dH = projectData.doorHeight ?? 2.1;
+    const wW = projectData.windowWidth ?? 1.2;
+    const wH = projectData.windowHeight ?? 1.0;
+    const dC = projectData.doorCount ?? 4;
+    const wC = projectData.windowCount ?? 6;
+    const opening = (dC * dW * dH) + (wC * wW * wH);
+    const wallH = projectData.dimensions?.[0]?.height ?? 3;
+    const wl = projectData.wallLengths;
+    const perim = (wl && wl.length > 0)
+      ? wl.reduce((s, w) => s + w.panjang, 0)
+      : ((projectData.dimensions?.[0]?.length ?? 0) + (projectData.dimensions?.[0]?.width ?? 0)) * 2;
+    const gross = perim * wallH * (projectData.floors ?? 1);
+    const net = Math.max(0, gross - opening);
+    return { gross, opening, net };
+  })();
+
+  const rebarPreview = {
+    bk: (rebarConfig.kolomDiameter ** 2 / 162),
+    bb: (rebarConfig.balokDiameter ** 2 / 162),
+    bp: (rebarConfig.platDiameter ** 2 / 162),
+  };
+
+  // Foundation cost breakdown untuk step 3
+  const foundationCostBreakdown = (() => {
+    if (!projectData.foundationType) return null;
+    const foundationItems = rabItems.filter(item =>
+      (item.category === 'Struktur' || item.category === 'Tanah & Pondasi') && (
+        item.name.toLowerCase().includes('pondasi') ||
+        item.name.toLowerCase().includes('galian') ||
+        item.name.toLowerCase().includes('urugan') ||
+        item.name.toLowerCase().includes('strauss') ||
+        item.name.toLowerCase().includes('tiang') ||
+        item.name.toLowerCase().includes('rakit') ||
+        item.name.toLowerCase().includes('sumuran')
+      )
+    );
+    const cost = foundationItems.reduce((s, i) => s + i.total, 0);
+    const label = FOUNDATION_TYPES.find(f => f.id === projectData.foundationType)?.label;
+    if (cost === 0) return null;
+    return { cost, label };
+  })();
+
+  const handleShare = async () => {
+    setShareLoading(true);
+    try {
+      showToast('Fitur share memerlukan proyek yang sudah disimpan', 'info');
+    } finally {
+      setShareLoading(false);
+    }
+  };
+
   const renderStep = () => {
     switch (step) {
       case 1:
@@ -808,37 +862,7 @@ const RABCalculator = () => {
                       type="file"
                       accept="image/*"
                       className="hidden"
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        if (!file) return;
-                        setAiProgress(10);
-                        try {
-                          const { analyzeDenah } = await import('../../services/visionService');
-                          setAiProgress(30);
-                          const result = await analyzeDenah(file);
-                          setAiProgress(90);
-                          if (result.success && result.dimensions) {
-                            setProjectData(prev => ({
-                              ...prev,
-                              name: prev.name || 'Proyek dari AI Vision',
-                              dimensions: [{ length: result.dimensions!.panjang, width: result.dimensions!.lebar, height: result.dimensions!.tinggi }],
-                              floors: result.floors ?? 1,
-                              wallLengths: result.wallLengths ?? [],
-                              bedroomCount: result.rooms?.bedroomCount ?? prev.bedroomCount,
-                              bathroomCount: result.rooms?.bathroomCount ?? prev.bathroomCount,
-                              roofModel: (result.roofType as Project['roofModel']) ?? prev.roofModel,
-                            }));
-                            showToast(`✅ Terdeteksi: ${result.dimensions.panjang}×${result.dimensions.lebar}m${result.notes ? ` — ${result.notes}` : ''}`, 'success');
-                            setTimeout(() => { setAiMode(false); setAiProgress(0); setStep(2); }, 800);
-                          } else {
-                            showToast(`❌ ${result.error || 'Gagal membaca denah'}`, 'error');
-                            setAiProgress(0);
-                          }
-                        } catch {
-                          showToast('Gagal menganalisis gambar', 'error');
-                          setAiProgress(0);
-                        }
-                      }}
+                      onChange={handleDennahUpload}
                     />
                     <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                       <Upload size={28} />
@@ -1066,24 +1090,25 @@ const RABCalculator = () => {
               </div>
 
               {/* Summary pilihan */}
-              {projectData.soilType && projectData.foundationType && (() => {
-                const soil = SOIL_TYPES.find(s => s.id === projectData.soilType);
-                const found = FOUNDATION_TYPES.find(f => f.id === projectData.foundationType);
-                const rec = FOUNDATION_RECOMMENDATIONS[projectData.soilType!]?.find(r => r.id === projectData.foundationType);
-                return (
-                  <div className="mt-4 p-4 bg-green-500/10 border border-green-500/20 rounded-xl flex items-start gap-3">
-                    <CheckCircle2 size={18} className="text-green-400 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-green-400 font-bold text-sm">Konfigurasi Pondasi Dipilih</p>
-                      <p className="text-text-secondary text-xs mt-1">
-                        <span className="text-white">{soil?.label}</span> → <span className="text-primary font-bold">{found?.label}</span>
+              {projectData.soilType && projectData.foundationType && (
+                <div className="mt-4 p-4 bg-green-500/10 border border-green-500/20 rounded-xl flex items-start gap-3">
+                  <CheckCircle2 size={18} className="text-green-400 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-green-400 font-bold text-sm">Konfigurasi Pondasi Dipilih</p>
+                    <p className="text-text-secondary text-xs mt-1">
+                      <span className="text-white">{SOIL_TYPES.find(s => s.id === projectData.soilType)?.label}</span>
+                      {' → '}
+                      <span className="text-primary font-bold">{FOUNDATION_TYPES.find(f => f.id === projectData.foundationType)?.label}</span>
+                    </p>
+                    <p className="text-text-secondary text-xs mt-0.5">{FOUNDATION_TYPES.find(f => f.id === projectData.foundationType)?.desc}</p>
+                    {FOUNDATION_RECOMMENDATIONS[projectData.soilType!]?.find(r => r.id === projectData.foundationType) && (
+                      <p className="text-green-300 text-xs mt-1 italic">
+                        "{FOUNDATION_RECOMMENDATIONS[projectData.soilType!]?.find(r => r.id === projectData.foundationType)?.reason}"
                       </p>
-                      <p className="text-text-secondary text-xs mt-0.5">{found?.desc}</p>
-                      {rec && <p className="text-green-300 text-xs mt-1 italic">"{rec.reason}"</p>}
-                    </div>
+                    )}
                   </div>
-                );
-              })()}
+                </div>
+              )}
             </div>
 
             {/* Detail Ruangan & Bukaan */}
@@ -1385,35 +1410,14 @@ const RABCalculator = () => {
               </div>
 
               {/* Preview pengurangan luas dinding */}
-              {(() => {
-                const dW = projectData.doorWidth ?? 0.9;
-                const dH = projectData.doorHeight ?? 2.1;
-                const wW = projectData.windowWidth ?? 1.2;
-                const wH = projectData.windowHeight ?? 1.0;
-                const dC = projectData.doorCount ?? 4;
-                const wC = projectData.windowCount ?? 6;
-                const opening = (dC * dW * dH) + (wC * wW * wH);
-                const wallH = projectData.dimensions?.[0]?.height ?? 3;
-                const wl = projectData.wallLengths;
-                const perim = (wl && wl.length > 0)
-                  ? wl.reduce((s, w) => s + w.panjang, 0)
-                  : ((projectData.dimensions?.[0]?.length ?? 0) + (projectData.dimensions?.[0]?.width ?? 0)) * 2;
-                const gross = perim * wallH * (projectData.floors ?? 1);
-                const net = Math.max(0, gross - opening);
-                return (
-                  <div className="bg-green-500/5 border border-green-500/20 rounded-xl p-3 text-xs space-y-1">
-                    <p className="text-green-400 font-bold">Preview Luas Dinding</p>
-                    <div className="flex gap-6 text-text-secondary">
-                      <span>Kotor: <span className="text-white font-bold">{gross.toFixed(1)} m²</span></span>
-                      <span>Bukaan: <span className="text-red-400 font-bold">-{opening.toFixed(1)} m²</span></span>
-                      <span>Bersih: <span className="text-green-400 font-bold">{net.toFixed(1)} m²</span></span>
-                    </div>
-                  </div>
-                );
-              })()}
-            </div>
-
-            {/* ── KONFIGURASI TULANGAN ── */}
+              <div className="bg-green-500/5 border border-green-500/20 rounded-xl p-3 text-xs space-y-1">
+                <p className="text-green-400 font-bold">Preview Luas Dinding</p>
+                <div className="flex gap-6 text-text-secondary">
+                  <span>Kotor: <span className="text-white font-bold">{wallPreview.gross.toFixed(1)} m²</span></span>
+                  <span>Bukaan: <span className="text-red-400 font-bold">-{wallPreview.opening.toFixed(1)} m²</span></span>
+                  <span>Bersih: <span className="text-green-400 font-bold">{wallPreview.net.toFixed(1)} m²</span></span>
+                </div>
+              </div>
             <div className="border-t border-border pt-6 space-y-4">
               <h4 className="text-sm font-bold text-white flex items-center gap-2">
                 <AlertCircle size={14} className="text-primary" />
@@ -1490,18 +1494,11 @@ const RABCalculator = () => {
                 </div>
               </div>
               {/* Preview berat besi */}
-              {(() => {
-                const bk = (rebarConfig.kolomDiameter ** 2 / 162);
-                const bb = (rebarConfig.balokDiameter ** 2 / 162);
-                const bp = (rebarConfig.platDiameter ** 2 / 162);
-                return (
-                  <div className="flex gap-4 text-xs text-text-secondary bg-background/50 border border-border rounded-xl p-3">
-                    <span>Kolom: <span className="text-blue-400 font-bold">{bk.toFixed(2)} kg/m</span></span>
-                    <span>Balok: <span className="text-orange-400 font-bold">{bb.toFixed(2)} kg/m</span></span>
-                    <span>Plat: <span className="text-green-400 font-bold">{bp.toFixed(2)} kg/m²</span></span>
-                  </div>
-                );
-              })()}
+              <div className="flex gap-4 text-xs text-text-secondary bg-background/50 border border-border rounded-xl p-3">
+                <span>Kolom: <span className="text-blue-400 font-bold">{rebarPreview.bk.toFixed(2)} kg/m</span></span>
+                <span>Balok: <span className="text-orange-400 font-bold">{rebarPreview.bb.toFixed(2)} kg/m</span></span>
+                <span>Plat: <span className="text-green-400 font-bold">{rebarPreview.bp.toFixed(2)} kg/m²</span></span>
+              </div>
             </div>
           </div>
         );
@@ -1589,15 +1586,7 @@ const RABCalculator = () => {
                   <span className="hidden sm:inline">Bandingkan</span>
                 </button>
                 <button
-                  onClick={async () => {
-                    setShareLoading(true);
-                    try {
-                      // Simpan dulu jika belum ada project ID
-                      showToast('Fitur share memerlukan proyek yang sudah disimpan', 'info');
-                    } finally {
-                      setShareLoading(false);
-                    }
-                  }}
+                  onClick={handleShare}
                   disabled={shareLoading}
                   className="flex items-center gap-2 px-4 py-2 bg-green-500/10 text-green-400 border border-green-500/20 rounded-xl text-sm font-bold hover:bg-green-500/20 transition-all"
                 >
@@ -1776,28 +1765,12 @@ const RABCalculator = () => {
                             <span className="text-white">{formatCurrency(summary.subtotal)}</span>
                           </div>
                           {/* Breakdown biaya pondasi */}
-                          {projectData.foundationType && (() => {
-                            const foundationItems = rabItems.filter(item =>
-                              item.category === 'Struktur' && (
-                                item.name.toLowerCase().includes('pondasi') ||
-                                item.name.toLowerCase().includes('galian') ||
-                                item.name.toLowerCase().includes('urugan') ||
-                                item.name.toLowerCase().includes('strauss') ||
-                                item.name.toLowerCase().includes('tiang') ||
-                                item.name.toLowerCase().includes('rakit') ||
-                                item.name.toLowerCase().includes('sumuran')
-                              )
-                            );
-                            const foundationCost = foundationItems.reduce((s, i) => s + i.total, 0);
-                            const foundLabel = FOUNDATION_TYPES.find(f => f.id === projectData.foundationType)?.label;
-                            if (foundationCost === 0) return null;
-                            return (
-                              <div className="flex justify-between text-sm bg-primary/5 px-2 py-1.5 rounded-lg border border-primary/10">
-                                <span className="text-primary text-xs">↳ Biaya Pondasi ({foundLabel})</span>
-                                <span className="text-primary font-bold text-xs">{formatCurrency(foundationCost)}</span>
-                              </div>
-                            );
-                          })()}
+                          {foundationCostBreakdown && (
+                            <div className="flex justify-between text-sm bg-primary/5 px-2 py-1.5 rounded-lg border border-primary/10">
+                              <span className="text-primary text-xs">Biaya Pondasi ({foundationCostBreakdown.label})</span>
+                              <span className="text-primary font-bold text-xs">{formatCurrency(foundationCostBreakdown.cost)}</span>
+                            </div>
+                          )}
                           <div className="flex justify-between text-sm">
                             <span className="text-text-secondary">Overhead & Profit</span>
                             <span className="text-white">{formatCurrency(summary.overheadAmount + summary.profitAmount)}</span>
@@ -1834,7 +1807,6 @@ const RABCalculator = () => {
                   )}
                 </div>
                     </div>
-                  </div>
                 </motion.div>
               )}
               {activeSubTab === 'split' && (
@@ -2025,6 +1997,9 @@ const RABCalculator = () => {
         onClose={() => setShowComparison(false)}
       />
     )}
+    </div>
+    </div>
+    </div>
     </>
   );
 };

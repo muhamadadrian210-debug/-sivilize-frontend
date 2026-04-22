@@ -11,7 +11,7 @@ export default defineConfig({
     }
   },
   build: {
-    target: 'es2015', // Support older browsers including Edge
+    target: 'es2015',
     rollupOptions: {
       output: {
         manualChunks: (id) => {
