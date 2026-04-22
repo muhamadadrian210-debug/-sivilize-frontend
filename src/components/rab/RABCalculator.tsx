@@ -791,58 +791,77 @@ const RABCalculator = () => {
               </button>
             </div>
             
-            {/* AI Modal Simulation */}
+            {/* AI Vision Modal — Gemini Vision */}
             {aiMode && (
               <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-                <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setAiMode(false)} />
+                <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={() => !aiProgress && setAiMode(false)} />
                 <div className="relative glass-card w-full max-w-lg p-8 space-y-6">
                   <h3 className="text-xl font-bold text-white flex items-center gap-3">
                     <Sparkles className="text-primary" />
-                    AI Vision Analysis
+                    AI Vision — Analisis Denah
                   </h3>
-                  <div className="border-2 border-dashed border-border rounded-2xl p-12 flex flex-col items-center justify-center gap-4 hover:border-primary/50 transition-colors cursor-pointer group">
-                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                      <Upload size={32} />
+                  <p className="text-text-secondary text-xs">Upload foto/scan denah, tampak depan, samping, atau gambar teknik. Gemini AI akan membaca dimensi otomatis.</p>
+
+                  {/* Upload area */}
+                  <label className={`border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center gap-3 transition-colors cursor-pointer ${aiProgress > 0 ? 'opacity-50 pointer-events-none' : 'hover:border-primary/50 border-border'}`}>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        setAiProgress(10);
+                        try {
+                          const { analyzeDenah } = await import('../../services/visionService');
+                          setAiProgress(30);
+                          const result = await analyzeDenah(file);
+                          setAiProgress(90);
+                          if (result.success && result.dimensions) {
+                            setProjectData(prev => ({
+                              ...prev,
+                              name: prev.name || 'Proyek dari AI Vision',
+                              dimensions: [{ length: result.dimensions!.panjang, width: result.dimensions!.lebar, height: result.dimensions!.tinggi }],
+                              floors: result.floors ?? 1,
+                              wallLengths: result.wallLengths ?? [],
+                              bedroomCount: result.rooms?.bedroomCount ?? prev.bedroomCount,
+                              bathroomCount: result.rooms?.bathroomCount ?? prev.bathroomCount,
+                              roofModel: (result.roofType as Project['roofModel']) ?? prev.roofModel,
+                            }));
+                            showToast(`✅ Terdeteksi: ${result.dimensions.panjang}×${result.dimensions.lebar}m${result.notes ? ` — ${result.notes}` : ''}`, 'success');
+                            setTimeout(() => { setAiMode(false); setAiProgress(0); setStep(2); }, 800);
+                          } else {
+                            showToast(`❌ ${result.error || 'Gagal membaca denah'}`, 'error');
+                            setAiProgress(0);
+                          }
+                        } catch {
+                          showToast('Gagal menganalisis gambar', 'error');
+                          setAiProgress(0);
+                        }
+                      }}
+                    />
+                    <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                      <Upload size={28} />
                     </div>
-                    <p className="text-text-secondary text-sm text-center">Tarik gambar denah ke sini atau klik untuk memilih file</p>
-                  </div>
-                  
+                    <p className="text-text-secondary text-sm text-center">Klik untuk pilih gambar denah</p>
+                    <p className="text-text-secondary text-xs text-center opacity-60">JPG, PNG, PDF screenshot — denah, tampak depan/samping</p>
+                  </label>
+
+                  {/* Progress */}
                   {aiProgress > 0 && (
                     <div className="space-y-2">
                       <div className="flex justify-between text-xs font-bold uppercase tracking-widest text-text-secondary">
-                        <span>Menganalisa Dimensi...</span>
+                        <span>{aiProgress < 30 ? 'Memuat gambar...' : aiProgress < 90 ? 'Gemini AI menganalisis...' : 'Selesai!'}</span>
                         <span>{aiProgress}%</span>
                       </div>
                       <div className="w-full h-2 bg-border rounded-full overflow-hidden">
-                        <div className="h-full bg-primary shadow-glow transition-all duration-300" style={{ width: `${aiProgress}%` }} />
+                        <div className="h-full bg-primary shadow-glow transition-all duration-500" style={{ width: `${aiProgress}%` }} />
                       </div>
                     </div>
                   )}
 
-                  <button 
-                    onClick={() => {
-                      let p = 0;
-                      const interval = setInterval(() => {
-                        p += 10;
-                        setAiProgress(p);
-                        if (p >= 100) {
-                          clearInterval(interval);
-                          setProjectData({
-                            ...projectData,
-                            name: 'Proyek dari AI Vision',
-                            dimensions: [{ length: 12, width: 8, height: 3 }]
-                          });
-                          setTimeout(() => {
-                            setAiMode(false);
-                            setAiProgress(0);
-                            setStep(2);
-                          }, 500);
-                        }
-                      }, 200);
-                    }}
-                    className="btn-primary w-full"
-                  >
-                    Mulai Analisa AI
+                  <button onClick={() => { setAiMode(false); setAiProgress(0); }} className="w-full text-center text-xs text-text-secondary hover:text-white transition-colors">
+                    Batal — isi manual
                   </button>
                 </div>
               </div>
