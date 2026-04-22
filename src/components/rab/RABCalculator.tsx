@@ -1867,7 +1867,7 @@ const RABCalculator = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                 >
-                  <ProjectTimeline items={rabItems} />
+                  <ProjectTimeline items={rabItems} totalArea={totalArea} />
                 </motion.div>
               )}
               {activeSubTab === 'template' && (
