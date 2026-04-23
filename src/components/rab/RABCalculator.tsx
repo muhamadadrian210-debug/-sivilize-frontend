@@ -48,6 +48,8 @@ import {
 } from '../../utils/calculations';
 import { exportToPDF, exportToExcel } from '../../utils/exportUtils';
 import { validateRABItems } from '../../utils/ahspValidator';
+import RABVisionUpload from './RABVisionUpload';
+import DimensionExtras, { DEFAULT_REBAR_CONFIG, getDimensionErrors, getWallPreview, getRebarPreview, type RebarConfig } from './DimensionExtras';
 import { useAutoSave } from '../../hooks/useAutoSave';
 import MaterialSummary from './MaterialSummary';
 import ProjectTimeline from './ProjectTimeline';
@@ -163,6 +165,8 @@ const RABCalculator = () => {
   const [tempProjectId] = useState(() => `temp_${Date.now()}`);
   const [aiMode, setAiMode] = useState(false);
   const [aiProgress, setAiProgress] = useState(0);
+  const [showVisionUpload, setShowVisionUpload] = useState(false);
+  const [rebarConfig, setRebarConfig] = useState<RebarConfig>(DEFAULT_REBAR_CONFIG);
   const [activeSubTab, setActiveSubTab] = useState<'rab' | 'materials' | 'timeline' | 'template'>('rab');
   const [selectedProvince, setSelectedProvince] = useState(DEFAULT_PROVINCE_ID);
   const [materialGrade, setMaterialGrade] = useState<MaterialGrade>(DEFAULT_MATERIAL_GRADE);
@@ -290,20 +294,32 @@ const RABCalculator = () => {
     setLoading(true);
     setTimeout(() => {
       const generated: RABItem[] = [];
-      
-      // Estimasi volume dasar rumah tinggal minimalis
-      const perimeter = Math.sqrt(totalArea) * 4;
-      const wallArea = perimeter * 3 * projectData.floors!;
+      const floors = projectData.floors ?? 1;
+      const dims = projectData.dimensions ?? [{ length: 10, width: 8, height: 3 }];
+
+      // Perimeter: pakai sisi dinding jika ada, fallback ke dimensi
+      const wl = projectData.wallLengths;
+      const perimeter = (wl && wl.length > 0)
+        ? wl.reduce((s, w) => s + w.panjang, 0)
+        : (dims[0].length + dims[0].width) * 2;
+
+      // Luas dinding bersih (dikurangi bukaan)
+      const wallH = dims[0].height ?? 3;
+      const doorCount  = projectData.doorCount  ?? 4;
+      const windowCount = projectData.windowCount ?? 6;
+      const openingArea = (doorCount * (projectData.doorWidth ?? 0.9) * (projectData.doorHeight ?? 2.1))
+                        + (windowCount * (projectData.windowWidth ?? 1.2) * (projectData.windowHeight ?? 1.0));
+      const wallArea = Math.max(0, perimeter * wallH * floors - openingArea);
       const plasterArea = wallArea * 2;
       const paintArea = plasterArea;
+
+      // Luas atap dengan kemiringan nyata
+      const pitchRad = ((projectData.roofPitch ?? 30) * Math.PI) / 180;
+      const slopeFactor = pitchRad > 0 ? 1 / Math.cos(pitchRad) : 1;
       const roofAreaFactorMap: Record<NonNullable<Project['roofModel']>, number> = {
-        '1-air': 1.1,
-        '2-air': 1.2,
-        '3-air': 1.3,
-        '4-air': 1.35,
-        dak: 1.0,
+        '1-air': 1.05, '2-air': 1.10, '3-air': 1.15, '4-air': 1.20, dak: 1.00,
       };
-      const roofArea = totalArea * (roofAreaFactorMap[projectData.roofModel || '2-air']);
+      const roofArea = totalArea * slopeFactor * (roofAreaFactorMap[projectData.roofModel || '2-air']);
       
       const templates = AHSP_TEMPLATES;
       const locationMult = getLocationMultiplier(locationType);
@@ -430,11 +446,24 @@ const RABCalculator = () => {
         }
       }
 
-      // Kolom & balok struktur atas
+      // Kolom & balok struktur atas — pakai rebarConfig untuk akurasi besi
+      const kolomDim = (projectData.floors ?? 1) >= 2 ? 0.20 : 0.15;
+      const kolomH = dims[0].height ?? 3;
+      const nKolom = Math.ceil(totalArea / 9);
       const concreteVol = totalArea * 0.12;
-      const steelWeight = totalArea * 18;
+
+      // Berat besi pakai rumus D²/162 × panjang
+      const beratKolom = (rebarConfig.kolomDiameter ** 2 / 162);
+      const beratBalok  = (rebarConfig.balokDiameter ** 2 / 162);
+      const beratPlat   = (rebarConfig.platDiameter  ** 2 / 162);
+      const panjangKolom = nKolom * kolomH * (projectData.floors ?? 1);
+      const panjangBalok = (perimeter + Math.sqrt(totalArea) * 2) * (projectData.floors ?? 1);
+      const steelWeight = (panjangKolom * beratKolom * 4)
+                        + (panjangBalok * beratBalok * 6)
+                        + ((projectData.floors ?? 1) >= 2 ? totalArea * ((projectData.floors ?? 1) - 1) * beratPlat * (1000 / rebarConfig.platJarak) * 2 : 0);
+
       addItem('str-002', concreteVol, { 'Pekerja': 4, 'Tukang Batu': 2, 'Kepala Tukang': 1, 'Mandor': 1 });
-      addItem('str-003', steelWeight, { 'Pekerja': 2, 'Tukang Besi': 2, 'Mandor': 1 });
+      addItem('str-003', Math.max(steelWeight, totalArea * 10), { 'Pekerja': 2, 'Tukang Besi': 2, 'Mandor': 1 });
 
       // Arsitektur
       addItem('ars-001', wallArea, { 'Pekerja': 3, 'Tukang Batu': 2, 'Mandor': 1 });
@@ -448,9 +477,7 @@ const RABCalculator = () => {
       // Finishing
       addItem('fin-001', paintArea, { 'Pekerja': 2, 'Tukang Cat': 2, 'Mandor': 1 });
 
-      // Bukaan - Pintu & Jendela
-      const doorCount = projectData.doorCount ?? 4;
-      const windowCount = projectData.windowCount ?? 6;
+      // Bukaan - Pintu & Jendela (sudah dideklarasi di atas)
       const bathroomCount = projectData.bathroomCount ?? 2;
 
       // Pintu utama + kamar tidur (kurangi pintu kamar mandi)
@@ -505,13 +532,34 @@ const RABCalculator = () => {
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-lg font-bold text-white">Data Dasar Proyek</h3>
               <button 
-                onClick={() => setAiMode(true)}
+                onClick={() => setShowVisionUpload(true)}
                 className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded-xl text-sm font-bold hover:bg-primary/20 transition-all group"
               >
                 <Sparkles size={16} className="group-hover:animate-pulse" />
                 <span>AI Mode (Upload Denah)</span>
               </button>
             </div>
+
+            {/* AI Vision Upload Modal */}
+            {showVisionUpload && (
+              <RABVisionUpload
+                onClose={() => setShowVisionUpload(false)}
+                onResult={(data) => {
+                  setProjectData({
+                    ...projectData,
+                    name: projectData.name || 'Proyek dari AI Vision',
+                    dimensions: [{ length: data.dimensions.length, width: data.dimensions.width, height: data.dimensions.height }],
+                    floors: data.floors ?? projectData.floors,
+                    bedroomCount: data.bedroomCount ?? projectData.bedroomCount,
+                    bathroomCount: data.bathroomCount ?? projectData.bathroomCount,
+                    roofModel: data.roofModel ?? projectData.roofModel,
+                  });
+                  setShowVisionUpload(false);
+                  showToast('Denah berhasil dibaca! ' + (data.notes || ''), 'success');
+                  setStep(2);
+                }}
+              />
+            )}
             
             {/* AI Modal Simulation */}
             {aiMode && (
@@ -930,22 +978,15 @@ const RABCalculator = () => {
               ))}
             </div>
 
-            <div className="bg-primary/5 border border-primary/20 p-6 rounded-2xl flex items-center justify-between">
-              <div>
-                <p className="text-text-secondary text-sm">Hasil Kalkulasi Dimensi</p>
-                <div className="flex items-center gap-8 mt-2">
-                  <div>
-                    <span className="text-white font-bold text-2xl">{totalArea.toFixed(2)}</span>
-                    <span className="text-text-secondary ml-1">m² Luas Total</span>
-                  </div>
-                  <div>
-                    <span className="text-white font-bold text-2xl">{totalVolume.toFixed(2)}</span>
-                    <span className="text-text-secondary ml-1">m³ Volume Total</span>
-                  </div>
-                </div>
-              </div>
-              <Info className="text-primary opacity-50" size={32} />
-            </div>
+            {/* Fitur tambahan: validasi, sisi dinding, tulangan, bukaan */}
+            <DimensionExtras
+              projectData={projectData}
+              setProjectData={setProjectData}
+              totalArea={totalArea}
+              totalVolume={totalVolume}
+              rebarConfig={rebarConfig}
+              setRebarConfig={setRebarConfig}
+            />
           </div>
         );
       case 3:
@@ -1361,15 +1402,19 @@ const RABCalculator = () => {
           {step < 3 ? (
             <button 
               onClick={step === 2 ? handleGenerateRAB : nextStep}
-              className="btn-primary flex items-center gap-2 min-w-[160px] justify-center"
-              disabled={loading}
+              className="btn-primary flex items-center gap-2 min-w-[160px] justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={loading || (step === 2 && getDimensionErrors(projectData).length > 0)}
+              title={step === 2 && getDimensionErrors(projectData).length > 0 ? getDimensionErrors(projectData)[0] : undefined}
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <>
                   <span>{step === 2 ? 'Hasilkan RAB' : 'Lanjut'}</span>
-                  <ChevronRight size={20} />
+                  {step === 2 && getDimensionErrors(projectData).length > 0
+                    ? <AlertTriangle size={16} className="text-red-300" />
+                    : <ChevronRight size={20} />
+                  }
                 </>
               )}
             </button>
