@@ -8,11 +8,11 @@ interface Message {
   timestamp: Date;
 }
 
-const SYSTEM_PROMPT = `Kamu adalah Kiro, AI Assistant expert di SIVILIZE HUB PRO — platform RAB & Teknik Sipil Indonesia.
+const SYSTEM_PROMPT = `Kamu adalah Kiro, AI Assistant expert di SIVILIZE HUB PRO â€” platform RAB & Teknik Sipil Indonesia.
 
 Keahlianmu:
 - Perhitungan RAB (Rencana Anggaran Biaya) sesuai AHSP/SNI
-- Permen PUPR No. 1 Tahun 2022
+- SE 47/SE/Dk/2026
 - Analisa Harga Satuan Pekerjaan (AHSP)
 - Jenis pondasi & rekomendasi berdasarkan jenis tanah
 - Material bangunan & harga pasar Indonesia
@@ -68,48 +68,48 @@ const callGemini = async (messages: Message[], userInput: string): Promise<strin
   return text;
 };
 
-// Fallback response berbasis keyword — aktif saat API key tidak ada atau quota habis
+// Fallback response berbasis keyword â€” aktif saat API key tidak ada atau quota habis
 const getFallbackResponse = (input: string): string => {
   const q = input.toLowerCase();
 
   if (q.includes('rab') || q.includes('rencana anggaran')) {
-    return 'RAB (Rencana Anggaran Biaya) adalah dokumen estimasi biaya konstruksi. Di SIVILIZE HUB PRO, lo bisa generate RAB otomatis di menu **Kalkulator RAB** — tinggal input dimensi bangunan, sistem langsung hitung semua item sesuai AHSP/SNI. 🏗️';
+    return 'RAB (Rencana Anggaran Biaya) adalah dokumen estimasi biaya konstruksi. Di SIVILIZE HUB PRO, lo bisa generate RAB otomatis di menu **Kalkulator RAB** â€” tinggal input dimensi bangunan, sistem langsung hitung semua item sesuai AHSP/SNI. ðŸ—ï¸';
   }
   if (q.includes('pondasi') || q.includes('fondasi')) {
-    return 'Rekomendasi pondasi berdasarkan jenis tanah:\n• **Tanah keras** → Batu kali (paling ekonomis)\n• **Tanah sedang** → Footplate\n• **Tanah lunak** → Strauss pile\n• **Tanah gambut** → Tiang pancang (wajib)\n• **Tanah berbatu** → Batu kali / footplate\n\nDi Kalkulator RAB, pilih jenis tanah dan sistem otomatis rekomendasikan pondasi yang tepat!';
+    return 'Rekomendasi pondasi berdasarkan jenis tanah:\nâ€¢ **Tanah keras** â†’ Batu kali (paling ekonomis)\nâ€¢ **Tanah sedang** â†’ Footplate\nâ€¢ **Tanah lunak** â†’ Strauss pile\nâ€¢ **Tanah gambut** â†’ Tiang pancang (wajib)\nâ€¢ **Tanah berbatu** â†’ Batu kali / footplate\n\nDi Kalkulator RAB, pilih jenis tanah dan sistem otomatis rekomendasikan pondasi yang tepat!';
   }
   if (q.includes('beton') || q.includes('k-225') || q.includes('k225')) {
-    return 'Komposisi Beton K-225 per m³ (AHSP SNI):\n• Semen PC: 371 kg\n• Pasir beton: 0.498 m³\n• Krikil/split: 0.776 m³\n• Air: 215 liter\n\nUpah tenaga kerja:\n• Pekerja: 1.65 OH\n• Tukang batu: 0.275 OH\n• Mandor: 0.083 OH\n\nHarga satuan ~Rp 1.3-1.5 juta/m³ tergantung lokasi.';
+    return 'Komposisi Beton K-225 per mÂ³ (AHSP SNI):\nâ€¢ Semen PC: 371 kg\nâ€¢ Pasir beton: 0.498 mÂ³\nâ€¢ Krikil/split: 0.776 mÂ³\nâ€¢ Air: 215 liter\n\nUpah tenaga kerja:\nâ€¢ Pekerja: 1.65 OH\nâ€¢ Tukang batu: 0.275 OH\nâ€¢ Mandor: 0.083 OH\n\nHarga satuan ~Rp 1.3-1.5 juta/mÂ³ tergantung lokasi.';
   }
   if (q.includes('bata') || q.includes('pasangan dinding')) {
-    return 'Pasangan bata merah 1:4 per m²:\n• Bata merah: 70 buah\n• Semen PC: 11.5 kg\n• Pasir pasang: 0.043 m³\n\nUpah: Tukang batu 0.1 OH + Pekerja 0.3 OH\nProduktivitas: ~10 m²/hari per tim';
+    return 'Pasangan bata merah 1:4 per mÂ²:\nâ€¢ Bata merah: 70 buah\nâ€¢ Semen PC: 11.5 kg\nâ€¢ Pasir pasang: 0.043 mÂ³\n\nUpah: Tukang batu 0.1 OH + Pekerja 0.3 OH\nProduktivitas: ~10 mÂ²/hari per tim';
   }
   if (q.includes('ahsp') || q.includes('harga satuan')) {
-    return 'AHSP (Analisa Harga Satuan Pekerjaan) adalah standar perhitungan biaya konstruksi Indonesia berdasarkan **Permen PUPR No.1/2022**.\n\nSetiap item pekerjaan punya koefisien material + upah tenaga kerja. Di SIVILIZE, lo bisa klik **"Lihat Komposisi AHSP"** di setiap item RAB untuk lihat detail lengkapnya!';
+    return 'AHSP (Analisa Harga Satuan Pekerjaan) adalah standar perhitungan biaya konstruksi Indonesia berdasarkan **SE 47/SE/Dk/2026**.\n\nSetiap item pekerjaan punya koefisien material + upah tenaga kerja. Di SIVILIZE, lo bisa klik **"Lihat Komposisi AHSP"** di setiap item RAB untuk lihat detail lengkapnya!';
   }
   if (q.includes('kurva s') || q.includes('progress')) {
-    return 'Kurva S adalah grafik progress rencana vs realisasi proyek. Fungsinya:\n• Laporan ke owner/bank\n• Deteksi keterlambatan lebih awal\n• Dasar klaim termin pembayaran\n\nDi SIVILIZE, isi tanggal mulai & selesai proyek, lalu update progress di Buku Harian — Kurva S otomatis terbentuk!';
+    return 'Kurva S adalah grafik progress rencana vs realisasi proyek. Fungsinya:\nâ€¢ Laporan ke owner/bank\nâ€¢ Deteksi keterlambatan lebih awal\nâ€¢ Dasar klaim termin pembayaran\n\nDi SIVILIZE, isi tanggal mulai & selesai proyek, lalu update progress di Buku Harian â€” Kurva S otomatis terbentuk!';
   }
   if (q.includes('export') || q.includes('cetak') || q.includes('pdf') || q.includes('excel')) {
     return 'Cara cetak/export RAB:\n1. Klik tombol **"Cetak / Export"** di halaman RAB\n2. Preview ringkasan RAB muncul\n3. Isi nama perusahaan & estimator\n4. Pilih **Download PDF** atau **Download Excel**\n\nPDF sudah include kop surat, tanda tangan, dan nomor dokumen profesional!';
   }
   if (q.includes('harga') || q.includes('material') || q.includes('semen') || q.includes('besi')) {
-    return 'Harga material di SIVILIZE sudah diupdate ke **2026** dan disesuaikan per provinsi:\n• Jawa: harga basis\n• Sumatera: +8-12%\n• Kalimantan: +15-28%\n• Papua Pegunungan: +85% (logistik udara)\n\nLo juga bisa override harga lokal sendiri di fitur Regional Price!';
+    return 'Harga material di SIVILIZE sudah diupdate ke **2026** dan disesuaikan per provinsi:\nâ€¢ Jawa: harga basis\nâ€¢ Sumatera: +8-12%\nâ€¢ Kalimantan: +15-28%\nâ€¢ Papua Pegunungan: +85% (logistik udara)\n\nLo juga bisa override harga lokal sendiri di fitur Regional Price!';
   }
   if (q.includes('backup') || q.includes('restore') || q.includes('data hilang')) {
-    return 'Untuk backup data:\n1. Buka **Profil** → tab **Backup & Restore**\n2. Klik **Export Semua Data**\n3. File JSON tersimpan di HP/PC lo\n\nUntuk restore: upload file JSON yang sama. Data tidak akan hilang meski ganti HP!';
+    return 'Untuk backup data:\n1. Buka **Profil** â†’ tab **Backup & Restore**\n2. Klik **Export Semua Data**\n3. File JSON tersimpan di HP/PC lo\n\nUntuk restore: upload file JSON yang sama. Data tidak akan hilang meski ganti HP!';
   }
   if (q.includes('share') || q.includes('bagikan') || q.includes('klien')) {
-    return 'Cara share RAB ke klien/owner:\n1. Buka proyek → klik **"Bagikan RAB"**\n2. Link read-only otomatis dibuat\n3. Kirim link ke klien via WA/email\n\nKlien bisa lihat RAB lengkap tanpa perlu daftar akun!';
+    return 'Cara share RAB ke klien/owner:\n1. Buka proyek â†’ klik **"Bagikan RAB"**\n2. Link read-only otomatis dibuat\n3. Kirim link ke klien via WA/email\n\nKlien bisa lihat RAB lengkap tanpa perlu daftar akun!';
   }
   if (q.includes('halo') || q.includes('hai') || q.includes('hi') || q.includes('hello')) {
-    return 'Halo Bro! 👋 Gue Kiro, AI assistant SIVILIZE HUB PRO.\n\nGue bisa bantu lo dengan:\n• Perhitungan RAB & AHSP\n• Rekomendasi pondasi & material\n• Cara pakai fitur SIVILIZE\n• Pertanyaan seputar konstruksi\n\nMau tanya apa?';
+    return 'Halo Bro! ðŸ‘‹ Gue Kiro, AI assistant SIVILIZE HUB PRO.\n\nGue bisa bantu lo dengan:\nâ€¢ Perhitungan RAB & AHSP\nâ€¢ Rekomendasi pondasi & material\nâ€¢ Cara pakai fitur SIVILIZE\nâ€¢ Pertanyaan seputar konstruksi\n\nMau tanya apa?';
   }
   if (q.includes('terima kasih') || q.includes('makasih') || q.includes('thanks')) {
-    return 'Sama-sama Bro! 🙏 Kalau ada pertanyaan lain seputar RAB atau konstruksi, tanya aja. Semoga proyeknya lancar!';
+    return 'Sama-sama Bro! ðŸ™ Kalau ada pertanyaan lain seputar RAB atau konstruksi, tanya aja. Semoga proyeknya lancar!';
   }
 
-  return `Pertanyaan lo: "${input}"\n\nGue bisa bantu seputar:\n• **RAB & AHSP** — cara hitung, komposisi material\n• **Pondasi** — rekomendasi berdasarkan jenis tanah\n• **Material** — harga, spesifikasi, merek\n• **Fitur SIVILIZE** — cara pakai export, kurva S, backup\n• **Konstruksi umum** — beton, bata, atap, MEP\n\nCoba tanya lebih spesifik ya Bro! 💪`;
+  return `Pertanyaan lo: "${input}"\n\nGue bisa bantu seputar:\nâ€¢ **RAB & AHSP** â€” cara hitung, komposisi material\nâ€¢ **Pondasi** â€” rekomendasi berdasarkan jenis tanah\nâ€¢ **Material** â€” harga, spesifikasi, merek\nâ€¢ **Fitur SIVILIZE** â€” cara pakai export, kurva S, backup\nâ€¢ **Konstruksi umum** â€” beton, bata, atap, MEP\n\nCoba tanya lebih spesifik ya Bro! ðŸ’ª`;
 };
 
 const AIChat = () => {
@@ -120,7 +120,7 @@ const AIChat = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       sender: 'ai',
-      text: 'Halo Bro! Gue Kiro, AI assistant SIVILIZE HUB PRO. Tanya apa aja seputar RAB, material, AHSP, pondasi, atau konstruksi — gue siap bantu! 🏗️',
+      text: 'Halo Bro! Gue Kiro, AI assistant SIVILIZE HUB PRO. Tanya apa aja seputar RAB, material, AHSP, pondasi, atau konstruksi â€” gue siap bantu! ðŸ—ï¸',
       timestamp: new Date()
     }
   ]);
@@ -168,14 +168,14 @@ const AIChat = () => {
   const clearChat = () => {
     setMessages([{
       sender: 'ai',
-      text: 'Chat dibersihkan. Ada yang bisa gue bantu bro? 🏗️',
+      text: 'Chat dibersihkan. Ada yang bisa gue bantu bro? ðŸ—ï¸',
       timestamp: new Date()
     }]);
   };
 
   // Quick prompts
   const quickPrompts = [
-    'Cara hitung RAB rumah 100m²?',
+    'Cara hitung RAB rumah 100mÂ²?',
     'Pondasi apa untuk tanah lunak?',
     'Berapa harga beton K-225?',
     'Apa itu bowplank?',
@@ -206,7 +206,7 @@ const AIChat = () => {
               <div>
                 <p className="text-white font-bold text-sm">Kiro AI</p>
                 <p className="text-white/70 text-[10px]">
-                  {import.meta.env.VITE_GEMINI_API_KEY ? 'Powered by Gemini • Expert Konstruksi' : 'Mode Offline • Expert Konstruksi'}
+                  {import.meta.env.VITE_GEMINI_API_KEY ? 'Powered by Gemini â€¢ Expert Konstruksi' : 'Mode Offline â€¢ Expert Konstruksi'}
                 </p>
               </div>
             </div>
@@ -258,7 +258,7 @@ const AIChat = () => {
             <div ref={bottomRef} />
           </div>
 
-          {/* Quick Prompts — tampil kalau belum ada percakapan */}
+          {/* Quick Prompts â€” tampil kalau belum ada percakapan */}
           {messages.length <= 1 && (
             <div className="px-3 pb-2 flex flex-wrap gap-1.5">
               {quickPrompts.map((p, i) => (

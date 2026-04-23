@@ -164,12 +164,14 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
     productivity: 1,
   },
   // ══════════════════════════════════════════════════════════
-  // K3 — Keselamatan & Kesehatan Kerja (wajib sesuai PP No.50/2012)
+  // SMKK — Sistem Manajemen Keselamatan Konstruksi
+  // Wajib sesuai SE 47/SE/Dk/2026 (menggantikan SE 182/2025 & Permen 8/2023)
+  // SMKK harus terintegrasi dalam perhitungan biaya RAB
   // ══════════════════════════════════════════════════════════
   {
     id: 'k3-001',
     category: 'Persiapan',
-    name: 'Perlengkapan K3 (Helm, Rompi, Sepatu Safety)',
+    name: 'APD Pekerja - SMKK (Helm, Rompi, Sepatu Safety)',
     unit: 'set',
     materials: [
       { name: 'Helm Proyek', coeff: 1, unit: 'buah' },
@@ -184,7 +186,7 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   {
     id: 'k3-002',
     category: 'Persiapan',
-    name: 'Pemasangan Pagar Pengaman Proyek',
+    name: 'Pagar Pengaman Proyek - SMKK',
     unit: 'm1',
     materials: [
       { name: 'Seng Gelombang', coeff: 0.9, unit: 'm2' },
@@ -201,13 +203,36 @@ export const AHSP_TEMPLATES: AHSPTemplate[] = [
   {
     id: 'k3-003',
     category: 'Persiapan',
-    name: 'Kotak P3K & Perlengkapan Darurat',
+    name: 'P3K, APAR & Rambu K3 - SMKK',
     unit: 'ls',
     materials: [
       { name: 'Kotak P3K', coeff: 1, unit: 'set' },
       { name: 'APAR (Alat Pemadam)', coeff: 1, unit: 'buah' },
     ],
     laborCoefficients: [],
+    productivity: 1,
+  },
+  {
+    id: 'k3-004',
+    category: 'Persiapan',
+    name: 'Rencana Keselamatan Konstruksi (RKK) - SMKK',
+    unit: 'ls',
+    materials: [],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 1.0, unit: 'OH' },
+      { name: 'Mandor', coeff: 0.5, unit: 'OH' },
+    ],
+    productivity: 1,
+  },
+  {
+    id: 'k3-005',
+    category: 'Persiapan',
+    name: 'Petugas K3 / Safety Officer - SMKK',
+    unit: 'bulan',
+    materials: [],
+    laborCoefficients: [
+      { name: 'Pekerja', coeff: 26, unit: 'OH' }, // 26 hari kerja/bulan
+    ],
     productivity: 1,
   },
   // STRUKTUR

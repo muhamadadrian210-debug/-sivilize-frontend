@@ -1,5 +1,5 @@
 /**
- * RABBreakdownCard — Tampilkan breakdown Material vs Upah Jasa
+ * RABBreakdownCard â€” Tampilkan breakdown Material vs Upah Jasa
  * Membantu kontraktor memahami komposisi biaya RAB
  */
 import { Package, Users, Info } from 'lucide-react';
@@ -96,7 +96,7 @@ const RABBreakdownCard = ({
 
       {/* Catatan */}
       <p className="text-text-secondary text-[10px] leading-relaxed border-t border-border pt-3">
-        * Breakdown ini adalah estimasi berdasarkan koefisien AHSP Permen PUPR No.1/2022.
+        * Breakdown ini adalah estimasi berdasarkan koefisien AHSP SE 47/SE/Dk/2026.
         Harga satuan sudah termasuk material + upah jasa tukang sesuai standar konstruksi Indonesia.
       </p>
     </div>

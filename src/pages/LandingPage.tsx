@@ -26,7 +26,7 @@ const LandingPage = ({ onGetStarted }: LandingPageProps) => {
     {
       icon: Database,
       title: 'Database AHSP Lengkap',
-      desc: '500+ item AHSP dari Permen PUPR No. 1/2022. Harga real-time per kota/kabupaten di seluruh Indonesia.',
+      desc: '500+ item AHSP dari SE 47/SE/Dk/2026. Harga real-time per kota/kabupaten di seluruh Indonesia.',
       color: 'text-blue-400',
       bg: 'bg-blue-400/10',
     },
@@ -103,7 +103,7 @@ const LandingPage = ({ onGetStarted }: LandingPageProps) => {
     },
     {
       q: 'Standar AHSP apa yang digunakan?',
-      a: 'Kami menggunakan standar Permen PUPR No. 1 Tahun 2022 tentang Pedoman Penyusunan Perkiraan Biaya Pekerjaan Konstruksi.',
+      a: 'Kami menggunakan standar SE 47/SE/Dk/2026 tentang Pedoman Penyusunan Perkiraan Biaya Pekerjaan Konstruksi.',
     },
     {
       q: 'Apakah bisa export ke PDF dan Excel?',
@@ -113,7 +113,7 @@ const LandingPage = ({ onGetStarted }: LandingPageProps) => {
 
   return (
     <div className="min-h-screen bg-background text-white">
-      {/* ── NAVBAR ── */}
+      {/* â”€â”€ NAVBAR â”€â”€ */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -156,7 +156,7 @@ const LandingPage = ({ onGetStarted }: LandingPageProps) => {
         )}
       </nav>
 
-      {/* ── HERO ── */}
+      {/* â”€â”€ HERO â”€â”€ */}
       <section className="pt-32 pb-20 px-4 lg:px-8 max-w-7xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -196,7 +196,7 @@ const LandingPage = ({ onGetStarted }: LandingPageProps) => {
           </div>
 
           <p className="text-text-secondary text-sm mt-6">
-            ✓ Gratis &nbsp;·&nbsp; ✓ Tanpa kartu kredit &nbsp;·&nbsp; ✓ Langsung bisa dipakai
+            âœ“ Gratis &nbsp;Â·&nbsp; âœ“ Tanpa kartu kredit &nbsp;Â·&nbsp; âœ“ Langsung bisa dipakai
           </p>
         </motion.div>
 
@@ -247,7 +247,7 @@ const LandingPage = ({ onGetStarted }: LandingPageProps) => {
         </motion.div>
       </section>
 
-      {/* ── STATS ── */}
+      {/* â”€â”€ STATS â”€â”€ */}
       <section className="py-16 px-4 lg:px-8 border-y border-border bg-card/30">
         <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
           {stats.map((stat, i) => {
@@ -271,11 +271,11 @@ const LandingPage = ({ onGetStarted }: LandingPageProps) => {
         </div>
       </section>
 
-      {/* ── FITUR ── */}
+      {/* â”€â”€ FITUR â”€â”€ */}
       <section id="fitur" className="py-24 px-4 lg:px-8 max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-black mb-4">Semua yang Lo Butuhkan</h2>
-          <p className="text-text-secondary max-w-xl mx-auto">Dari hitung RAB sampai laporan progress — semua ada di satu platform.</p>
+          <p className="text-text-secondary max-w-xl mx-auto">Dari hitung RAB sampai laporan progress â€” semua ada di satu platform.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((f, i) => {
@@ -299,7 +299,7 @@ const LandingPage = ({ onGetStarted }: LandingPageProps) => {
         </div>
       </section>
 
-      {/* ── CARA KERJA ── */}
+      {/* â”€â”€ CARA KERJA â”€â”€ */}
       <section className="py-24 px-4 lg:px-8 bg-card/30 border-y border-border">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
@@ -328,7 +328,7 @@ const LandingPage = ({ onGetStarted }: LandingPageProps) => {
         </div>
       </section>
 
-      {/* ── TESTIMONI ── */}
+      {/* â”€â”€ TESTIMONI â”€â”€ */}
       <section id="testimoni" className="py-24 px-4 lg:px-8 max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-black mb-4">Kata Mereka</h2>
@@ -363,7 +363,7 @@ const LandingPage = ({ onGetStarted }: LandingPageProps) => {
         </div>
       </section>
 
-      {/* ── FAQ ── */}
+      {/* â”€â”€ FAQ â”€â”€ */}
       <section id="faq" className="py-24 px-4 lg:px-8 bg-card/30 border-y border-border">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-16">
@@ -393,7 +393,7 @@ const LandingPage = ({ onGetStarted }: LandingPageProps) => {
         </div>
       </section>
 
-      {/* ── CTA ── */}
+      {/* â”€â”€ CTA â”€â”€ */}
       <section className="py-24 px-4 lg:px-8 max-w-4xl mx-auto text-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -423,7 +423,7 @@ const LandingPage = ({ onGetStarted }: LandingPageProps) => {
         </motion.div>
       </section>
 
-      {/* ── FOOTER ── */}
+      {/* â”€â”€ FOOTER â”€â”€ */}
       <footer className="border-t border-border py-8 px-4 lg:px-8">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
@@ -432,7 +432,7 @@ const LandingPage = ({ onGetStarted }: LandingPageProps) => {
             </div>
             <span className="text-white font-bold text-sm">SIVILIZE HUB PRO</span>
           </div>
-          <p className="text-text-secondary text-sm">© {new Date().getFullYear()} SIVILIZE HUB PRO. All rights reserved.</p>
+          <p className="text-text-secondary text-sm">Â© {new Date().getFullYear()} SIVILIZE HUB PRO. All rights reserved.</p>
           <div className="flex items-center gap-4 text-text-secondary text-sm">
             <button onClick={onGetStarted} className="hover:text-white transition-colors">Privacy Policy</button>
             <button onClick={onGetStarted} className="hover:text-white transition-colors">Terms of Service</button>

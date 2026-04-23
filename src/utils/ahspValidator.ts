@@ -1,5 +1,5 @@
 /**
- * AHSP Validator - Permen PUPR No. 1 Tahun 2022
+ * AHSP Validator - SE 47/SE/Dk/2026
  * Validasi koefisien dan harga satuan pekerjaan
  */
 
@@ -11,24 +11,24 @@ export interface AHSPWarning {
 // Rentang harga satuan wajar per kategori (Rp/satuan) - referensi PUPR 2022
 const PRICE_RANGES: Record<string, { min: number; max: number; unit: string }> = {
   // Struktur
-  'Galian Tanah':         { min: 40000,    max: 150000,   unit: 'm³' },
-  'Beton K-225':          { min: 800000,   max: 2000000,  unit: 'm³' },
-  'Beton K-300':          { min: 900000,   max: 2500000,  unit: 'm³' },
+  'Galian Tanah':         { min: 40000,    max: 150000,   unit: 'mÂ³' },
+  'Beton K-225':          { min: 800000,   max: 2000000,  unit: 'mÂ³' },
+  'Beton K-300':          { min: 900000,   max: 2500000,  unit: 'mÂ³' },
   'Pembesian':            { min: 15000,    max: 35000,    unit: 'kg' },
-  'Bekisting':            { min: 150000,   max: 400000,   unit: 'm²' },
+  'Bekisting':            { min: 150000,   max: 400000,   unit: 'mÂ²' },
   // Dinding
-  'Pasangan Bata':        { min: 80000,    max: 200000,   unit: 'm²' },
-  'Plesteran':            { min: 40000,    max: 100000,   unit: 'm²' },
-  'Acian':                { min: 30000,    max: 80000,    unit: 'm²' },
+  'Pasangan Bata':        { min: 80000,    max: 200000,   unit: 'mÂ²' },
+  'Plesteran':            { min: 40000,    max: 100000,   unit: 'mÂ²' },
+  'Acian':                { min: 30000,    max: 80000,    unit: 'mÂ²' },
   // Lantai
-  'Keramik':              { min: 80000,    max: 300000,   unit: 'm²' },
-  'Granit':               { min: 200000,   max: 800000,   unit: 'm²' },
+  'Keramik':              { min: 80000,    max: 300000,   unit: 'mÂ²' },
+  'Granit':               { min: 200000,   max: 800000,   unit: 'mÂ²' },
   // Finishing
-  'Cat Dinding':          { min: 25000,    max: 80000,    unit: 'm²' },
-  'Plafond':              { min: 80000,    max: 250000,   unit: 'm²' },
+  'Cat Dinding':          { min: 25000,    max: 80000,    unit: 'mÂ²' },
+  'Plafond':              { min: 80000,    max: 250000,   unit: 'mÂ²' },
   // Atap
-  'Rangka Atap Baja':     { min: 150000,   max: 400000,   unit: 'm²' },
-  'Genteng':              { min: 80000,    max: 300000,   unit: 'm²' },
+  'Rangka Atap Baja':     { min: 150000,   max: 400000,   unit: 'mÂ²' },
+  'Genteng':              { min: 80000,    max: 300000,   unit: 'mÂ²' },
   // MEP
   'Instalasi Listrik':    { min: 300000,   max: 1500000,  unit: 'titik' },
   'Instalasi Air':        { min: 200000,   max: 800000,   unit: 'titik' },
@@ -94,13 +94,13 @@ export const validateLaborCoeff = (
   if (pekerjaCoeff < pMin || pekerjaCoeff > pMax) {
     return {
       level: 'warning',
-      message: `Koefisien pekerja ${pekerjaCoeff} OH di luar standar PUPR (${pMin}–${pMax} OH)`
+      message: `Koefisien pekerja ${pekerjaCoeff} OH di luar standar PUPR (${pMin}â€“${pMax} OH)`
     };
   }
   if (tukangCoeff < tMin || tukangCoeff > tMax) {
     return {
       level: 'warning',
-      message: `Koefisien tukang ${tukangCoeff} OH di luar standar PUPR (${tMin}–${tMax} OH)`
+      message: `Koefisien tukang ${tukangCoeff} OH di luar standar PUPR (${tMin}â€“${tMax} OH)`
     };
   }
   return null;

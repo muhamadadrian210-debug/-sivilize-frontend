@@ -1,7 +1,7 @@
 /**
- * AHSPDetailPanel — Panel detail komposisi AHSP per item pekerjaan
+ * AHSPDetailPanel â€” Panel detail komposisi AHSP per item pekerjaan
  * Menampilkan: material apa saja, berapa banyak, berapa harganya, dan upah tukang
- * Referensi: Permen PUPR No. 1 Tahun 2022
+ * Referensi: SE 47/SE/Dk/2026
  */
 import { Package, Users, ChevronDown, ChevronUp, BookOpen } from 'lucide-react';
 import { useState } from 'react';
@@ -61,10 +61,10 @@ const AHSPDetailPanel = ({ item, cityId, grade }: AHSPDetailPanelProps) => {
           {/* Header */}
           <div className="px-4 py-3 bg-primary/10 border-b border-border">
             <p className="text-primary font-bold text-[11px] uppercase tracking-widest">
-              Analisa Harga Satuan — {item.name}
+              Analisa Harga Satuan â€” {item.name}
             </p>
             <p className="text-text-secondary text-[10px] mt-0.5">
-              Ref: Permen PUPR No.1/2022 | Volume: {item.volume.toFixed(3)} {item.unit}
+              Ref: SE 47/SE/Dk/2026 | Volume: {item.volume.toFixed(3)} {item.unit}
             </p>
           </div>
 
@@ -181,7 +181,7 @@ const AHSPDetailPanel = ({ item, cityId, grade }: AHSPDetailPanelProps) => {
           {/* Catatan */}
           <div className="px-4 py-2 bg-background/50">
             <p className="text-text-secondary text-[10px] italic">
-              * Koefisien berdasarkan AHSP Permen PUPR No.1/2022. Upah menggunakan standar 2026.
+              * Koefisien berdasarkan AHSP SE 47/SE/Dk/2026. Upah menggunakan standar 2026.
               Harga material sesuai lokasi proyek ({grade === 'A' ? 'Grade A - Premium' : grade === 'B' ? 'Grade B - Standar' : 'Grade C - Ekonomis'}).
             </p>
           </div>

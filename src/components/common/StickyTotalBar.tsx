@@ -9,7 +9,7 @@ interface StickyTotalBarProps {
 }
 
 /**
- * Sticky Total Bar — tampil di bawah layar saat scroll
+ * Sticky Total Bar â€” tampil di bawah layar saat scroll
  * Mobile-friendly, jempol-friendly
  */
 const StickyTotalBar = ({ subtotal, grandTotal, itemCount, onScrollToTop }: StickyTotalBarProps) => {
@@ -54,7 +54,7 @@ const StickyTotalBar = ({ subtotal, grandTotal, itemCount, onScrollToTop }: Stic
         </div>
         {/* Disclaimer */}
         <p className="text-center text-[10px] text-text-secondary mt-1 pb-0.5">
-          * Estimasi berdasarkan AHSP Permen PUPR No.1/2022 & harga pasar 2026. Verifikasi harga lokal sebelum tender.
+          * Estimasi berdasarkan AHSP SE 47/SE/Dk/2026 & harga pasar 2026. Verifikasi harga lokal sebelum tender.
         </p>
       </div>
     </div>

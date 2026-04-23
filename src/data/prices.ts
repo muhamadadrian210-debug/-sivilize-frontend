@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿export interface CityPrices {
+﻿﻿﻿﻿﻿export interface CityPrices {
   id: string;
   name: string;
   provinceId: string;
@@ -43,7 +43,7 @@ export interface RegionalPriceOverride {
 }
 
 // Harga material default (per satuan, harga pasar 2026 Indonesia)
-// Referensi: AHSP SNI Permen PUPR No.1/2022, survey pasar 2026
+// Referensi: AHSP SNI SE 47/SE/Dk/2026, survey pasar 2026
 const defaultMaterials: Record<string, number> = {
   // === STRUKTUR ===
   'Semen PC': 1450,           // per kg (~Rp 72.500/sak 50kg, update 2026)
