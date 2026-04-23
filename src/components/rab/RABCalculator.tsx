@@ -50,6 +50,8 @@ import { exportToPDF, exportToExcel } from '../../utils/exportUtils';
 import { validateRABItems } from '../../utils/ahspValidator';
 import RABVisionUpload from './RABVisionUpload';
 import DimensionExtras, { DEFAULT_REBAR_CONFIG, getDimensionErrors, getWallPreview, getRebarPreview, type RebarConfig } from './DimensionExtras';
+import RABSplitView from './RABSplitView';
+import MaterialPriceEditor from './MaterialPriceEditor';
 import { useAutoSave } from '../../hooks/useAutoSave';
 import MaterialSummary from './MaterialSummary';
 import ProjectTimeline from './ProjectTimeline';
@@ -167,7 +169,8 @@ const RABCalculator = () => {
   const [aiProgress, setAiProgress] = useState(0);
   const [showVisionUpload, setShowVisionUpload] = useState(false);
   const [rebarConfig, setRebarConfig] = useState<RebarConfig>(DEFAULT_REBAR_CONFIG);
-  const [activeSubTab, setActiveSubTab] = useState<'rab' | 'materials' | 'timeline' | 'template'>('rab');
+  const [activeSubTab, setActiveSubTab] = useState<'rab' | 'split' | 'materials' | 'prices' | 'timeline' | 'template'>('rab');
+  const [customPrices, setCustomPrices] = useState<Record<string, number>>({});
   const [selectedProvince, setSelectedProvince] = useState(DEFAULT_PROVINCE_ID);
   const [materialGrade, setMaterialGrade] = useState<MaterialGrade>(DEFAULT_MATERIAL_GRADE);
   const [locationType, setLocationType] = useState<LocationType>('kota');
@@ -1025,10 +1028,22 @@ const RABCalculator = () => {
                   Breakdown RAB
                 </button>
                 <button 
+                  onClick={() => setActiveSubTab('split')}
+                  className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${activeSubTab === 'split' ? 'bg-primary text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}
+                >
+                  Material / Pekerja
+                </button>
+                <button 
                   onClick={() => setActiveSubTab('materials')}
                   className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${activeSubTab === 'materials' ? 'bg-primary text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}
                 >
                   Kebutuhan Material
+                </button>
+                <button 
+                  onClick={() => setActiveSubTab('prices')}
+                  className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${activeSubTab === 'prices' ? 'bg-yellow-500 text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}
+                >
+                  Update Harga
                 </button>
                 <button 
                   onClick={() => setActiveSubTab('timeline')}
@@ -1317,6 +1332,34 @@ const RABCalculator = () => {
                   exit={{ opacity: 0, y: -10 }}
                 >
                   <MaterialSummary items={rabItems} cityId={projectData.location || ''} grade={materialGrade} />
+                </motion.div>
+              )}
+              {activeSubTab === 'split' && (
+                <motion.div
+                  key="split"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                >
+                  <RABSplitView items={rabItems} cityId={projectData.location || ''} grade={materialGrade} />
+                </motion.div>
+              )}
+              {activeSubTab === 'prices' && (
+                <motion.div
+                  key="prices"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                >
+                  <MaterialPriceEditor
+                    cityId={projectData.location || ''}
+                    grade={materialGrade}
+                    customPrices={customPrices}
+                    onUpdate={(prices) => {
+                      setCustomPrices(prices);
+                      showToast('Harga diperbarui!', 'success');
+                    }}
+                  />
                 </motion.div>
               )}
               {activeSubTab === 'timeline' && (
