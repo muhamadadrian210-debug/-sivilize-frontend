@@ -125,6 +125,17 @@ export const authService = {
     }
     return response.data;
   },
+  sendOtp: async (email: string, purpose: 'login' | 'register') => {
+    const response = await api.post<ApiResponse<null>>('/auth/send-otp', { email, purpose });
+    return response.data;
+  },
+  verifyOtp: async (data: { email: string; otp: string; purpose: 'login' | 'register'; name?: string; password?: string }) => {
+    const response = await api.post<ApiResponse<User>>('/auth/verify-otp', data);
+    if (response.data.token) {
+      localStorage.setItem('token', response.data.token);
+    }
+    return response.data;
+  },
 };
 
 export const projectService = {
