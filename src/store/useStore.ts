@@ -317,6 +317,7 @@ export const useStore = create<AppState>()(
         });
         localStorage.removeItem('token');
         localStorage.removeItem('sivilize_remember_me');
+        localStorage.removeItem('sivilize_otp_verified'); // hapus flag OTP saat logout
         set({ user: null, isAuthenticated: false, projects: [], activeProjectId: null });
       },
 

@@ -103,7 +103,18 @@ const AuthPage = () => {
         // Verifikasi password dulu, baru kirim OTP
         const response = await authService.login({ email: formData.email, password: formData.password, rememberMe });
         if (response.success) {
-          // Login berhasil tapi kita intercept — kirim OTP
+          // Cek apakah user sudah pernah OTP verified sebelumnya
+          const otpVerified = localStorage.getItem('sivilize_otp_verified');
+          if (otpVerified === formData.email.toLowerCase()) {
+            // Sudah pernah login & OTP — langsung masuk
+            setUser(response.data);
+            setAuthenticated(true);
+            if (rememberMe) localStorage.setItem('sivilize_remember_me', JSON.stringify({ email: formData.email }));
+            else localStorage.removeItem('sivilize_remember_me');
+            setLoading(false);
+            return;
+          }
+          // Belum pernah OTP atau sudah logout — wajib OTP
           if (rememberMe) localStorage.setItem('sivilize_remember_me', JSON.stringify({ email: formData.email }));
           else localStorage.removeItem('sivilize_remember_me');
           setLoading(false);
@@ -161,6 +172,8 @@ const AuthPage = () => {
         password: otpPurpose === 'register' ? formData.password : undefined,
       });
       if (response.success) {
+        // Simpan flag — user ini sudah OTP verified, skip OTP di login berikutnya
+        localStorage.setItem('sivilize_otp_verified', formData.email.toLowerCase());
         setUser(response.data);
         setAuthenticated(true);
       }
