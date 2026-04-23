@@ -1501,6 +1501,7 @@ const RABCalculator = () => {
               </div>
             </div>
           </div>
+        </div>
         );
       case 3:
         return (
@@ -1807,6 +1808,7 @@ const RABCalculator = () => {
                   )}
                 </div>
                     </div>
+                  </div>
                 </motion.div>
               )}
               {activeSubTab === 'split' && (
@@ -1997,9 +1999,6 @@ const RABCalculator = () => {
         onClose={() => setShowComparison(false)}
       />
     )}
-    </div>
-    </div>
-    </div>
     </>
   );
 };
