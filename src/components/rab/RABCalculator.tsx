@@ -169,6 +169,7 @@ const RABCalculator = () => {
   const [aiProgress, setAiProgress] = useState(0);
   const [showVisionUpload, setShowVisionUpload] = useState(false);
   const [rebarConfig, setRebarConfig] = useState<RebarConfig>(DEFAULT_REBAR_CONFIG);
+  const [showQuranPopup, setShowQuranPopup] = useState(false);
   const [activeSubTab, setActiveSubTab] = useState<'rab' | 'split' | 'materials' | 'prices' | 'timeline' | 'template'>('rab');
   const [customPrices, setCustomPrices] = useState<Record<string, number>>({});
   const [selectedProvince, setSelectedProvince] = useState(DEFAULT_PROVINCE_ID);
@@ -1444,7 +1445,7 @@ const RABCalculator = () => {
 
           {step < 3 ? (
             <button 
-              onClick={step === 2 ? handleGenerateRAB : nextStep}
+              onClick={step === 2 ? () => setShowQuranPopup(true) : nextStep}
               className="btn-primary flex items-center gap-2 min-w-[160px] justify-center disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={loading || (step === 2 && getDimensionErrors(projectData).length > 0)}
               title={step === 2 && getDimensionErrors(projectData).length > 0 ? getDimensionErrors(projectData)[0] : undefined}
@@ -1507,6 +1508,63 @@ const RABCalculator = () => {
         projectId={tempProjectId}
         onClose={() => setShowComparison(false)}
       />
+    )}
+
+    {/* Popup Ayat Quran sebelum Generate RAB */}
+    {showQuranPopup && (
+      <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-background/90 backdrop-blur-sm" />
+        <div className="relative glass-card w-full max-w-lg p-8 space-y-6 border border-primary/30">
+          {/* Header */}
+          <div className="text-center space-y-1">
+            <p className="text-primary/60 text-xs font-bold uppercase tracking-widest">Sebelum Melanjutkan</p>
+            <h3 className="text-white font-bold text-lg">Ingatlah Selalu</h3>
+          </div>
+
+          {/* Ayat 1 — Kejujuran */}
+          <div className="bg-primary/5 border border-primary/20 rounded-xl p-5 space-y-2">
+            <p className="text-white font-bold text-right text-xl leading-loose" dir="rtl" lang="ar">
+              يَٰٓأَيُّهَا ٱلَّذِينَ ءَامَنُوا۟ ٱتَّقُوا۟ ٱللَّهَ وَقُولُوا۟ قَوْلًا سَدِيدًا
+            </p>
+            <p className="text-text-secondary text-sm italic leading-relaxed text-center">
+              "Wahai orang-orang yang beriman, bertakwalah kepada Allah dan ucapkanlah perkataan yang benar (jujur)."
+            </p>
+            <p className="text-primary/50 text-xs text-center font-bold">— QS. Al-Ahzab: 70</p>
+          </div>
+
+          {/* Ayat 2 — Amanah */}
+          <div className="bg-primary/5 border border-primary/20 rounded-xl p-5 space-y-2">
+            <p className="text-white font-bold text-right text-xl leading-loose" dir="rtl" lang="ar">
+              إِنَّ ٱللَّهَ يَأْمُرُكُمْ أَن تُؤَدُّوا۟ ٱلْأَمَٰنَٰتِ إِلَىٰٓ أَهْلِهَا
+            </p>
+            <p className="text-text-secondary text-sm italic leading-relaxed text-center">
+              "Sesungguhnya Allah menyuruh kamu menyampaikan amanat kepada yang berhak menerimanya."
+            </p>
+            <p className="text-primary/50 text-xs text-center font-bold">— QS. An-Nisa: 58</p>
+          </div>
+
+          <p className="text-text-secondary text-xs text-center leading-relaxed">
+            Gunakan hasil RAB ini dengan <span className="text-white font-bold">jujur dan amanah</span>. 
+            Hasil ini adalah estimasi — wajib divalidasi oleh engineer bersertifikat sebelum pelaksanaan.
+          </p>
+
+          {/* Tombol */}
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowQuranPopup(false)}
+              className="flex-1 py-3 border border-border rounded-xl text-text-secondary hover:text-white hover:border-primary/50 transition-all text-sm font-bold"
+            >
+              Kembali
+            </button>
+            <button
+              onClick={() => { setShowQuranPopup(false); handleGenerateRAB(); }}
+              className="flex-1 btn-primary py-3 text-sm"
+            >
+              Bismillah, Hasilkan RAB
+            </button>
+          </div>
+        </div>
+      </div>
     )}
     </>
   );

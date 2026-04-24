@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Calculator, BarChart3, BookOpen, Database, Shield, Smartphone,
@@ -158,6 +158,25 @@ const LandingPage = ({ onGetStarted }: LandingPageProps) => {
 
       {/* â”€â”€ HERO â”€â”€ */}
       <section className="pt-32 pb-20 px-4 lg:px-8 max-w-7xl mx-auto">
+        {/* Ayat Quran — Kejujuran & Amanah */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="max-w-3xl mx-auto mb-10 text-center"
+        >
+          <div className="bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 border border-primary/20 rounded-2xl px-6 py-5">
+            <p className="text-primary/60 text-xs font-bold uppercase tracking-widest mb-2">QS. Al-Ahzab: 70-71</p>
+            <p className="text-white font-bold text-lg md:text-xl leading-relaxed mb-2" dir="rtl" lang="ar">
+              يَٰٓأَيُّهَا ٱلَّذِينَ ءَامَنُوا۟ ٱتَّقُوا۟ ٱللَّهَ وَقُولُوا۟ قَوْلًا سَدِيدًا
+            </p>
+            <p className="text-text-secondary text-sm italic leading-relaxed">
+              "Wahai orang-orang yang beriman, bertakwalah kepada Allah dan ucapkanlah perkataan yang benar (jujur). Niscaya Allah memperbaiki amal-amalmu dan mengampuni dosa-dosamu."
+            </p>
+            <p className="text-primary/50 text-xs mt-2">— QS. Al-Ahzab: 70-71</p>
+          </div>
+        </motion.div>
+
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
