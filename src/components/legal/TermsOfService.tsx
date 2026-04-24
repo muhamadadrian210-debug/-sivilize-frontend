@@ -1,96 +1,156 @@
-import { 
-  FileText, 
-  AlertCircle, 
-  Ban, 
-  Activity,
-  CheckCircle2,
-  ChevronRight,
-  ShieldOff
-} from 'lucide-react';
+import { FileText, AlertCircle, Ban, CheckCircle2, ShieldOff, Scale, CreditCard, HelpCircle } from 'lucide-react';
 
 const TermsOfService = () => {
   const sections = [
     {
-      title: 'Aturan Penggunaan Aplikasi',
+      title: '1. Penerimaan Syarat',
       icon: CheckCircle2,
       content: [
-        'Hanya individu berusia 18 tahun ke atas yang diizinkan menggunakan platform.',
-        'Pengguna bertanggung jawab atas keakuratan data proyek yang dimasukkan.',
-        'Sivilize Hub Pro tidak bertanggung jawab atas kesalahan perhitungan akibat input data yang tidak valid.',
-        'Akun bersifat personal dan tidak boleh dibagikan kepada orang lain tanpa izin.'
+        'Dengan mendaftar dan menggunakan Sivilize Hub Pro, Anda menyetujui syarat dan ketentuan ini secara penuh.',
+        'Jika Anda tidak menyetujui syarat ini, harap hentikan penggunaan layanan.',
+        'Pengguna harus berusia minimal 18 tahun atau memiliki izin dari wali yang sah.',
+        'Syarat ini berlaku efektif sejak 13 Februari 2026.',
       ]
     },
     {
-      title: 'Larangan Penyalahgunaan',
+      title: '2. Deskripsi Layanan',
+      icon: FileText,
+      content: [
+        'Sivilize Hub Pro adalah platform perhitungan Rencana Anggaran Biaya (RAB) konstruksi berbasis web.',
+        'Layanan mencakup: kalkulator RAB, database AHSP, analisis struktur, manajemen proyek, dan ekspor dokumen.',
+        'Perhitungan mengacu pada SE 47/SE/Dk/2026 (Dirjen Bina Konstruksi) dan standar SNI yang berlaku.',
+        'Kami berhak memperbarui, memodifikasi, atau menghentikan fitur tertentu tanpa pemberitahuan sebelumnya.',
+      ]
+    },
+    {
+      title: '3. Akun Pengguna & Keamanan',
+      icon: ShieldOff,
+      content: [
+        'Setiap pengguna wajib memverifikasi email melalui kode OTP saat pertama kali mendaftar dan login.',
+        'Anda bertanggung jawab penuh atas keamanan akun dan kata sandi Anda.',
+        'Jangan bagikan kode OTP kepada siapapun — Sivilize Corp tidak pernah meminta kode OTP Anda.',
+        'Laporkan segera jika Anda mencurigai akun Anda telah diakses tanpa izin.',
+        'Akun bersifat personal dan tidak boleh dipindahtangankan.',
+      ]
+    },
+    {
+      title: '4. Penggunaan yang Diizinkan',
+      icon: CheckCircle2,
+      content: [
+        'Menggunakan platform untuk keperluan perhitungan RAB dan manajemen proyek konstruksi.',
+        'Mengekspor hasil perhitungan untuk keperluan profesional dan bisnis.',
+        'Menyimpan dan mengelola data proyek konstruksi Anda sendiri.',
+        'Berbagi hasil RAB dengan klien melalui fitur share link yang tersedia.',
+      ]
+    },
+    {
+      title: '5. Larangan Penggunaan',
       icon: Ban,
       content: [
         'Dilarang melakukan reverse engineering terhadap algoritma perhitungan AHSP.',
-        'Dilarang menggunakan skrip otomatis untuk mengambil data dari platform.',
-        'Dilarang mengunggah file berbahaya, virus, atau malware ke dalam sistem.',
-        'Penyalahgunaan hak akses dapat mengakibatkan penangguhan akun secara permanen.'
+        'Dilarang menggunakan skrip otomatis (bot) untuk mengambil data dari platform.',
+        'Dilarang mengunggah konten berbahaya, virus, atau malware.',
+        'Dilarang menggunakan platform untuk tujuan ilegal atau merugikan pihak lain.',
+        'Dilarang mencoba menembus sistem keamanan atau mengakses data pengguna lain.',
+        'Pelanggaran dapat mengakibatkan penangguhan atau penghapusan akun secara permanen.',
       ]
     },
     {
-      title: 'Batas Tanggung Jawab Developer',
-      icon: ShieldOff,
+      title: '6. Disclaimer Perhitungan',
+      icon: AlertCircle,
       content: [
-        'Layanan disediakan "apa adanya" tanpa jaminan mutlak atas ketersediaan 24/7.',
-        'Kami tidak bertanggung jawab atas kerugian finansial yang timbul dari keputusan bisnis berdasarkan data platform.',
-        'Developer berhak melakukan pemeliharaan sistem (maintenance) sewaktu-waktu.',
-        'Hasil perhitungan RAB bersifat estimasi profesional dan perlu divalidasi oleh ahli teknik sipil terkait.'
+        'Hasil perhitungan RAB bersifat ESTIMASI berdasarkan koefisien AHSP dan harga pasar.',
+        'Untuk konstruksi riil, hasil harus divalidasi oleh Structural Engineer bersertifikat.',
+        'Sivilize Corp tidak bertanggung jawab atas kerugian akibat penggunaan hasil perhitungan tanpa validasi profesional.',
+        'Harga material dan upah dapat berbeda di lapangan — selalu lakukan survei harga lokal.',
+        'Fitur AI Vision (analisis denah) adalah estimasi awal dan tidak menggantikan pengukuran lapangan.',
       ]
     },
     {
-      title: 'Perubahan Layanan',
-      icon: Activity,
+      title: '7. Hak Kekayaan Intelektual',
+      icon: Scale,
       content: [
-        'Fitur aplikasi dapat berubah, ditambahkan, atau dihapus tanpa pemberitahuan sebelumnya.',
-        'Kami akan memberitahukan perubahan signifikan melalui email atau notifikasi sistem.',
-        'Penggunaan berkelanjutan setelah perubahan dianggap sebagai persetujuan terhadap aturan baru.'
+        'Seluruh konten, desain, algoritma, dan kode Sivilize Hub Pro adalah milik Sivilize Corp.',
+        'Data proyek yang Anda buat adalah milik Anda sepenuhnya.',
+        'Anda memberikan kami lisensi terbatas untuk menyimpan dan memproses data Anda guna menyediakan layanan.',
+        'Dilarang menyalin, mendistribusikan, atau mengkomersialkan platform tanpa izin tertulis.',
       ]
-    }
+    },
+    {
+      title: '8. Layanan Gratis & Berbayar',
+      icon: CreditCard,
+      content: [
+        'Saat ini Sivilize Hub Pro tersedia secara gratis dalam fase beta.',
+        'Kami berhak memperkenalkan paket berbayar di masa mendatang dengan pemberitahuan sebelumnya.',
+        'Pengguna yang sudah terdaftar sebelum perubahan harga akan mendapat pemberitahuan minimal 30 hari.',
+      ]
+    },
+    {
+      title: '9. Kontak & Dukungan',
+      icon: HelpCircle,
+      content: [
+        'Email: muhamadadrian210@gmail.com',
+        'Platform: sivilize-hub-pro.vercel.app',
+        'Perusahaan: Sivilize Corp',
+        'Untuk pertanyaan, keluhan, atau permintaan penghapusan akun, hubungi email di atas.',
+      ]
+    },
   ];
 
   return (
-    <div className="max-w-4xl mx-auto py-12 px-6">
-      <div className="text-center mb-16">
-        <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-primary">
-          <FileText size={40} />
+    <div className="max-w-4xl mx-auto space-y-8 pb-12">
+      {/* Header */}
+      <div className="glass-card p-8">
+        <div className="flex items-center gap-4 mb-4">
+          <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+            <FileText size={24} className="text-primary" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-black text-white">Syarat & Ketentuan</h1>
+            <p className="text-text-secondary text-sm">Sivilize Corp — Sivilize Hub Pro</p>
+          </div>
         </div>
-        <h1 className="text-4xl font-black text-white mb-4 tracking-tight">Ketentuan Layanan</h1>
-        <p className="text-text-secondary max-w-2xl mx-auto">
-          Terakhir diperbarui: 31 Maret 2026. Dengan mengakses Sivilize Hub Pro, Anda setuju untuk mematuhi seluruh syarat dan ketentuan di bawah ini.
+        <div className="flex flex-wrap gap-4 text-xs text-text-secondary">
+          <span>📅 Berlaku sejak: <span className="text-white font-bold">13 Februari 2026</span></span>
+          <span>🔄 Terakhir diperbarui: <span className="text-white font-bold">April 2026</span></span>
+          <span>🏢 Sivilize Corp</span>
+        </div>
+        <p className="text-text-secondary text-sm mt-4 leading-relaxed">
+          Syarat dan Ketentuan ini mengatur penggunaan platform Sivilize Hub Pro yang dioperasikan oleh Sivilize Corp. 
+          Harap baca dengan seksama sebelum menggunakan layanan kami.
         </p>
       </div>
 
-      <div className="grid gap-8">
-        {sections.map((section, index) => (
-          <div key={index} className="glass-card p-8 group hover:border-primary/30 transition-all">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="p-3 bg-primary/10 rounded-xl text-primary group-hover:scale-110 transition-transform">
-                <section.icon size={24} />
+      {/* Sections */}
+      {sections.map((section, i) => {
+        const Icon = section.icon;
+        return (
+          <div key={i} className="glass-card p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-9 h-9 bg-primary/10 rounded-lg flex items-center justify-center">
+                <Icon size={18} className="text-primary" />
               </div>
-              <h2 className="text-xl font-bold text-white">{section.title}</h2>
+              <h2 className="text-white font-bold">{section.title}</h2>
             </div>
-            <ul className="space-y-4">
-              {section.content.map((item, i) => (
-                <li key={i} className="flex items-start gap-3 text-text-secondary leading-relaxed">
-                  <ChevronRight size={18} className="text-primary shrink-0 mt-1" />
-                  {item}
+            <ul className="space-y-2">
+              {section.content.map((item, j) => (
+                <li key={j} className="flex items-start gap-2 text-text-secondary text-sm leading-relaxed">
+                  <span className="text-primary mt-1 shrink-0">•</span>
+                  <span>{item}</span>
                 </li>
               ))}
             </ul>
           </div>
-        ))}
-      </div>
+        );
+      })}
 
-      <div className="mt-16 glass-card p-8 border-red-500/20 bg-red-500/5 text-center">
-        <div className="flex items-center justify-center gap-2 text-red-400 font-bold mb-4">
-          <AlertCircle size={20} />
-          Peringatan Penting
-        </div>
-        <p className="text-text-secondary text-sm">
-          Pelanggaran terhadap ketentuan layanan ini dapat mengakibatkan penghentian akses secara sepihak oleh developer demi keamanan ekosistem Sivilize Hub Pro.
+      {/* Footer note */}
+      <div className="glass-card p-6 border-primary/20">
+        <p className="text-text-secondary text-xs text-center leading-relaxed">
+          Dengan menggunakan Sivilize Hub Pro, Anda menyatakan telah membaca, memahami, dan menyetujui 
+          seluruh Syarat & Ketentuan ini. Sivilize Corp berhak memperbarui syarat ini sewaktu-waktu.
+          <br /><br />
+          <span className="text-primary font-bold">© 2026 Sivilize Corp. All rights reserved.</span>
         </p>
       </div>
     </div>

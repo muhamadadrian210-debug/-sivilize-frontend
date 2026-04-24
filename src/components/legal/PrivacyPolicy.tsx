@@ -1,97 +1,138 @@
-import { 
-  ShieldCheck, 
-  Lock, 
-  Eye, 
-  FileCheck,
-  RefreshCw,
-  Mail,
-  ChevronRight
-} from 'lucide-react';
+import { ShieldCheck, Lock, Eye, FileCheck, RefreshCw, Mail, Database, Globe } from 'lucide-react';
 
 const PrivacyPolicy = () => {
   const sections = [
     {
-      title: 'Data yang Dikumpulkan',
+      title: '1. Data yang Kami Kumpulkan',
       icon: Eye,
       content: [
-        'Informasi Akun: Nama lengkap, alamat email, dan kata sandi yang dienkripsi.',
+        'Informasi Akun: Nama lengkap dan alamat email yang Anda daftarkan.',
+        'Kata Sandi: Disimpan dalam bentuk terenkripsi (bcrypt hash) — kami tidak pernah menyimpan kata sandi dalam bentuk teks biasa.',
+        'Kode OTP: Hanya disimpan sementara di memori server selama 5 menit, kemudian dihapus otomatis.',
         'Data Proyek: Detail perhitungan RAB, volume pekerjaan, dan data AHSP yang Anda masukkan.',
-        'Log Aktivitas: Informasi penggunaan platform untuk tujuan optimasi sistem.'
+        'Log Aktivitas: Informasi penggunaan platform untuk tujuan keamanan dan optimasi sistem.',
+        'Data Teknis: Alamat IP dan user agent untuk keperluan keamanan dan pencegahan penyalahgunaan.',
       ]
     },
     {
-      title: 'Tujuan Penggunaan Data',
+      title: '2. Tujuan Penggunaan Data',
       icon: FileCheck,
       content: [
-        'Menyediakan layanan perhitungan RAB dan manajemen proyek sipil.',
-        'Mengirimkan notifikasi terkait status proyek dan pembaruan sistem.',
-        'Personalisasi pengalaman pengguna berdasarkan riwayat proyek.',
-        'Keperluan keamanan akun dan pencegahan penyalahgunaan.'
+        'Menyediakan layanan perhitungan RAB dan manajemen proyek konstruksi.',
+        'Mengirimkan kode OTP untuk verifikasi identitas saat login dan pendaftaran.',
+        'Mengirimkan notifikasi terkait status akun dan pembaruan sistem.',
+        'Menjaga keamanan akun dan mencegah akses tidak sah.',
+        'Meningkatkan kualitas layanan berdasarkan pola penggunaan secara anonim.',
       ]
     },
     {
-      title: 'Jaminan Keamanan Data',
+      title: '3. Penyimpanan & Keamanan Data',
       icon: Lock,
       content: [
-        'Enkripsi End-to-End: Seluruh data sensitif dienkripsi menggunakan standar industri.',
-        'Tanpa Pihak Ketiga: Kami menjamin tidak akan membagikan data Anda kepada pihak lain tanpa izin.',
-        'Penyimpanan Aman: Data disimpan dalam server terproteksi tinggi dengan firewall berlapis.'
+        'Data disimpan di MongoDB Atlas dengan enkripsi at-rest dan in-transit (TLS/SSL).',
+        'Kata sandi dienkripsi menggunakan bcrypt dengan salt factor 10.',
+        'Kode OTP di-hash menggunakan SHA-256 sebelum disimpan.',
+        'Sistem dilindungi oleh firewall, rate limiting, dan proteksi DDoS.',
+        'Token autentikasi (JWT) memiliki masa berlaku 30 hari dan dapat dicabut saat logout.',
+        'Kami tidak pernah menjual atau membagikan data pribadi Anda kepada pihak ketiga.',
       ]
     },
     {
-      title: 'Hak Pengguna Terhadap Data',
+      title: '4. Layanan Pihak Ketiga',
+      icon: Globe,
+      content: [
+        'Resend (resend.com): Digunakan untuk pengiriman email OTP. Email Anda diteruskan ke layanan ini hanya untuk keperluan pengiriman.',
+        'MongoDB Atlas: Penyedia database cloud untuk penyimpanan data akun dan proyek.',
+        'Vercel: Platform hosting untuk frontend dan backend aplikasi.',
+        'Google Gemini AI: Digunakan untuk fitur analisis gambar denah (AI Vision). Gambar yang diunggah diproses oleh Google AI dan tidak disimpan oleh kami.',
+      ]
+    },
+    {
+      title: '5. Hak Pengguna',
+      icon: ShieldCheck,
+      content: [
+        'Hak Akses: Anda dapat melihat data akun Anda kapan saja melalui halaman profil.',
+        'Hak Koreksi: Anda dapat memperbarui nama dan email melalui pengaturan profil.',
+        'Hak Hapus: Anda dapat meminta penghapusan akun dan seluruh data dengan menghubungi kami.',
+        'Hak Portabilitas: Anda dapat mengekspor data proyek Anda dalam format JSON melalui fitur Backup.',
+      ]
+    },
+    {
+      title: '6. Retensi Data',
+      icon: Database,
+      content: [
+        'Data akun aktif disimpan selama akun masih aktif digunakan.',
+        'Jika akun tidak aktif selama 2 tahun, kami berhak menghapus data secara permanen.',
+        'Log keamanan disimpan maksimal 90 hari.',
+        'Kode OTP dihapus otomatis setelah 5 menit atau setelah digunakan.',
+      ]
+    },
+    {
+      title: '7. Pembaruan Kebijakan',
       icon: RefreshCw,
       content: [
-        'Hak Akses: Anda berhak melihat data apa saja yang kami simpan.',
-        'Hak Koreksi: Anda dapat mengubah atau memperbarui informasi akun kapan saja.',
-        'Hak Penghapusan: Anda berhak meminta penghapusan permanen akun dan seluruh data terkait.'
+        'Kebijakan ini dapat diperbarui sewaktu-waktu. Perubahan signifikan akan diberitahukan melalui email.',
+        'Penggunaan layanan setelah pembaruan dianggap sebagai persetujuan terhadap kebijakan baru.',
+        'Versi terbaru kebijakan selalu tersedia di halaman ini.',
       ]
-    }
+    },
+    {
+      title: '8. Hubungi Kami',
+      icon: Mail,
+      content: [
+        'Untuk pertanyaan terkait privasi, hubungi: muhamadadrian210@gmail.com',
+        'Perusahaan: Sivilize Corp',
+        'Platform: Sivilize Hub Pro — sivilize-hub-pro.vercel.app',
+      ]
+    },
   ];
 
   return (
-    <div className="max-w-4xl mx-auto py-12 px-6">
-      <div className="text-center mb-16">
-        <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-primary">
-          <ShieldCheck size={40} />
+    <div className="max-w-4xl mx-auto space-y-8 pb-12">
+      {/* Header */}
+      <div className="glass-card p-8">
+        <div className="flex items-center gap-4 mb-4">
+          <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+            <ShieldCheck size={24} className="text-primary" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-black text-white">Kebijakan Privasi</h1>
+            <p className="text-text-secondary text-sm">Sivilize Corp — Sivilize Hub Pro</p>
+          </div>
         </div>
-        <h1 className="text-4xl font-black text-white mb-4 tracking-tight">Kebijakan Privasi</h1>
-        <p className="text-text-secondary max-w-2xl mx-auto">
-          Terakhir diperbarui: 31 Maret 2026. Kami berkomitmen untuk melindungi privasi dan keamanan data pengguna Sivilize Hub Pro.
+        <div className="flex flex-wrap gap-4 text-xs text-text-secondary">
+          <span>📅 Berlaku sejak: <span className="text-white font-bold">13 Februari 2026</span></span>
+          <span>🔄 Terakhir diperbarui: <span className="text-white font-bold">April 2026</span></span>
+          <span>🏢 Sivilize Corp</span>
+        </div>
+        <p className="text-text-secondary text-sm mt-4 leading-relaxed">
+          Sivilize Corp ("kami", "kita") berkomitmen melindungi privasi pengguna Sivilize Hub Pro. 
+          Kebijakan ini menjelaskan bagaimana kami mengumpulkan, menggunakan, dan melindungi data Anda.
         </p>
       </div>
 
-      <div className="grid gap-8">
-        {sections.map((section, index) => (
-          <div key={index} className="glass-card p-8 group hover:border-primary/30 transition-all">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="p-3 bg-primary/10 rounded-xl text-primary group-hover:scale-110 transition-transform">
-                <section.icon size={24} />
+      {/* Sections */}
+      {sections.map((section, i) => {
+        const Icon = section.icon;
+        return (
+          <div key={i} className="glass-card p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-9 h-9 bg-primary/10 rounded-lg flex items-center justify-center">
+                <Icon size={18} className="text-primary" />
               </div>
-              <h2 className="text-xl font-bold text-white">{section.title}</h2>
+              <h2 className="text-white font-bold">{section.title}</h2>
             </div>
-            <ul className="space-y-4">
-              {section.content.map((item, i) => (
-                <li key={i} className="flex items-start gap-3 text-text-secondary leading-relaxed">
-                  <ChevronRight size={18} className="text-primary shrink-0 mt-1" />
-                  {item}
+            <ul className="space-y-2">
+              {section.content.map((item, j) => (
+                <li key={j} className="flex items-start gap-2 text-text-secondary text-sm leading-relaxed">
+                  <span className="text-primary mt-1 shrink-0">•</span>
+                  <span>{item}</span>
                 </li>
               ))}
             </ul>
           </div>
-        ))}
-      </div>
-
-      <div className="mt-16 glass-card p-8 border-primary/20 bg-primary/5 text-center">
-        <h3 className="text-white font-bold mb-4">Butuh Informasi Lebih Lanjut?</h3>
-        <p className="text-text-secondary text-sm mb-6">
-          Jika Anda memiliki pertanyaan mengenai kebijakan privasi kami, jangan ragu untuk menghubungi tim support.
-        </p>
-        <button className="btn-primary inline-flex items-center gap-2">
-          <Mail size={18} />
-          Hubungi Tim Privasi
-        </button>
-      </div>
+        );
+      })}
     </div>
   );
 };
