@@ -79,6 +79,12 @@ const AuthPage = () => {
 
   // ── Send OTP ──────────────────────────────────────────────
   const handleSendOtp = async (purpose: 'login' | 'register') => {
+    // Validasi format email dulu di frontend
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError('Format email tidak valid. Contoh: nama@gmail.com');
+      return;
+    }
     setLoading(true); setError('');
     try {
       await authService.sendOtp(formData.email, purpose);
@@ -89,7 +95,7 @@ const AuthPage = () => {
       setTimeout(() => otpRefs.current[0]?.focus(), 100);
     } catch (err: unknown) {
       const e = err as AxiosLikeError;
-      setError(e.response?.data?.message || 'Gagal mengirim OTP. Coba lagi.');
+      setError(e.response?.data?.message || 'Email tidak valid atau tidak dapat menerima pesan.');
     } finally { setLoading(false); }
   };
 
@@ -258,6 +264,19 @@ const AuthPage = () => {
                 </button>
 
                 <div className="text-center space-y-2">
+                  {/* Tombol buka email client */}
+                  <a
+                    href={`https://mail.google.com/mail/u/?authuser=${encodeURIComponent(formData.email)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 w-full py-2.5 bg-white/5 border border-border rounded-xl text-sm text-text-secondary hover:text-white hover:border-primary/50 transition-all"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                      <path d="M20 4H4C2.9 4 2 4.9 2 6v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" fill="#EA4335"/>
+                    </svg>
+                    Buka Gmail
+                  </a>
+
                   {otpCountdown > 0 ? (
                     <p className="text-text-secondary text-xs">Kirim ulang dalam <span className="text-white font-bold">{otpCountdown}s</span></p>
                   ) : (
