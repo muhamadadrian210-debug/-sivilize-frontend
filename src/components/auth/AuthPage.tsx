@@ -86,15 +86,18 @@ const AuthPage = () => {
       return;
     }
     setLoading(true); setError('');
+    setSuccess('⏳ Kode OTP sedang dikirimkan ke Gmail Anda, silahkan dicek...');
     try {
       await authService.sendOtp(formData.email, purpose);
       setOtpPurpose(purpose);
       setOtpDigits(['', '', '', '', '', '']);
       setOtpCountdown(60);
+      setSuccess('');
       setMode('otp');
       setTimeout(() => otpRefs.current[0]?.focus(), 100);
     } catch (err: unknown) {
       const e = err as AxiosLikeError;
+      setSuccess('');
       setError(e.response?.data?.message || 'Email tidak valid atau tidak dapat menerima pesan.');
     } finally { setLoading(false); }
   };
