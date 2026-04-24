@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "outputDirectory": ".",
   "builds": [
     {
       "src": "index.js",
@@ -15,11 +16,5 @@
   "env": {
     "NODE_ENV": "production",
     "ALLOWED_ORIGINS": "https://sivilize-hub-pro.vercel.app,https://sivilize-frontend.vercel.app"
-  },
-  "crons": [
-    {
-      "path": "/ping",
-      "schedule": "*/5 * * * *"
-    }
-  ]
+  }
 }
