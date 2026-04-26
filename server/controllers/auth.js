@@ -412,18 +412,6 @@ exports.sendOtp = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Format email tidak valid' });
     }
 
-    // Validasi domain email â€” cek apakah domain punya MX record
-    const domain = email.split('@')[1];
-    try {
-      const dns = require('dns').promises;
-      const mx = await dns.resolveMx(domain);
-      if (!mx || mx.length === 0) {
-        return res.status(400).json({ success: false, message: `Email tidak valid â€” domain "${domain}" tidak ditemukan` });
-      }
-    } catch {
-      return res.status(400).json({ success: false, message: `Email tidak valid â€” domain "${domain}" tidak dapat diverifikasi` });
-    }
-
     if (!checkOtpRate(email.toLowerCase())) {
       return res.status(429).json({ success: false, message: 'Terlalu banyak permintaan OTP. Tunggu 1 menit.' });
     }
@@ -433,8 +421,14 @@ exports.sendOtp = async (req, res, next) => {
 
     try {
       await sendOTPEmail(email, otp, purpose || 'login');
-    } catch {
-      return res.status(400).json({ success: false, message: 'Email tidak valid atau tidak dapat menerima pesan. Periksa kembali alamat email Anda.' });
+    } catch (emailErr) {
+      console.error('❌ Gagal kirim OTP:', emailErr.message);
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Gagal mengirim email OTP. Pastikan email Anda benar atau coba lagi nanti.',
+        // Hanya tampilkan detail error jika bukan production
+        ...(process.env.NODE_ENV !== 'production' && { error: emailErr.message })
+      });
     }
 
     res.status(200).json({ success: true, message: `Kode OTP telah dikirim ke ${email}` });
@@ -491,8 +485,8 @@ exports.verifyOtp = async (req, res, next) => {
   }
 };
 
-// â”€â”€ Upload Avatar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€const multer = require('multer');
-
+// ── Upload Avatar ────────────────────────────────────────────
+const multer = require('multer');
 // Vercel serverless: filesystem read-only, pakai memory storage
 const avatarUpload = multer({
   storage: multer.memoryStorage(),
