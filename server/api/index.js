@@ -1,29 +1,28 @@
-const express = require('express');
-const app = express();
+// Entry point untuk Vercel serverless
+// Wrap main app dengan error catching yang proper
 
-// Test apakah basic express jalan
-app.get('/health', (req, res) => res.json({ ok: true, v: 'minimal' }));
-app.get('/', (req, res) => res.json({ ok: true, v: 'minimal' }));
-
-// Load main app dengan error catching
-let mainApp = null;
-let loadError = null;
+let app;
+let startupError = null;
 
 try {
-  mainApp = require('../index.js');
+  app = require('../index.js');
 } catch (err) {
-  loadError = { message: err.message, stack: err.stack?.split('\n').slice(0, 8).join(' | ') };
-  console.error('LOAD ERROR:', err.message);
+  startupError = err;
+  console.error('[STARTUP ERROR]', err.message);
+  console.error(err.stack);
 }
 
-app.use((req, res, next) => {
-  if (loadError) {
-    return res.status(500).json({ error: 'startup_failed', details: loadError });
+module.exports = (req, res) => {
+  if (startupError) {
+    return res.status(500).json({
+      success: false,
+      error: 'startup_failed',
+      message: startupError.message,
+      hint: startupError.stack?.split('\n').slice(0, 3).join(' | ')
+    });
   }
-  if (mainApp) {
-    return mainApp(req, res, next);
+  if (!app) {
+    return res.status(500).json({ success: false, error: 'app_not_loaded' });
   }
-  next();
-});
-
-module.exports = app;
+  return app(req, res);
+};
