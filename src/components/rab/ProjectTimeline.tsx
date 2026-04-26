@@ -4,7 +4,7 @@ import { AHSP_TEMPLATES } from '../../data/ahsp';
 
 interface ProjectTimelineProps {
   items: RABItem[];
-  totalArea?: number; // luas total bangunan dalam mÂ²
+  totalArea?: number; // luas total bangunan dalam m²
 }
 
 const PHASE_ORDER = [
@@ -18,14 +18,14 @@ const PHASE_ORDER = [
 /**
  * Hitung jumlah tim per fase berdasarkan luas bangunan
  * Referensi: SNI & pengalaman lapangan Indonesia
- * - Rumah kecil (<60mÂ²): 1 tim per fase
- * - Rumah sedang (60â€“150mÂ²): 2 tim
- * - Rumah besar (150â€“300mÂ²): 3 tim
- * - Bangunan besar (300â€“600mÂ²): 4â€“5 tim
- * - Gedung (>600mÂ²): 6â€“8 tim
+ * - Rumah kecil (<60m²): 1 tim per fase
+ * - Rumah sedang (60–150m²): 2 tim
+ * - Rumah besar (150–300m²): 3 tim
+ * - Bangunan besar (300–600m²): 4–5 tim
+ * - Gedung (>600m²): 6–8 tim
  */
 function getTeamSize(category: string, totalArea: number): number {
-  // Base team per kategori (untuk rumah 100mÂ²)
+  // Base team per kategori (untuk rumah 100m²)
   const BASE: Record<string, number> = {
     'Persiapan':                1,
     'Tanah & Pondasi':          2,

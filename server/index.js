@@ -1,4 +1,4 @@
-﻿const express = require('express');
+const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const rateLimit = require('express-rate-limit');
@@ -44,7 +44,7 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(mongoSanitize({
   replaceWith: '_',
   onSanitize: ({ req, key }) => {
-    console.warn(`Ã¢Å¡Â Ã¯Â¸Â NoSQL injection attempt blocked: ${key}`);
+    console.warn(`⚠️ NoSQL injection attempt blocked: ${key}`);
   }
 }));
 
@@ -71,7 +71,7 @@ const corsOptions = {
     // Allow explicitly listed origins
     if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) return callback(null, true);
     // Log blocked origin for debugging
-    console.warn(`Ã¢Å¡Â Ã¯Â¸Â CORS blocked origin: ${origin}`);
+    console.warn(`⚠️ CORS blocked origin: ${origin}`);
     callback(new Error('Not allowed by CORS'));
   },
   credentials: false,
@@ -170,7 +170,7 @@ app.use((req, res, next) => {
   const url = req.originalUrl;
   
   if (suspicious.some(s => body.toLowerCase().includes(s.toLowerCase()) || url.toLowerCase().includes(s.toLowerCase()))) {
-    console.warn(`Ã°Å¸Å¡Â¨ SUSPICIOUS REQUEST [${req.requestId}]: ${req.method} ${url} from ${req.ip}`);
+    console.warn(`🚨 SUSPICIOUS REQUEST [${req.requestId}]: ${req.method} ${url} from ${req.ip}`);
   }
   next();
 });
@@ -180,17 +180,17 @@ app.use((req, res, next) => {
 // ============================================================
 const connectDB = async () => {
   const uri = process.env.MONGODB_URI;
-  console.log('Ã°Å¸â€Â MONGODB_URI exists:', !!uri);
+  console.log('🔍 MONGODB_URI exists:', !!uri);
 
   if (!uri) {
-    console.log('Ã¢Å¡Â Ã¯Â¸Â MONGODB_URI tidak ada, pakai in-memory storage');
+    console.log('⚠️ MONGODB_URI tidak ada, pakai in-memory storage');
     return;
   }
 
-  // Retry logic Ã¢â‚¬â€ Vercel cold start kadang butuh beberapa detik
+  // Retry logic — Vercel cold start kadang butuh beberapa detik
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
-      console.log(`Ã°Å¸â€â€ž MongoDB connect attempt ${attempt}/3...`);
+      console.log(`🔄 MongoDB connect attempt ${attempt}/3...`);
       await mongoose.connect(uri, {
         serverSelectionTimeoutMS: 10000,
         socketTimeoutMS: 30000,
@@ -201,27 +201,27 @@ const connectDB = async () => {
         maxIdleTimeMS: 270000, // 4.5 menit Ã¢â‚¬â€ sedikit di bawah Vercel timeout 5 menit
         heartbeatFrequencyMS: 30000,
       });
-      console.log('Ã¢Å“â€¦ MongoDB Connected!');
+      console.log('✅ MongoDB Connected!');
       return;
     } catch (err) {
-      console.log(`Ã¢ÂÅ’ Attempt ${attempt} failed: ${err.message}`);
+      console.log(`❌ Attempt ${attempt} failed: ${err.message}`);
       if (attempt < 3) await new Promise(r => setTimeout(r, 1500));
     }
   }
-  console.log('Ã¢Å¡Â Ã¯Â¸Â Semua attempt gagal, pakai in-memory storage');
+  console.log('⚠️ Semua attempt gagal, pakai in-memory storage');
 };
 
 // Connection event handlers
 mongoose.connection.on('connected', () => {
-  console.log('Ã°Å¸Å¸Â¢ MongoDB connection established');
+  console.log('🟢 MongoDB connection established');
 });
 
 mongoose.connection.on('error', (err) => {
-  console.error('Ã°Å¸â€Â´ MongoDB connection error:', err.message);
+  console.error('🔴 MongoDB connection error:', err.message);
 });
 
 mongoose.connection.on('disconnected', () => {
-  console.warn('Ã°Å¸Å¸Â¡ MongoDB disconnected');
+  console.warn('🟡 MongoDB disconnected');
 });
 
 // Singleton connection promise Ã¢â‚¬â€ reuse antar invocations
@@ -275,7 +275,7 @@ const HONEYPOT_PATHS = [
 HONEYPOT_PATHS.forEach(path => {
   app.all(path, (req, res) => {
     const ip = req.ip || 'unknown';
-    console.warn(`Ã°Å¸ÂÂ¯ HONEYPOT HIT: ${req.method} ${path} from ${ip}`);
+    console.warn(`🍯 HONEYPOT HIT: ${req.method} ${path} from ${ip}`);
 
     // Kirim alert ke admin
     try {
@@ -331,7 +331,7 @@ app.use((req, res) => {
 // Error handler
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || err.status || 500;
-  console.error(`Ã¢ÂÅ’ Error [${req.requestId}]:`, err.message);
+  console.error(`❌ Error [${req.requestId}]:`, err.message);
   res.status(statusCode).json({
     success: false,
     message: process.env.NODE_ENV === 'production'

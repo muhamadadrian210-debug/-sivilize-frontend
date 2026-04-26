@@ -11,24 +11,25 @@ export interface AHSPWarning {
 // Rentang harga satuan wajar per kategori (Rp/satuan) - referensi PUPR 2022
 const PRICE_RANGES: Record<string, { min: number; max: number; unit: string }> = {
   // Struktur
-  'Galian Tanah':         { min: 40000,    max: 150000,   unit: 'mÂ³' },
-  'Beton K-225':          { min: 800000,   max: 2000000,  unit: 'mÂ³' },
-  'Beton K-300':          { min: 900000,   max: 2500000,  unit: 'mÂ³' },
-  'Pembesian':            { min: 15000,    max: 35000,    unit: 'kg' },
-  'Bekisting':            { min: 150000,   max: 400000,   unit: 'mÂ²' },
+  'Galian Tanah':         { min: 40000,    max: 150000,   unit: 'm³' },
+  'Beton K-225':          { min: 800000,   max: 2000000,  unit: 'm³' },
+  'Beton K-300':          { min: 900000,   max: 2500000,  unit: 'm³' },
+  'Besi Tulangan':        { min: 14000,    max: 25000,    unit: 'kg' },
+  'Bekisting':            { min: 150000,   max: 400000,   unit: 'm²' },
   // Dinding
-  'Pasangan Bata':        { min: 80000,    max: 200000,   unit: 'mÂ²' },
-  'Plesteran':            { min: 40000,    max: 100000,   unit: 'mÂ²' },
-  'Acian':                { min: 30000,    max: 80000,    unit: 'mÂ²' },
+  'Pasangan Bata':        { min: 80000,    max: 200000,   unit: 'm²' },
+  'Plesteran':            { min: 40000,    max: 100000,   unit: 'm²' },
+  'Acian':                { min: 30000,    max: 80000,    unit: 'm²' },
+  'Lantai Kerja':         { min: 500000,   max: 1200000,  unit: 'm³' },
   // Lantai
-  'Keramik':              { min: 80000,    max: 300000,   unit: 'mÂ²' },
-  'Granit':               { min: 200000,   max: 800000,   unit: 'mÂ²' },
+  'Keramik':              { min: 80000,    max: 300000,   unit: 'm²' },
+  'Granit':               { min: 200000,   max: 800000,   unit: 'm²' },
   // Finishing
-  'Cat Dinding':          { min: 25000,    max: 80000,    unit: 'mÂ²' },
-  'Plafond':              { min: 80000,    max: 250000,   unit: 'mÂ²' },
+  'Cat Dinding':          { min: 25000,    max: 80000,    unit: 'm²' },
+  'Plafon':               { min: 80000,    max: 250000,   unit: 'm²' },
   // Atap
-  'Rangka Atap Baja':     { min: 150000,   max: 400000,   unit: 'mÂ²' },
-  'Genteng':              { min: 80000,    max: 300000,   unit: 'mÂ²' },
+  'Rangka Atap Baja':     { min: 150000,   max: 400000,   unit: 'm²' },
+  'Genteng':              { min: 80000,    max: 300000,   unit: 'm²' },
   // MEP
   'Instalasi Listrik':    { min: 300000,   max: 1500000,  unit: 'titik' },
   'Instalasi Air':        { min: 200000,   max: 800000,   unit: 'titik' },

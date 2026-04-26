@@ -79,10 +79,10 @@ const getFallbackResponse = (input: string): string => {
     return 'Rekomendasi pondasi berdasarkan jenis tanah:\nâ€¢ **Tanah keras** â†’ Batu kali (paling ekonomis)\nâ€¢ **Tanah sedang** â†’ Footplate\nâ€¢ **Tanah lunak** â†’ Strauss pile\nâ€¢ **Tanah gambut** â†’ Tiang pancang (wajib)\nâ€¢ **Tanah berbatu** â†’ Batu kali / footplate\n\nDi Kalkulator RAB, pilih jenis tanah dan sistem otomatis rekomendasikan pondasi yang tepat!';
   }
   if (q.includes('beton') || q.includes('k-225') || q.includes('k225')) {
-    return 'Komposisi Beton K-225 per mÂ³ (AHSP SNI):\nâ€¢ Semen PC: 371 kg\nâ€¢ Pasir beton: 0.498 mÂ³\nâ€¢ Krikil/split: 0.776 mÂ³\nâ€¢ Air: 215 liter\n\nUpah tenaga kerja:\nâ€¢ Pekerja: 1.65 OH\nâ€¢ Tukang batu: 0.275 OH\nâ€¢ Mandor: 0.083 OH\n\nHarga satuan ~Rp 1.3-1.5 juta/mÂ³ tergantung lokasi.';
+    return 'Komposisi Beton K-225 per m³ (AHSP SNI):\n• Semen PC: 371 kg\n• Pasir beton: 0.498 m³\n• Krikil/split: 0.776 m³\n• Air: 215 liter\n\nUpah tenaga kerja:\n• Pekerja: 1.65 OH\n• Tukang batu: 0.275 OH\n• Mandor: 0.083 OH\n\nHarga satuan ~Rp 1.3-1.5 juta/m³ tergantung lokasi.';
   }
   if (q.includes('bata') || q.includes('pasangan dinding')) {
-    return 'Pasangan bata merah 1:4 per mÂ²:\nâ€¢ Bata merah: 70 buah\nâ€¢ Semen PC: 11.5 kg\nâ€¢ Pasir pasang: 0.043 mÂ³\n\nUpah: Tukang batu 0.1 OH + Pekerja 0.3 OH\nProduktivitas: ~10 mÂ²/hari per tim';
+    return 'Pasangan bata merah 1:4 per m²:\n• Bata merah: 70 buah\n• Semen PC: 11.5 kg\n• Pasir pasang: 0.043 m³\n\nUpah: Tukang batu 0.1 OH + Pekerja 0.3 OH\nProduktivitas: ~10 m²/hari per tim';
   }
   if (q.includes('ahsp') || q.includes('harga satuan')) {
     return 'AHSP (Analisa Harga Satuan Pekerjaan) adalah standar perhitungan biaya konstruksi Indonesia berdasarkan **SE 47/SE/Dk/2026**.\n\nSetiap item pekerjaan punya koefisien material + upah tenaga kerja. Di SIVILIZE, lo bisa klik **"Lihat Komposisi AHSP"** di setiap item RAB untuk lihat detail lengkapnya!';

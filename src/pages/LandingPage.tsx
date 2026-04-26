@@ -215,7 +215,7 @@ const LandingPage = ({ onGetStarted }: LandingPageProps) => {
           </div>
 
           <p className="text-text-secondary text-sm mt-6">
-            âœ“ Gratis &nbsp;Â·&nbsp; âœ“ Tanpa kartu kredit &nbsp;Â·&nbsp; âœ“ Langsung bisa dipakai
+            ✓ Gratis &nbsp;·&nbsp; ✓ Tanpa kartu kredit &nbsp;·&nbsp; ✓ Langsung bisa dipakai
           </p>
         </motion.div>
 
