@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿export interface CityPrices {
+export interface CityPrices {
   id: string;
   name: string;
   provinceId: string;
@@ -17,12 +17,12 @@ export interface ProvinceOption {
 
 export type MaterialGrade = 'A' | 'B' | 'C';
 
-// Tipe lokasi proyek â€” menentukan multiplier ongkos angkut
+// Tipe lokasi proyek — menentukan multiplier ongkos angkut
 export type LocationType = 'kota' | 'pinggiran' | 'pelosok' | 'sangat-terpencil';
 
 export const LOCATION_TYPE_OPTIONS: { id: LocationType; label: string; multiplier: number; desc: string }[] = [
   { id: 'kota',            label: 'Pusat Kota',        multiplier: 1.00, desc: 'Akses mudah, material tersedia' },
-  { id: 'pinggiran',       label: 'Pinggiran Kota',    multiplier: 1.08, desc: 'Jarak 10â€“30km dari pusat kota' },
+  { id: 'pinggiran',       label: 'Pinggiran Kota',    multiplier: 1.08, desc: 'Jarak 10–30km dari pusat kota' },
   { id: 'pelosok',         label: 'Pelosok/Desa',      multiplier: 1.18, desc: 'Jarak >30km, akses terbatas' },
   { id: 'sangat-terpencil',label: 'Sangat Terpencil',  multiplier: 1.35, desc: 'Pulau terpencil, pegunungan, akses sulit' },
 ];
@@ -62,10 +62,8 @@ const defaultMaterials: Record<string, number> = {
   'Cat Kayu': 75000,          // per kg
 
   // === KAYU & KUSEN ===
-  'Kayu Kusen': 4500000,      // per mÂ³ (kayu kelas II)
-  'Kayu Rangka Atap': 3800000,// per mÂ³
-
-  // === PINTU ===
+  'Kayu Kusen': 4500000,      // per m³ (kayu kelas II)
+  'Kayu Rangka Atap': 3800000,// per m³
   'Daun Pintu Panel': 850000, // per unit (pintu panel kayu)
   'Daun Pintu PVC': 650000,   // per unit (pintu PVC kamar mandi)
   'Engsel Pintu': 45000,      // per buah (engsel tanam)
@@ -75,7 +73,7 @@ const defaultMaterials: Record<string, number> = {
   'Daun Jendela': 350000,     // per unit
   'Engsel Jendela': 35000,    // per buah
   'Grendel': 25000,           // per buah
-  'Kaca Polos 5mm': 120000,   // per mÂ²
+  'Kaca Polos 5mm': 120000,   // per m²
 
   // === ALUMINIUM ===
   'Kusen Aluminium': 850000,  // per set (kusen + frame)
@@ -110,17 +108,18 @@ const defaultMaterials: Record<string, number> = {
   'MCB 1 Phase': 85000,       // per buah
 
   // === ATAP ===
-  'Genteng Beton': 8500,      // per buah (~14 buah/mÂ²)
+  'Genteng Beton': 8500,      // per buah (~14 buah/m²)
   'Genteng Keramik': 12000,   // per buah
-  'Spandek/Galvalum': 85000,  // per mÂ²
+  'Spandek/Galvalum': 85000,  // per m²
   'Baja Ringan C75': 18500,   // per kg
   'Reng Baja Ringan': 12000,  // per kg
   'Sekrup Roofing': 850,      // per buah
   'Sealant': 45000,           // per kg
 
   // === PONDASI ===
-  'Batu Kali': 280000,        // per mÂ³
-  'Pasir Urug': 180000,       // per mÂ³
+  'Batu Kali': 280000,        // per m³
+  'Pasir Urug': 180000,       // per m³
+  'Pasir': 295000,            // alias Pasir Pasang
 
   // === PERSIAPAN ===
   'Kayu Kaso 5/7': 3500000,     // per m³
@@ -137,6 +136,9 @@ const defaultMaterials: Record<string, number> = {
   'Kayu Bekisting': 3200000,  // per m³ (kayu kelas III)
   'Paku': 22000,              // per kg
   'Minyak Bekisting': 15000,  // per liter
+
+  // === AKSESORIS LAIN ===
+  'Engsel': 45000,            // alias Engsel Pintu
 
   // === LANTAI & DINDING KERAMIK ===
   'Keramik 40x40': 85000,       // per m² (standar grade B)
@@ -170,7 +172,6 @@ const defaultMaterials: Record<string, number> = {
   'Bracket AC': 85000,          // per set
 
   // === DRAINASE ===
-  'Pasir Urug': 180000,         // per m³
   // === EKSTERIOR ===
   'Cat Eksterior': 95000,           // per kg (weathershield)
   'Cat Dasar Eksterior': 60000,     // per kg

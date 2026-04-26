@@ -98,6 +98,7 @@ export async function importData(
     // Import templates (selalu dengan ID baru)
     if (Array.isArray(backup.rabTemplates)) {
       for (const template of backup.rabTemplates) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { id: _id, createdAt: _createdAt, ...templateData } = template;
         callbacks.saveRABTemplate(templateData);
         result.templatesImported++;

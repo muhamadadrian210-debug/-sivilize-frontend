@@ -20,6 +20,7 @@ const NotificationPanel = () => {
   const unread = notifications.filter(n => !n.read).length;
 
   const formatTime = (ts: number) => {
+    // eslint-disable-next-line react-hooks/purity
     const diff = Date.now() - ts;
     if (diff < 60000) return 'Baru saja';
     if (diff < 3600000) return `${Math.floor(diff / 60000)} menit lalu`;

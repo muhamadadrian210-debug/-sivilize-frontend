@@ -162,7 +162,7 @@ const AuthPage = () => {
       const axiosErr = err as AxiosLikeError;
       const errData = axiosErr.response?.data;
       if (errData?.errors) setError(errData.errors.map(e => e.message).join('\n'));
-      else if (!axiosErr.response) setError('Server sedang memuat, tunggu 10 detik lalu coba lagi.');
+      else if (!axiosErr.response) setError('Tidak ada respon dari server. Periksa koneksi internet Anda atau coba lagi beberapa saat lagi.');
       else setError(errData?.message || 'Terjadi kesalahan. Silakan coba lagi.');
     } finally { setLoading(false); }
   };

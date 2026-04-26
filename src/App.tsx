@@ -34,16 +34,6 @@ function App() {
   const [showAuth, setShowAuth] = useState(false);
   useDataSync(); // Sinkronisasi data proyek dengan server
 
-  // Tampilkan halaman prank jika URL /prank
-  if (window.location.pathname === '/prank') {
-    return <PrankPage />;
-  }
-
-  // Tampilkan halaman share jika URL /share/:token
-  if (window.location.pathname.startsWith('/share/')) {
-    return <ShareView />;
-  }
-
   // Wake up backend saat app load + keep-alive ping setiap 4 menit
   useEffect(() => {
     const BACKEND_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'https://sivilize-backend.vercel.app';
@@ -99,7 +89,17 @@ function App() {
   useEffect(() => {
     if (!isAuthenticated) return;
     runNotificationEngine(projects, notifications, addNotification);
-  }, [isAuthenticated, projects]);
+  }, [isAuthenticated, projects, notifications, addNotification]);
+
+  // Tampilkan halaman prank jika URL /prank
+  if (window.location.pathname === '/prank') {
+    return <PrankPage />;
+  }
+
+  // Tampilkan halaman share jika URL /share/:token
+  if (window.location.pathname.startsWith('/share/')) {
+    return <ShareView />;
+  }
 
   if (!isAuthenticated) {
     if (showAuth) {

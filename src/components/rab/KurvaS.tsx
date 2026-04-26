@@ -17,7 +17,7 @@ const KurvaS = ({ project }: KurvaSProps) => {
   const { showToast } = useToast();
 
   const latestVersion = project.versions?.[project.versions.length - 1];
-  const items = latestVersion?.rabItems || [];
+  const items = useMemo(() => latestVersion?.rabItems || [], [latestVersion]);
   const grandTotal = latestVersion?.summary?.grandTotal || 0;
 
   const [viewMode, setViewMode] = useState<'weekly' | 'monthly'>('weekly');
@@ -27,7 +27,7 @@ const KurvaS = ({ project }: KurvaSProps) => {
   const [endDate, setEndDate] = useState(project.endDate || '');
   const [dateError, setDateError] = useState('');
 
-  const manualProgress = project.manualProgress || {};
+  const manualProgress = useMemo(() => project.manualProgress || {}, [project.manualProgress]);
 
   const handleDateChange = (field: 'startDate' | 'endDate', value: string) => {
     if (field === 'startDate') {
@@ -62,9 +62,11 @@ const KurvaS = ({ project }: KurvaSProps) => {
   const lastLog = [...(project.dailyLogs || [])].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
   const currentProgress = lastLog?.progressPercent || 0;
 
-  const currentWeek = startDate
-    ? Math.ceil((Date.now() - new Date(startDate).getTime()) / (7 * 24 * 60 * 60 * 1000))
-    : null;
+  const currentWeek = useMemo(() => {
+    if (!startDate) return null;
+    // eslint-disable-next-line react-hooks/purity
+    return Math.ceil((Date.now() - new Date(startDate).getTime()) / (7 * 24 * 60 * 60 * 1000));
+  }, [startDate]);
 
   const planAtCurrentWeek = currentWeek && weeklyData.length > 0
     ? weeklyData[Math.min(currentWeek, weeklyData.length - 1)]?.rencana || 0

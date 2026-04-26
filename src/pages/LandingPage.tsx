@@ -1,8 +1,8 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Calculator, BarChart3, BookOpen, Database, Shield, Smartphone,
-  ArrowRight, CheckCircle2, Star, Building2, Users, TrendingUp,
+  ArrowRight, CheckCircle2, Star, Building2,
   FileText, Zap, Globe, ChevronDown, Menu, X
 } from 'lucide-react';
 import { LogoCivil as CivilEngineeringLogo } from '../components/LogoCivil';

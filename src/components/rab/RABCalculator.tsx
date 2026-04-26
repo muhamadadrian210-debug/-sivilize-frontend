@@ -11,8 +11,6 @@ import {
   CheckCircle2,
   Info,
   AlertTriangle,
-  FileText,
-  FileDown,
   Sparkles,
   Upload,
   AlertCircle,
@@ -21,8 +19,7 @@ import {
   Lightbulb,
   Printer,
   GitCompare,
-  Share2,
-  Copy
+  Share2
 } from 'lucide-react';
 import { useStore, type RABItem, type Project } from '../../store/useStore';
 import { AHSP_TEMPLATES } from '../../data/ahsp';
@@ -46,10 +43,9 @@ import {
   formatCurrency, 
   getCostCategory 
 } from '../../utils/calculations';
-import { exportToPDF, exportToExcel } from '../../utils/exportUtils';
 import { validateRABItems } from '../../utils/ahspValidator';
 import RABVisionUpload from './RABVisionUpload';
-import DimensionExtras, { DEFAULT_REBAR_CONFIG, getDimensionErrors, getWallPreview, getRebarPreview, type RebarConfig } from './DimensionExtras';
+import DimensionExtras, { DEFAULT_REBAR_CONFIG, getDimensionErrors, type RebarConfig } from './DimensionExtras';
 import RABSplitView from './RABSplitView';
 import MaterialPriceEditor from './MaterialPriceEditor';
 import { useAutoSave } from '../../hooks/useAutoSave';
@@ -451,7 +447,6 @@ const RABCalculator = () => {
       }
 
       // Kolom & balok struktur atas — pakai rebarConfig untuk akurasi besi
-      const kolomDim = (projectData.floors ?? 1) >= 2 ? 0.20 : 0.15;
       const kolomH = dims[0].height ?? 3;
       const nKolom = Math.ceil(totalArea / 9);
       const concreteVol = totalArea * 0.12;

@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { TrendingUp, Plus, Trash2, Camera, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { TrendingUp, Plus, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { useStore, type CostRealization } from '../../store/useStore';
-import { formatCurrency, calculateTotalRAB } from '../../utils/calculations';
+import { formatCurrency } from '../../utils/calculations';
 import { useToast } from '../common/Toast';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 

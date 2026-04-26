@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 /**
  * DimensionExtras — Fitur tambahan di step 2:
  * - Validasi dimensi

@@ -1,8 +1,9 @@
+/* eslint-disable react-refresh/only-export-components */
 /**
  * Bar kecil di atas yang menunjukkan status sinkronisasi data
  */
 import { useState, useEffect } from 'react';
-import { Cloud, CloudOff, RefreshCw, CheckCircle2 } from 'lucide-react';
+import { CloudOff, RefreshCw } from 'lucide-react';
 
 type SyncStatus = 'synced' | 'syncing' | 'offline' | 'error';
 

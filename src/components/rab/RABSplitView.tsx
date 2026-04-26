@@ -104,7 +104,11 @@ const RABSplitView = ({ items, cityId, grade }: RABSplitViewProps) => {
   const toggleRow = (no: number) => {
     setExpandedRows(prev => {
       const next = new Set(prev);
-      next.has(no) ? next.delete(no) : next.add(no);
+      if (next.has(no)) {
+        next.delete(no);
+      } else {
+        next.add(no);
+      }
       return next;
     });
   };

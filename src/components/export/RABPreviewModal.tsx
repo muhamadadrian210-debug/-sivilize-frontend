@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { X, FileDown, FileText, Building2, User, Hash, MessageCircle } from 'lucide-react';
 import { type Project, type RABItem, type FinancialSettings } from '../../store/useStore';
 import { calculateTotalRAB } from '../../utils/calculations';
@@ -33,25 +33,22 @@ const DEFAULT_EXPORT_CONFIG: ExportConfig = {
 };
 
 const RABPreviewModal = ({ isOpen, onClose, project, items, financials, grade }: RABPreviewModalProps) => {
-  const [config, setConfig] = useState<ExportConfig>(DEFAULT_EXPORT_CONFIG);
-
-  // Load config dari localStorage saat mount
-  useEffect(() => {
-    if (!isOpen) return;
+  const [config, setConfig] = useState<ExportConfig>(() => {
     try {
       const saved = localStorage.getItem(EXPORT_CONFIG_STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved) as Partial<ExportConfig>;
-        setConfig({
+        return {
           companyName: parsed.companyName || DEFAULT_EXPORT_CONFIG.companyName,
           estimatorName: parsed.estimatorName || '',
-          documentNumber: generateDocNumber(), // selalu generate baru
-        });
+          documentNumber: generateDocNumber(),
+        };
       }
     } catch {
       // ignore
     }
-  }, [isOpen]);
+    return DEFAULT_EXPORT_CONFIG;
+  });
 
   if (!isOpen) return null;
 

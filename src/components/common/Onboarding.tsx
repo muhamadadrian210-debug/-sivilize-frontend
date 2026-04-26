@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import {
-  Calculator, BookOpen, BarChart3, Layers, Shield,
+  Calculator, BookOpen, BarChart3, Shield,
   ChevronRight, CheckCircle2, Bell, Share2, Download,
   Users, Lock, AlertTriangle, Play, Pause
 } from 'lucide-react';
@@ -154,14 +154,14 @@ const Onboarding = () => {
   const [show, setShow] = useState(() => !localStorage.getItem('sivilize_onboarding_done'));
   const [step, setStep] = useState(0);
   const [timeLeft, setTimeLeft] = useState(MIN_READ_TIME);
-  const [canProceed, setCanProceed] = useState(false);
+  const canProceed = timeLeft <= 0;
   const [isPaused, setIsPaused] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Reset timer setiap ganti slide
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTimeLeft(MIN_READ_TIME);
-    setCanProceed(false);
     setIsPaused(false);
   }, [step]);
 
@@ -169,13 +169,11 @@ const Onboarding = () => {
   useEffect(() => {
     if (!show || isPaused) return;
     if (timeLeft <= 0) {
-      setCanProceed(true);
       return;
     }
     timerRef.current = setInterval(() => {
       setTimeLeft(t => {
         if (t <= 1) {
-          setCanProceed(true);
           return 0;
         }
         return t - 1;

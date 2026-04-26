@@ -58,6 +58,7 @@ export const sanitizeFormData = <T extends Record<string, unknown>>(data: T): T 
       // Trim whitespace dan hapus karakter berbahaya
       (sanitized[key] as string) = (sanitized[key] as string)
         .trim()
+        // eslint-disable-next-line no-control-regex
         .replace(/[\x00-\x1F\x7F]/g, ''); // hapus control characters
     }
   }

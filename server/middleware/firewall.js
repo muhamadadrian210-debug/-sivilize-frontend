@@ -22,9 +22,9 @@ const CONFIG = {
   BRUTE_BLOCK_DURATION_MS: 60 * 60 * 1000, // Blokir 1 jam
 
   // Aggressive DDoS (request sangat cepat)
-  AGGRESSIVE_THRESHOLD: 50,        // 50 request dalam 5 detik = DDoS agresif
+  AGGRESSIVE_THRESHOLD: 100,       // Dilonggarkan dari 50 ke 100 agar user sah tidak terblokir
   AGGRESSIVE_WINDOW_MS: 5 * 1000,  // Window 5 detik
-  AGGRESSIVE_BLOCK_DURATION_MS: 24 * 60 * 60 * 1000, // Blokir 24 jam
+  AGGRESSIVE_BLOCK_DURATION_MS: 2 * 60 * 60 * 1000, // Blokir dikurangi dari 24 jam ke 2 jam agar tidak terlalu fatal
 
   // Concurrent connection limit
   MAX_CONCURRENT: 20,              // Max 20 koneksi bersamaan per IP

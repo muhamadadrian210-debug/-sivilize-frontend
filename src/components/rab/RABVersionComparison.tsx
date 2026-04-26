@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/preserve-manual-memoization */
 import { useState, useMemo } from 'react';
 import { X, GitCompare, TrendingUp, TrendingDown, Plus, Minus } from 'lucide-react';
 import { useStore, type ProjectVersion } from '../../store/useStore';
@@ -8,7 +9,7 @@ interface RABVersionComparisonProps {
   onClose: () => void;
 }
 
-export interface ComparisonItem {
+interface ComparisonItem {
   id: string;
   category: string;
   name: string;
@@ -23,7 +24,7 @@ export interface ComparisonItem {
   status: 'added' | 'removed' | 'increased' | 'decreased' | 'unchanged';
 }
 
-export function computeVersionDiff(
+function computeVersionDiff(
   versionA: ProjectVersion,
   versionB: ProjectVersion
 ): ComparisonItem[] {

@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, type ReactNode } from 'react';
 
 type Language = 'id' | 'en';
@@ -121,5 +122,3 @@ export function useLanguageContext(): LanguageContextValue {
   }
   return ctx;
 }
-
-export default LanguageContext;

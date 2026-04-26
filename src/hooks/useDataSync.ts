@@ -36,7 +36,7 @@ export function useDataSync() {
       syncedRef.current = false;
       pullFromServer();
     }
-  }, [isAuthenticated, user?.id]);
+  }, [isAuthenticated, user, pullFromServer]);
 
   // Re-sync setiap 5 menit jika ada perubahan
   useEffect(() => {
