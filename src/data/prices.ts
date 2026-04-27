@@ -47,9 +47,9 @@ export interface RegionalPriceOverride {
 const defaultMaterials: Record<string, number> = {
   // === STRUKTUR ===
   'Semen PC': 1450,           // per kg (~Rp 72.500/sak 50kg, update 2026)
-  'Pasir Pasang': 295000,     // per m³
-  'Pasir Beton': 335000,      // per m³
-  'Krikil (Split)': 345000,   // per m³
+  'Pasir Pasang': 295000,     // per m3
+  'Pasir Beton': 335000,      // per m3
+  'Krikil (Split)': 345000,   // per m3
   'Bata Merah': 850,          // per buah
   'Besi Beton': 15500,        // per kg (update 2026)
   'Kawat Beton': 23000,       // per kg
@@ -62,8 +62,8 @@ const defaultMaterials: Record<string, number> = {
   'Cat Kayu': 75000,          // per kg
 
   // === KAYU & KUSEN ===
-  'Kayu Kusen': 4500000,      // per m³ (kayu kelas II)
-  'Kayu Rangka Atap': 3800000,// per m³
+  'Kayu Kusen': 4500000,      // per m3 (kayu kelas II)
+  'Kayu Rangka Atap': 3800000,// per m3
   'Daun Pintu Panel': 850000, // per unit (pintu panel kayu)
   'Daun Pintu PVC': 650000,   // per unit (pintu PVC kamar mandi)
   'Engsel Pintu': 45000,      // per buah (engsel tanam)
@@ -73,7 +73,7 @@ const defaultMaterials: Record<string, number> = {
   'Daun Jendela': 350000,     // per unit
   'Engsel Jendela': 35000,    // per buah
   'Grendel': 25000,           // per buah
-  'Kaca Polos 5mm': 120000,   // per m²
+  'Kaca Polos 5mm': 120000,   // per m2
 
   // === ALUMINIUM ===
   'Kusen Aluminium': 850000,  // per set (kusen + frame)
@@ -108,23 +108,23 @@ const defaultMaterials: Record<string, number> = {
   'MCB 1 Phase': 85000,       // per buah
 
   // === ATAP ===
-  'Genteng Beton': 8500,      // per buah (~14 buah/m²)
+  'Genteng Beton': 8500,      // per buah (~14 buah/m2)
   'Genteng Keramik': 12000,   // per buah
-  'Spandek/Galvalum': 85000,  // per m²
+  'Spandek/Galvalum': 85000,  // per m2
   'Baja Ringan C75': 18500,   // per kg
   'Reng Baja Ringan': 12000,  // per kg
   'Sekrup Roofing': 850,      // per buah
   'Sealant': 45000,           // per kg
 
   // === PONDASI ===
-  'Batu Kali': 280000,        // per m³
-  'Pasir Urug': 180000,       // per m³
+  'Batu Kali': 280000,        // per m3
+  'Pasir Urug': 180000,       // per m3
   'Pasir': 295000,            // alias Pasir Pasang
 
   // === PERSIAPAN ===
-  'Kayu Kaso 5/7': 3500000,     // per m³
-  'Papan Kayu 2/20': 3200000,   // per m³
-  'Seng Gelombang': 85000,      // per m²
+  'Kayu Kaso 5/7': 3500000,     // per m3
+  'Papan Kayu 2/20': 3200000,   // per m3
+  'Seng Gelombang': 85000,      // per m2
   // === K3 ===
   'Helm Proyek': 85000,         // per buah
   'Rompi Safety': 65000,        // per buah
@@ -133,7 +133,7 @@ const defaultMaterials: Record<string, number> = {
   'Kacamata Safety': 35000,     // per buah
   'Kotak P3K': 150000,          // per set
   'APAR (Alat Pemadam)': 350000,// per buah
-  'Kayu Bekisting': 3200000,  // per m³ (kayu kelas III)
+  'Kayu Bekisting': 3200000,  // per m3 (kayu kelas III)
   'Paku': 22000,              // per kg
   'Minyak Bekisting': 15000,  // per liter
 
@@ -141,20 +141,20 @@ const defaultMaterials: Record<string, number> = {
   'Engsel': 45000,            // alias Engsel Pintu
 
   // === LANTAI & DINDING KERAMIK ===
-  'Keramik 40x40': 85000,       // per m² (standar grade B)
-  'Keramik 60x60': 120000,      // per m²
-  'Granit 60x60': 250000,       // per m²
-  'Keramik Dinding 25x40': 75000, // per m²
+  'Keramik 40x40': 85000,       // per m2 (standar grade B)
+  'Keramik 60x60': 120000,      // per m2
+  'Granit 60x60': 250000,       // per m2
+  'Keramik Dinding 25x40': 75000, // per m2
   'Semen Warna': 18000,         // per kg
   'Amplas': 5000,               // per lembar
 
   // === FINISHING TAMBAHAN ===
   'Waterproofing Coating': 85000, // per kg
-  'Gypsum Board 9mm': 65000,    // per m²
-  'Rangka Metal Furing': 45000, // per m²
+  'Gypsum Board 9mm': 65000,    // per m2
+  'Rangka Metal Furing': 45000, // per m2
   'Sekrup Gypsum': 500,         // per buah
   'Compound Gypsum': 25000,     // per kg
-  'GRC Board 4mm': 55000,       // per m²
+  'GRC Board 4mm': 55000,       // per m2
 
   // === BATA RINGAN ===
   'Bata Ringan AAC 10cm': 12000,  // per buah (60x20x10cm)
@@ -177,7 +177,7 @@ const defaultMaterials: Record<string, number> = {
   'Cat Dasar Eksterior': 60000,     // per kg
   'Plamir Eksterior': 32000,        // per kg
   // === TANAH URUG ===
-  'Tanah Urug': 120000,             // per m³
+  'Tanah Urug': 120000,             // per m3
 };
 
 // Upah tenaga kerja per OH (Orang Hari) - harga pasar 2026

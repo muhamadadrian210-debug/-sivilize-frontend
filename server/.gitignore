@@ -4,3 +4,5 @@ node_modules/
 uploads/
 *.log
 localDb.json
+.vercel
+.env*.local
