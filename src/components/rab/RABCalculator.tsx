@@ -1,4 +1,4 @@
-import { Fragment, useState, useMemo, useEffect } from 'react';
+﻿import { Fragment, useState, useMemo, useEffect } from 'react';
 import { 
   Trash2, 
   ChevronRight, 
@@ -145,7 +145,8 @@ const LEVEL_STYLE = {
   recommended: 'bg-green-500/10 border-green-500/30 text-green-400',
   possible:    'bg-blue-500/10 border-blue-500/30 text-blue-400',
   avoid:       'bg-red-500/10 border-red-500/30 text-red-400',
-};-----1`   {
+};
+const LEVEL_LABEL = {
   recommended: '✓ Direkomendasikan',
   possible:    '~ Bisa Dipakai',
   avoid:       '✗ Hindari',
