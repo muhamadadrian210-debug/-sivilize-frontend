@@ -27,9 +27,10 @@ import {
 import { calculateAHSPItem } from '../../utils/calculations';
 import { importRegionalPriceCsv, importRegionalPriceFromApi } from '../../services/regionalPriceDataset';
 import HSPKManager from './HSPKManager';
+import CustomAHSPEditor from './CustomAHSPEditor';
 
 const AHSPDatabase = () => {
-  const [mainTab, setMainTab] = useState<'ahsp' | 'hspk'>('ahsp');
+  const [mainTab, setMainTab] = useState<'ahsp' | 'hspk' | 'custom'>('ahsp');
   const [search, setSearch] = useState('');
   const [selectedProvince, setSelectedProvince] = useState(DEFAULT_PROVINCE_ID);
   const [selectedCity, setSelectedCity] = useState(DEFAULT_CITY_ID);
@@ -51,7 +52,7 @@ const AHSPDatabase = () => {
   return (
     <div className="space-y-8">
       {/* Main Tab Switcher */}
-      <div className="flex items-center gap-2 bg-background border border-border p-1 rounded-xl w-fit">
+      <div className="flex items-center gap-2 bg-background border border-border p-1 rounded-xl w-fit flex-wrap">
         <button onClick={() => setMainTab('ahsp')}
           className={`px-5 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${mainTab === 'ahsp' ? 'bg-primary text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}>
           <Layers size={16} /> Database AHSP
@@ -60,7 +61,14 @@ const AHSPDatabase = () => {
           className={`px-5 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${mainTab === 'hspk' ? 'bg-primary text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}>
           <MapPin size={16} /> HSPK Regional
         </button>
+        <button onClick={() => setMainTab('custom')}
+          className={`px-5 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${mainTab === 'custom' ? 'bg-primary text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}>
+          <Edit2 size={16} /> Custom Daerah Saya
+        </button>
       </div>
+
+      {/* Custom AHSP per User */}
+      {mainTab === 'custom' && <CustomAHSPEditor />}
 
       {/* HSPK Manager */}
       {mainTab === 'hspk' && <HSPKManager />}
