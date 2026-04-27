@@ -145,8 +145,7 @@ const LEVEL_STYLE = {
   recommended: 'bg-green-500/10 border-green-500/30 text-green-400',
   possible:    'bg-blue-500/10 border-blue-500/30 text-blue-400',
   avoid:       'bg-red-500/10 border-red-500/30 text-red-400',
-};
-const LEVEL_LABEL = {
+};-----1`   {
   recommended: '✓ Direkomendasikan',
   possible:    '~ Bisa Dipakai',
   avoid:       '✗ Hindari',
@@ -991,6 +990,19 @@ const RABCalculator = () => {
       case 3:
         return (
           <div className="space-y-8">
+            {/* Disclaimer estimasi — selalu tampil di atas */}
+            <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 flex gap-3 items-start">
+              <span className="text-2xl">📋</span>
+              <div className="space-y-1">
+                <p className="text-white text-sm font-black">Ini adalah PERKIRAAN, bukan angka pasti!</p>
+                <p className="text-text-secondary text-xs leading-relaxed">
+                  Bayangkan ini seperti <strong className="text-white">taksiran harga di pasar</strong> — bisa lebih murah, bisa lebih mahal.
+                  Sebelum mulai bangun, <strong className="text-blue-300">wajib tunjukkan hasil ini ke kontraktor atau arsitek</strong> untuk dicek ulang.
+                  Jangan langsung bayar tukang hanya berdasarkan angka ini ya! 🙏
+                </p>
+              </div>
+            </div>
+
             {/* Auto-save indicator */}
             {autoSaveStatus && (
               <div className="flex items-center gap-2 text-xs text-text-secondary">

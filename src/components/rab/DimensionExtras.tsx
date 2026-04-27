@@ -250,6 +250,29 @@ const DimensionExtras = ({ projectData, setProjectData, totalArea, totalVolume, 
           <span className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-full font-bold">Akurasi Besi</span>
         </h4>
         <p className="text-text-secondary text-xs">Sesuaikan dengan gambar struktur. Default = SNI rumah tinggal 1–2 lantai.</p>
+
+        {/* Disclaimer mudah dimengerti */}
+        <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-3 space-y-1">
+          <p className="text-yellow-400 text-xs font-black flex items-center gap-1.5">
+            ⚠️ Penting dibaca dulu!
+          </p>
+          <p className="text-yellow-200/80 text-xs leading-relaxed">
+            Angka di bawah ini sudah <strong className="text-white">diisi otomatis</strong> sesuai standar rumah biasa (SNI).
+            <br />
+            <span className="text-yellow-300 font-bold">Kalau kamu punya gambar dari arsitek</span> — sesuaikan angkanya dengan yang ada di gambar itu.
+            <br />
+            <span className="text-white/60">Kalau tidak punya gambar, biarkan saja seperti ini.</span>
+          </p>
+        </div>
+
+        {/* Disclaimer hasil estimasi */}
+        <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-3">
+          <p className="text-red-300/80 text-[11px] leading-relaxed">
+            🏠 <strong className="text-white">Hasil RAB ini adalah perkiraan.</strong> Bukan angka pasti.
+            Wajib dicek ulang sama kontraktor atau arsitek sebelum mulai bangun.
+            Seperti perkiraan bensin — bisa lebih, bisa kurang.
+          </p>
+        </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {[
             { label: 'Kolom', color: 'blue',   dKey: 'kolomDiameter', sKey: 'kolomSengkang', diameters: [10,12,13,16,19,22], spacings: [100,125,150,200] },
