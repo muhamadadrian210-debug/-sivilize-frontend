@@ -105,6 +105,35 @@ async function sendOTPEmail(email, otp, purpose) {
     + '&copy; 2026 Sivilize Corp. All rights reserved.'
     + '</p></div>';
 
+  const subject = '[Sivilize Corp] Kode OTP ' + label + ': ' + otp;
+
+  // ── Coba Gmail SMTP dulu (bisa kirim ke semua email) ──────
+  const smtpUser = process.env.SMTP_USER;
+  const smtpPass = process.env.SMTP_PASS;
+  if (smtpUser && smtpPass) {
+    try {
+      const nodemailer = require('nodemailer');
+      const transporter = nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false,
+        auth: { user: smtpUser, pass: smtpPass },
+        tls: { rejectUnauthorized: false },
+      });
+      await transporter.sendMail({
+        from: '"Sivilize Corp" <' + smtpUser + '>',
+        to: email,
+        subject: subject,
+        html: html,
+      });
+      console.log('OTP terkirim via Gmail SMTP ke ' + email);
+      return { success: true };
+    } catch (smtpErr) {
+      console.error('Gmail SMTP gagal, fallback ke Resend:', smtpErr.message);
+    }
+  }
+
+  // ── Fallback: Resend API ──────────────────────────────────
   if (!apiKey) {
     console.log('[DEV] OTP untuk ' + email + ': ' + otp);
     return { success: true, dev: true };
@@ -119,7 +148,7 @@ async function sendOTPEmail(email, otp, purpose) {
     body: JSON.stringify({
       from: FROM,
       to: [email],
-      subject: '[Sivilize Corp] Kode OTP ' + label + ': ' + otp,
+      subject: subject,
       html: html,
     }),
   });
@@ -129,7 +158,7 @@ async function sendOTPEmail(email, otp, purpose) {
     throw new Error(err.message || 'Resend API error: ' + res.status);
   }
 
-  console.log('OTP terkirim ke ' + email);
+  console.log('OTP terkirim via Resend ke ' + email);
   return { success: true };
 }
 
