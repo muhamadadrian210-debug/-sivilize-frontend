@@ -1,4 +1,4 @@
-﻿﻿const jwt = require('jsonwebtoken');
+﻿﻿﻿const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
 const { validateRegister, validateLogin } = require('../validators/authValidator');
@@ -392,7 +392,7 @@ function checkOtpRate(email) {
   const now = Date.now();
   const rec = otpRateLimit.get(email) || { count: 0, first: now };
   if (now - rec.first > 60 * 1000) { rec.count = 0; rec.first = now; }
-  if (rec.count >= 3) return false; // maks 3x per menit
+  if (rec.count >= 5) return false; // maks 5x per menit
   rec.count++;
   otpRateLimit.set(email, rec);
   return true;

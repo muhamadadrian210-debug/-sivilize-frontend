@@ -92,13 +92,23 @@ const AuthPage = () => {
       setOtpPurpose(purpose);
       setOtpDigits(['', '', '', '', '', '']);
       setOtpCountdown(60);
+      setError(''); // pastikan error bersih sebelum pindah
       setSuccess('');
       setMode('otp');
       setTimeout(() => otpRefs.current[0]?.focus(), 100);
     } catch (err: unknown) {
       const e = err as AxiosLikeError;
+      const status = (err as { response?: { status?: number } }).response?.status;
       setSuccess('');
-      setError(e.response?.data?.message || 'Gagal mengirim OTP. Periksa koneksi atau coba lagi.');
+      if (status === 429) {
+        setError('Terlalu banyak percobaan. Tunggu 1 menit lalu coba lagi.');
+      } else if (status === 400) {
+        setError(e.response?.data?.message || 'Gagal mengirim OTP.');
+      } else if (!e.response) {
+        setError('Tidak ada respon dari server. Periksa koneksi internet Anda.');
+      } else {
+        setError(e.response?.data?.message || 'Gagal mengirim OTP. Coba lagi.');
+      }
     } finally { setLoading(false); }
   };
 

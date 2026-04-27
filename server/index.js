@@ -96,10 +96,10 @@ const globalLimiter = rateLimit({
 });
 app.use(globalLimiter);
 
-// Auth limiter - lebih ketat (cegah brute force)
+// Auth limiter - cegah brute force tapi tidak terlalu ketat
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: 30, // 30 request per 15 menit (naik dari 10)
   message: { success: false, message: 'Terlalu banyak percobaan login. Coba lagi dalam 15 menit.' },
   standardHeaders: true,
   legacyHeaders: false,
