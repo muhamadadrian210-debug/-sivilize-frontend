@@ -1,4 +1,4 @@
-﻿const jwt = require('jsonwebtoken');
+﻿﻿const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
 const { validateRegister, validateLogin } = require('../validators/authValidator');
@@ -412,6 +412,36 @@ exports.sendOtp = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Format email tidak valid' });
     }
 
+    // Cek ketersediaan email SEBELUM kirim OTP
+    const UserModel = getStorage();
+    if (purpose === 'register') {
+      // Register: email TIDAK boleh sudah terdaftar
+      if (UserModel) {
+        const existing = await UserModel.findOne({ email: email.toLowerCase() });
+        if (existing) {
+          return res.status(400).json({ success: false, message: 'Email sudah terdaftar. Silakan login.' });
+        }
+      } else {
+        const existing = mockStorage.findOne('users', { email: email.toLowerCase() });
+        if (existing) {
+          return res.status(400).json({ success: false, message: 'Email sudah terdaftar. Silakan login.' });
+        }
+      }
+    } else if (purpose === 'login') {
+      // Login: email HARUS sudah terdaftar
+      if (UserModel) {
+        const existing = await UserModel.findOne({ email: email.toLowerCase() });
+        if (!existing) {
+          return res.status(400).json({ success: false, message: 'Email belum terdaftar. Silakan daftar terlebih dahulu.' });
+        }
+      } else {
+        const existing = mockStorage.findOne('users', { email: email.toLowerCase() });
+        if (!existing) {
+          return res.status(400).json({ success: false, message: 'Email belum terdaftar. Silakan daftar terlebih dahulu.' });
+        }
+      }
+    }
+
     if (!checkOtpRate(email.toLowerCase())) {
       return res.status(429).json({ success: false, message: 'Terlalu banyak permintaan OTP. Tunggu 1 menit.' });
     }
@@ -422,11 +452,10 @@ exports.sendOtp = async (req, res, next) => {
     try {
       await sendOTPEmail(email, otp, purpose || 'login');
     } catch (emailErr) {
-      console.error('❌ Gagal kirim OTP:', emailErr.message);
+      console.error('Gagal kirim OTP:', emailErr.message);
       return res.status(400).json({ 
         success: false, 
         message: 'Gagal mengirim email OTP. Pastikan email Anda benar atau coba lagi nanti.',
-        // Hanya tampilkan detail error jika bukan production
         ...(process.env.NODE_ENV !== 'production' && { error: emailErr.message })
       });
     }
@@ -468,15 +497,30 @@ exports.verifyOtp = async (req, res, next) => {
         return sendTokenResponse(user, 201, res);
       }
     } else {
-      // Login â€” cari user dan return token
+      // Login -- cari user, verifikasi password, lalu return token
       const UserModel = getStorage();
       if (UserModel) {
-        const user = await UserModel.findOne({ email: email.toLowerCase() });
+        const user = await UserModel.findOne({ email: email.toLowerCase() }).select('+password');
         if (!user) return res.status(401).json({ success: false, message: 'Email tidak terdaftar' });
+        // Verifikasi password jika dikirim
+        if (password) {
+          const isMatch = await bcrypt.compare(password, user.password);
+          if (!isMatch) return res.status(401).json({ success: false, message: 'Password salah' });
+        }
+        // Auto-upgrade role jika email admin
+        const correctRole = getRoleForEmail(email);
+        if (user.role !== correctRole) {
+          user.role = correctRole;
+          await user.save({ validateBeforeSave: false });
+        }
         return sendTokenResponse({ _id: user._id, name: user.name, email: user.email, role: user.role }, 200, res);
       } else {
         const user = mockStorage.findOne('users', { email: email.toLowerCase() });
         if (!user) return res.status(401).json({ success: false, message: 'Email tidak terdaftar' });
+        if (password) {
+          const isMatch = await bcrypt.compare(password, user.password);
+          if (!isMatch) return res.status(401).json({ success: false, message: 'Password salah' });
+        }
         return sendTokenResponse(user, 200, res);
       }
     }

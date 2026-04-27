@@ -85,10 +85,10 @@ const AuthPage = () => {
       setError('Format email tidak valid. Contoh: nama@gmail.com');
       return;
     }
-    setLoading(true); setError('');
-    setSuccess('⏳ Kode OTP sedang dikirimkan ke Gmail Anda, silahkan dicek...');
+    setLoading(true); setError(''); setSuccess('⏳ Kode OTP sedang dikirimkan ke Gmail Anda, silahkan dicek...');
     try {
       await authService.sendOtp(formData.email, purpose);
+      // Set purpose SEBELUM pindah mode agar tidak race condition
       setOtpPurpose(purpose);
       setOtpDigits(['', '', '', '', '', '']);
       setOtpCountdown(60);
@@ -98,7 +98,7 @@ const AuthPage = () => {
     } catch (err: unknown) {
       const e = err as AxiosLikeError;
       setSuccess('');
-      setError(e.response?.data?.message || 'Email tidak valid atau tidak dapat menerima pesan.');
+      setError(e.response?.data?.message || 'Gagal mengirim OTP. Periksa koneksi atau coba lagi.');
     } finally { setLoading(false); }
   };
 
@@ -109,27 +109,38 @@ const AuthPage = () => {
 
     try {
       if (mode === 'login') {
-        // Verifikasi password dulu, baru kirim OTP
-        const response = await authService.login({ email: formData.email, password: formData.password, rememberMe });
-        if (response.success) {
-          // Cek apakah user sudah pernah OTP verified sebelumnya
-          const otpVerified = localStorage.getItem('sivilize_otp_verified');
-          if (otpVerified === formData.email.toLowerCase()) {
-            // Sudah pernah login & OTP — langsung masuk
+        // Cek apakah user sudah pernah OTP verified sebelumnya
+        const otpVerified = localStorage.getItem('sivilize_otp_verified');
+        if (otpVerified === formData.email.toLowerCase()) {
+          // Sudah pernah OTP — verifikasi password langsung login
+          let response;
+          try {
+            response = await authService.login({ email: formData.email, password: formData.password, rememberMe });
+          } catch (loginErr: unknown) {
+            const e = loginErr as AxiosLikeError & { response?: { status?: number } };
+            if (!e.response) {
+              setError('Server sedang memuat... Mencoba ulang otomatis.');
+              await new Promise(r => setTimeout(r, 3000));
+              response = await authService.login({ email: formData.email, password: formData.password, rememberMe });
+            } else {
+              throw loginErr;
+            }
+          }
+          if (response.success) {
             setUser(response.data);
             setAuthenticated(true);
             if (rememberMe) localStorage.setItem('sivilize_remember_me', JSON.stringify({ email: formData.email }));
             else localStorage.removeItem('sivilize_remember_me');
-            setLoading(false);
             return;
           }
-          // Belum pernah OTP atau sudah logout — wajib OTP
-          if (rememberMe) localStorage.setItem('sivilize_remember_me', JSON.stringify({ email: formData.email }));
-          else localStorage.removeItem('sivilize_remember_me');
-          setLoading(false);
-          await handleSendOtp('login');
-          return;
         }
+        // Belum pernah OTP atau sudah logout — wajib OTP
+        // Simpan password sementara untuk dipakai saat verify OTP
+        if (rememberMe) localStorage.setItem('sivilize_remember_me', JSON.stringify({ email: formData.email }));
+        else localStorage.removeItem('sivilize_remember_me');
+        setLoading(false);
+        await handleSendOtp('login');
+        return;
       } else if (mode === 'register') {
         // Validasi dulu, baru kirim OTP
         if (formData.password.length < 8) {
@@ -161,8 +172,10 @@ const AuthPage = () => {
     } catch (err: unknown) {
       const axiosErr = err as AxiosLikeError;
       const errData = axiosErr.response?.data;
+      const status = (err as { response?: { status?: number } }).response?.status;
       if (errData?.errors) setError(errData.errors.map(e => e.message).join('\n'));
       else if (!axiosErr.response) setError('Tidak ada respon dari server. Periksa koneksi internet Anda atau coba lagi beberapa saat lagi.');
+      else if (status === 500) setError('Server sedang bermasalah. Tunggu beberapa detik lalu coba lagi.');
       else setError(errData?.message || 'Terjadi kesalahan. Silakan coba lagi.');
     } finally { setLoading(false); }
   };
@@ -172,13 +185,15 @@ const AuthPage = () => {
     const otp = otpDigits.join('');
     if (otp.length < 6) { setError('Masukkan 6 digit OTP'); return; }
     setLoading(true); setError('');
+    // Capture purpose saat ini untuk menghindari stale closure
+    const currentPurpose = otpPurpose;
     try {
       const response = await authService.verifyOtp({
         email: formData.email,
         otp,
-        purpose: otpPurpose,
-        name: otpPurpose === 'register' ? formData.name : undefined,
-        password: otpPurpose === 'register' ? formData.password : undefined,
+        purpose: currentPurpose,
+        name: currentPurpose === 'register' ? formData.name : undefined,
+        password: formData.password, // selalu kirim password (untuk register & login)
       });
       if (response.success) {
         // Simpan flag — user ini sudah OTP verified, skip OTP di login berikutnya
