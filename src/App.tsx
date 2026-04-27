@@ -34,24 +34,22 @@ function App() {
   const [showAuth, setShowAuth] = useState(false);
   useDataSync(); // Sinkronisasi data proyek dengan server
 
-  // Wake up backend saat app load + keep-alive ping setiap 4 menit
+  // Wake up backend saat app load + keep-alive ping setiap 3 menit
   useEffect(() => {
     const BACKEND_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'https://sivilize-backend.vercel.app';
 
-    const ping = async () => {
-      try {
-        await fetch(`${BACKEND_URL}/health`, { method: 'GET', cache: 'no-store' });
-      } catch {
-        // Ignore
-      }
+    const ping = () => {
+      fetch(`${BACKEND_URL}/ping`, { method: 'GET', cache: 'no-store', keepalive: true }).catch(() => {});
     };
 
     // Ping langsung saat load
     ping();
+    // Ping lagi setelah 5 detik (double-tap untuk pastikan server bangun)
+    const warmup = setTimeout(ping, 5000);
 
-    // Keep-alive: ping setiap 4 menit supaya backend tidak cold start
-    const interval = setInterval(ping, 4 * 60 * 1000);
-    return () => clearInterval(interval);
+    // Keep-alive: ping setiap 3 menit supaya backend tidak cold start
+    const interval = setInterval(ping, 3 * 60 * 1000);
+    return () => { clearInterval(interval); clearTimeout(warmup); };
   }, []);
 
   // Restore auth state from localStorage on app load

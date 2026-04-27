@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   Calculator, BarChart3, BookOpen, Database, Shield, Smartphone,
@@ -14,6 +14,12 @@ interface LandingPageProps {
 const LandingPage = ({ onGetStarted }: LandingPageProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+  // Warm up backend saat landing page dibuka — supaya tidak cold start saat user klik login
+  useEffect(() => {
+    const url = (import.meta.env.VITE_API_URL || 'https://sivilize-backend.vercel.app/api').replace('/api', '');
+    fetch(`${url}/ping`, { cache: 'no-store', keepalive: true }).catch(() => {});
+  }, []);
 
   const features = [
     {
