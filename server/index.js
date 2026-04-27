@@ -1,4 +1,4 @@
-const express = require('express');
+﻿const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const rateLimit = require('express-rate-limit');
@@ -35,7 +35,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // ============================================================
-// 2b. STATIC FILES Ã¢â‚¬â€ disabled di Vercel (filesystem read-only)
+// 2b. STATIC FILES ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â disabled di Vercel (filesystem read-only)
 // ============================================================
 
 // ============================================================
@@ -44,7 +44,7 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(mongoSanitize({
   replaceWith: '_',
   onSanitize: ({ req, key }) => {
-    console.warn(`⚠️ NoSQL injection attempt blocked: ${key}`);
+    console.warn(`âš ï¸ NoSQL injection attempt blocked: ${key}`);
   }
 }));
 
@@ -71,7 +71,7 @@ const corsOptions = {
     // Allow explicitly listed origins
     if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) return callback(null, true);
     // Log blocked origin for debugging
-    console.warn(`⚠️ CORS blocked origin: ${origin}`);
+    console.warn(`âš ï¸ CORS blocked origin: ${origin}`);
     callback(new Error('Not allowed by CORS'));
   },
   credentials: false,
@@ -80,7 +80,7 @@ const corsOptions = {
   optionsSuccessStatus: 200
 };
 app.use(cors(corsOptions));
-// Handle preflight untuk semua route Ã¢â‚¬â€ pastikan selalu return 200
+// Handle preflight untuk semua route ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â pastikan selalu return 200
 app.options('*', cors(corsOptions));
 
 // ============================================================
@@ -141,7 +141,7 @@ const {
   getFirewallStatus,
 } = require('./middleware/firewall');
 
-// Firewall stack Ã¢â‚¬â€ urutan penting
+// Firewall stack ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â urutan penting
 app.use(firewallStack);
 app.use(securityHeaders);
 app.use(requestSizeLimiter);
@@ -170,61 +170,61 @@ app.use((req, res, next) => {
   const url = req.originalUrl;
   
   if (suspicious.some(s => body.toLowerCase().includes(s.toLowerCase()) || url.toLowerCase().includes(s.toLowerCase()))) {
-    console.warn(`🚨 SUSPICIOUS REQUEST [${req.requestId}]: ${req.method} ${url} from ${req.ip}`);
+    console.warn(`ðŸš¨ SUSPICIOUS REQUEST [${req.requestId}]: ${req.method} ${url} from ${req.ip}`);
   }
   next();
 });
 
 // ============================================================
-// 9. MONGODB CONNECTION Ã¢â‚¬â€ Optimized untuk Vercel serverless
+// 9. MONGODB CONNECTION ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Optimized untuk Vercel serverless
 // ============================================================
 const connectDB = async () => {
   const uri = process.env.MONGODB_URI;
-  console.log('🔍 MONGODB_URI exists:', !!uri);
+  console.log('ðŸ” MONGODB_URI exists:', !!uri);
 
   if (!uri) {
-    console.log('⚠️ MONGODB_URI tidak ada, pakai in-memory storage');
+    console.log('âš ï¸ MONGODB_URI tidak ada, pakai in-memory storage');
     return;
   }
 
-  // Retry logic — Vercel cold start kadang butuh beberapa detik
+  // Retry logic â€” Vercel cold start kadang butuh beberapa detik
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
-      console.log(`🔄 MongoDB connect attempt ${attempt}/3...`);
+      console.log(`ðŸ”„ MongoDB connect attempt ${attempt}/3...`);
       await mongoose.connect(uri, {
         serverSelectionTimeoutMS: 10000,
         socketTimeoutMS: 30000,
         connectTimeoutMS: 10000,
-        // Connection pool Ã¢â‚¬â€ reuse koneksi antar invocations
+        // Connection pool ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â reuse koneksi antar invocations
         maxPoolSize: 10,
         minPoolSize: 1,
-        maxIdleTimeMS: 270000, // 4.5 menit Ã¢â‚¬â€ sedikit di bawah Vercel timeout 5 menit
+        maxIdleTimeMS: 270000, // 4.5 menit ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â sedikit di bawah Vercel timeout 5 menit
         heartbeatFrequencyMS: 30000,
       });
-      console.log('✅ MongoDB Connected!');
+      console.log('âœ… MongoDB Connected!');
       return;
     } catch (err) {
-      console.log(`❌ Attempt ${attempt} failed: ${err.message}`);
+      console.log(`âŒ Attempt ${attempt} failed: ${err.message}`);
       if (attempt < 3) await new Promise(r => setTimeout(r, 1500));
     }
   }
-  console.log('⚠️ Semua attempt gagal, pakai in-memory storage');
+  console.log('âš ï¸ Semua attempt gagal, pakai in-memory storage');
 };
 
 // Connection event handlers
 mongoose.connection.on('connected', () => {
-  console.log('🟢 MongoDB connection established');
+  console.log('ðŸŸ¢ MongoDB connection established');
 });
 
 mongoose.connection.on('error', (err) => {
-  console.error('🔴 MongoDB connection error:', err.message);
+  console.error('ðŸ”´ MongoDB connection error:', err.message);
 });
 
 mongoose.connection.on('disconnected', () => {
-  console.warn('🟡 MongoDB disconnected');
+  console.warn('ðŸŸ¡ MongoDB disconnected');
 });
 
-// Singleton connection promise Ã¢â‚¬â€ reuse antar invocations
+// Singleton connection promise ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â reuse antar invocations
 let dbConnectionPromise = null;
 
 const ensureDBConnected = async () => {
@@ -264,7 +264,7 @@ try {
 }
 
 // ============================================================
-// 11. HONEYPOT ENDPOINTS Ã¢â‚¬â€ jebak hacker yang coba scan
+// 11. HONEYPOT ENDPOINTS ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â jebak hacker yang coba scan
 // ============================================================
 const HONEYPOT_PATHS = [
   '/admin', '/wp-admin', '/wp-login.php', '/phpmyadmin',
@@ -275,7 +275,7 @@ const HONEYPOT_PATHS = [
 HONEYPOT_PATHS.forEach(path => {
   app.all(path, (req, res) => {
     const ip = req.ip || 'unknown';
-    console.warn(`🍯 HONEYPOT HIT: ${req.method} ${path} from ${ip}`);
+    console.warn(`ðŸ¯ HONEYPOT HIT: ${req.method} ${path} from ${ip}`);
 
     // Kirim alert ke admin
     try {
@@ -318,7 +318,7 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Ping endpoint Ã¢â‚¬â€ ringan, untuk keep-alive dari frontend & cron
+// Ping endpoint ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â ringan, untuk keep-alive dari frontend & cron
 app.get('/ping', (req, res) => {
   res.json({ ok: true, ts: Date.now() });
 });
@@ -331,7 +331,7 @@ app.use((req, res) => {
 // Error handler
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || err.status || 500;
-  console.error(`❌ Error [${req.requestId}]:`, err.message);
+  console.error(`âŒ Error [${req.requestId}]:`, err.message);
   res.status(statusCode).json({
     success: false,
     message: process.env.NODE_ENV === 'production'
@@ -350,3 +350,5 @@ if (require.main === module) {
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => { console.log('Server running on port ' + PORT); });
 }
+
+module.exports = app;
