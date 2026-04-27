@@ -1,4 +1,4 @@
-﻿import { Fragment, useState, useMemo, useEffect } from 'react';
+﻿﻿import { Fragment, useState, useMemo, useEffect } from 'react';
 import { 
   Trash2, 
   ChevronRight, 
@@ -1518,76 +1518,52 @@ const RABCalculator = () => {
       />
     )}
 
-    {/* Popup Ayat Quran sebelum Generate RAB */}
+    {/* Popup Integritas sebelum Generate RAB — universal, nyaman semua kalangan */}
     {showQuranPopup && (
       <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
         <div className="absolute inset-0 bg-background/90 backdrop-blur-sm" />
         <div className="relative glass-card w-full max-w-lg p-6 space-y-4 border border-primary/30 overflow-y-auto max-h-[90vh]">
           <div className="text-center space-y-1">
             <p className="text-primary/60 text-xs font-bold uppercase tracking-widest">Sebelum Melanjutkan</p>
-            <h3 className="text-white font-bold text-lg">Allah Maha Melihat — Jujur & Amanah</h3>
+            <h3 className="text-white font-bold text-lg">Gunakan dengan Jujur & Bertanggung Jawab</h3>
           </div>
 
-          {/* Ayat 1 — Allah Maha Melihat */}
+          {/* Nilai 1 — Kejujuran */}
           <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-xl p-4 space-y-2">
-            <p className="text-white font-bold text-right text-lg leading-loose" dir="rtl" lang="ar">
-              إِنَّ ٱللَّهَ كَانَ عَلَيْكُمْ رَقِيبًا
+            <p className="text-yellow-400 font-bold text-sm flex items-center gap-2">⚖️ Kejujuran adalah fondasi</p>
+            <p className="text-text-secondary text-sm leading-relaxed">
+              RAB yang jujur melindungi <strong className="text-white">pemilik rumah</strong> dari kerugian,
+              dan melindungi <strong className="text-white">kontraktor</strong> dari sengketa.
+              Angka yang benar = kepercayaan yang terjaga.
             </p>
-            <p className="text-text-secondary text-sm italic leading-relaxed text-center">
-              "Sesungguhnya Allah selalu menjaga dan mengawasi kalian."
-            </p>
-            <p className="text-yellow-500/70 text-xs text-center font-bold">— QS. An-Nisa: 1</p>
           </div>
 
-          {/* Ayat 2 — Allah Melihat apa yang kamu kerjakan */}
-          <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-xl p-4 space-y-2">
-            <p className="text-white font-bold text-right text-lg leading-loose" dir="rtl" lang="ar">
-              وَٱللَّهُ بَصِيرٌ بِمَا تَعْمَلُونَ
+          {/* Nilai 2 — Amanah */}
+          <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 space-y-2">
+            <p className="text-primary font-bold text-sm flex items-center gap-2">🤝 Amanah membangun reputasi</p>
+            <p className="text-text-secondary text-sm leading-relaxed">
+              Kontraktor yang amanah akan selalu dicari. Kontraktor yang curang
+              akan kehilangan kepercayaan selamanya.
+              <strong className="text-white"> Reputasi lebih berharga dari keuntungan sesaat.</strong>
             </p>
-            <p className="text-text-secondary text-sm italic leading-relaxed text-center">
-              "Dan Allah Maha Melihat apa yang kamu kerjakan."
-            </p>
-            <p className="text-yellow-500/70 text-xs text-center font-bold">— QS. Al-Hujurat: 18</p>
           </div>
 
-          {/* Ayat 3 — Jangan Curang */}
+          {/* Nilai 3 — Tanggung jawab */}
           <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-4 space-y-2">
-            <p className="text-white font-bold text-right text-lg leading-loose" dir="rtl" lang="ar">
-              وَيْلٌ لِّلْمُطَفِّفِينَ ٱلَّذِينَ إِذَا ٱكْتَالُوا۟ عَلَى ٱلنَّاسِ يَسْتَوْفُونَ وَإِذَا كَالُوهُمْ أَو وَّزَنُوهُمْ يُخْسِرُونَ
+            <p className="text-red-400 font-bold text-sm flex items-center gap-2">🏠 Keselamatan adalah prioritas</p>
+            <p className="text-text-secondary text-sm leading-relaxed">
+              Rumah yang dibangun dengan RAB yang benar = struktur yang kuat.
+              <strong className="text-white"> Jangan kurangi material demi keuntungan</strong> —
+              keselamatan penghuni adalah tanggung jawab kita bersama.
             </p>
-            <p className="text-text-secondary text-sm italic leading-relaxed text-center">
-              "Celakalah bagi orang-orang yang curang — yang apabila menerima dari orang lain minta dipenuhi, namun apabila memberi kepada orang lain mereka mengurangi."
-            </p>
-            <p className="text-red-400/70 text-xs text-center font-bold">— QS. Al-Mutaffifin: 1-3</p>
           </div>
 
-          {/* Ayat 4 — Kejujuran */}
-          <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 space-y-2">
-            <p className="text-white font-bold text-right text-lg leading-loose" dir="rtl" lang="ar">
-              يَٰٓأَيُّهَا ٱلَّذِينَ ءَامَنُوا۟ ٱتَّقُوا۟ ٱللَّهَ وَقُولُوا۟ قَوْلًا سَدِيدًا
+          <div className="bg-card border border-border rounded-xl p-3">
+            <p className="text-text-secondary text-xs text-center leading-relaxed">
+              📋 <strong className="text-white">Hasil ini adalah estimasi.</strong> Wajib diverifikasi
+              oleh engineer atau kontraktor berpengalaman sebelum eksekusi.
             </p>
-            <p className="text-text-secondary text-sm italic leading-relaxed text-center">
-              "Wahai orang-orang yang beriman, bertakwalah kepada Allah dan ucapkanlah perkataan yang benar (jujur)."
-            </p>
-            <p className="text-primary/50 text-xs text-center font-bold">— QS. Al-Ahzab: 70</p>
           </div>
-
-          {/* Ayat 5 — Amanah */}
-          <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 space-y-2">
-            <p className="text-white font-bold text-right text-lg leading-loose" dir="rtl" lang="ar">
-              إِنَّ ٱللَّهَ يَأْمُرُكُمْ أَن تُؤَدُّوا۟ ٱلْأَمَٰنَٰتِ إِلَىٰٓ أَهْلِهَا
-            </p>
-            <p className="text-text-secondary text-sm italic leading-relaxed text-center">
-              "Sesungguhnya Allah menyuruh kamu menyampaikan amanat kepada yang berhak menerimanya."
-            </p>
-            <p className="text-primary/50 text-xs text-center font-bold">— QS. An-Nisa: 58</p>
-          </div>
-
-          <p className="text-text-secondary text-xs text-center leading-relaxed border-t border-border pt-3">
-            Allah SWT melihat setiap niat dan perbuatan kita.<br/>
-            Gunakan RAB ini dengan <span className="text-white font-bold">jujur dan amanah</span>.<br/>
-            Hasil ini adalah estimasi — wajib divalidasi engineer bersertifikat.
-          </p>
 
           <div className="flex gap-3">
             <button
@@ -1600,7 +1576,7 @@ const RABCalculator = () => {
               onClick={() => { setShowQuranPopup(false); handleGenerateRAB(); }}
               className="flex-1 btn-primary py-3 text-sm font-bold"
             >
-              Bismillah, Hasilkan RAB
+              ✓ Saya Mengerti, Hasilkan RAB
             </button>
           </div>
         </div>
