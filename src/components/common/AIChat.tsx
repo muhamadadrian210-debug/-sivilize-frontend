@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+﻿import { useState, useRef, useEffect } from 'react';
 import { X, Send, Sparkles, User, Trash2 } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 
@@ -106,7 +106,7 @@ const getFallbackResponse = (input: string): string => {
     return 'Halo Bro! ðŸ‘‹ Gue Kiro, AI assistant SIVILIZE HUB PRO.\n\nGue bisa bantu lo dengan:\nâ€¢ Perhitungan RAB & AHSP\nâ€¢ Rekomendasi pondasi & material\nâ€¢ Cara pakai fitur SIVILIZE\nâ€¢ Pertanyaan seputar konstruksi\n\nMau tanya apa?';
   }
   if (q.includes('terima kasih') || q.includes('makasih') || q.includes('thanks')) {
-    return 'Sama-sama Bro! ðŸ™ Kalau ada pertanyaan lain seputar RAB atau konstruksi, tanya aja. Semoga proyeknya lancar!';
+    return 'Sama-sama Bro! 🙏 Kalau ada pertanyaan lain seputar RAB atau konstruksi, tanya aja. Semoga proyeknya lancar!';
   }
 
   return `Pertanyaan lo: "${input}"\n\nGue bisa bantu seputar:\nâ€¢ **RAB & AHSP** â€” cara hitung, komposisi material\nâ€¢ **Pondasi** â€” rekomendasi berdasarkan jenis tanah\nâ€¢ **Material** â€” harga, spesifikasi, merek\nâ€¢ **Fitur SIVILIZE** â€” cara pakai export, kurva S, backup\nâ€¢ **Konstruksi umum** â€” beton, bata, atap, MEP\n\nCoba tanya lebih spesifik ya Bro! ðŸ’ª`;
