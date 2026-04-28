@@ -1,13 +1,12 @@
-export interface AHSPTemplate {
+﻿export interface AHSPTemplate {
   id: string;
   category: 'Persiapan' | 'Tanah & Pondasi' | 'Struktur' | 'Dinding & Plesteran' | 'Kusen, Pintu & Jendela' | 'Atap & Plafon' | 'Lantai & Keramik' | 'Instalasi Listrik' | 'Instalasi Air & Sanitasi' | 'Finishing & Pengecatan' | 'Lain-lain';
   name: string;
   unit: string;
+  desc?: string; // Penjelasan bahasa SD kelas 1 untuk orang awam
   materials: { name: string; coeff: number; unit: string }[];
-  // Koefisien tenaga kerja per satuan unit pekerjaan (OH)
   laborCoefficients: { name: string; coeff: number; unit: string }[];
-  // Produktivitas default (opsional, bisa di-override user)
-  productivity?: number; // units per day per team
+  productivity?: number;
 }
 
 export const AHSP_TEMPLATES: AHSPTemplate[] = [
@@ -1174,6 +1173,7 @@ export const AHSP_EXTRA: AHSPTemplate[] = [
     id: 'str-009',
     category: 'Struktur',
     name: 'Beton K-175 (Site Mix) - Lantai Kerja',
+    desc: 'Beton mutu rendah untuk alas/lantai kerja di bawah pondasi. Seperti alas kaki sebelum pakai sepatu - bukan struktur utama, tapi wajib ada.',
     unit: 'm3',
     materials: [
       { name: 'Semen PC', coeff: 326, unit: 'kg' },
@@ -1193,6 +1193,7 @@ export const AHSP_EXTRA: AHSPTemplate[] = [
     id: 'str-010',
     category: 'Struktur',
     name: 'Beton K-250 (Site Mix) - Struktur Utama',
+    desc: 'Beton lebih kuat dari K-225, cocok untuk kolom dan balok rumah 2 lantai ke atas. Makin besar angkanya, makin kuat betonnya.',
     unit: 'm3',
     materials: [
       { name: 'Semen PC', coeff: 406, unit: 'kg' },
@@ -1212,6 +1213,7 @@ export const AHSP_EXTRA: AHSPTemplate[] = [
     id: 'str-011',
     category: 'Struktur',
     name: 'Beton K-300 (Ready Mix) - Struktur Khusus',
+    desc: 'Beton paling kuat, dipesan jadi dari pabrik (truk molen). Dipakai untuk gedung atau rumah dengan beban sangat berat.',
     unit: 'm3',
     materials: [
       { name: 'Beton Ready Mix K-300', coeff: 1.0, unit: 'm3' },
@@ -1228,6 +1230,7 @@ export const AHSP_EXTRA: AHSPTemplate[] = [
     id: 'str-012',
     category: 'Struktur',
     name: 'Bekisting Kolom (Kayu Multiplex)',
+    desc: 'Cetakan kayu untuk membentuk tiang beton (kolom). Seperti cetakan es batu - kayu dipasang dulu, beton dituang, setelah keras kayu dilepas.',
     unit: 'm2',
     materials: [
       { name: 'Multiplex 12mm', coeff: 0.35, unit: 'lembar' },
@@ -1247,6 +1250,7 @@ export const AHSP_EXTRA: AHSPTemplate[] = [
     id: 'str-013',
     category: 'Struktur',
     name: 'Bekisting Balok (Kayu Multiplex)',
+    desc: 'Cetakan kayu untuk membentuk balok beton (penghubung antar kolom). Dipasang di atas, beton dituang, setelah keras kayu dilepas.',
     unit: 'm2',
     materials: [
       { name: 'Multiplex 12mm', coeff: 0.35, unit: 'lembar' },
@@ -1266,6 +1270,7 @@ export const AHSP_EXTRA: AHSPTemplate[] = [
     id: 'str-014',
     category: 'Struktur',
     name: 'Bekisting Plat Lantai (Kayu Multiplex)',
+    desc: 'Cetakan kayu untuk membuat lantai beton di atas (lantai 2 dst). Kayu dipasang sebagai alas, beton dituang di atasnya.',
     unit: 'm2',
     materials: [
       { name: 'Multiplex 12mm', coeff: 0.35, unit: 'lembar' },
@@ -1285,6 +1290,7 @@ export const AHSP_EXTRA: AHSPTemplate[] = [
     id: 'str-015',
     category: 'Struktur',
     name: 'Bekisting Pondasi/Sloof',
+    desc: 'Cetakan kayu untuk membentuk pondasi dan sloof (balok di bawah tanah). Lebih sederhana dari bekisting kolom.',
     unit: 'm2',
     materials: [
       { name: 'Papan Kayu 2/20', coeff: 0.02, unit: 'm3' },
@@ -1304,6 +1310,7 @@ export const AHSP_EXTRA: AHSPTemplate[] = [
     id: 'pon-001',
     category: 'Tanah & Pondasi',
     name: 'Pondasi Footplate/Telapak Beton Bertulang',
+    desc: 'Pondasi berbentuk kotak beton di bawah setiap tiang. Seperti telapak kaki yang menopang tubuh. Cocok untuk tanah sedang.',
     unit: 'buah',
     materials: [
       { name: 'Semen PC', coeff: 120, unit: 'kg' },
@@ -1326,6 +1333,7 @@ export const AHSP_EXTRA: AHSPTemplate[] = [
     id: 'pon-002',
     category: 'Tanah & Pondasi',
     name: 'Sloof Beton Bertulang 15x20cm',
+    desc: 'Balok beton yang ada di bawah tanah, menghubungkan semua pondasi. Seperti sabuk yang mengikat semua pondasi agar tidak bergerak sendiri-sendiri.',
     unit: 'm1',
     materials: [
       { name: 'Semen PC', coeff: 18.6, unit: 'kg' },
@@ -1348,6 +1356,7 @@ export const AHSP_EXTRA: AHSPTemplate[] = [
     id: 'pon-003',
     category: 'Tanah & Pondasi',
     name: 'Strauss Pile D30cm (Manual)',
+    desc: 'Tiang beton yang ditanam dalam ke tanah lunak/gambut. Seperti pasak yang ditancapkan ke tanah agar rumah tidak ambles.',
     unit: 'm1',
     materials: [
       { name: 'Semen PC', coeff: 40, unit: 'kg' },
@@ -1370,6 +1379,7 @@ export const AHSP_EXTRA: AHSPTemplate[] = [
     id: 'str-016',
     category: 'Struktur',
     name: 'Kolom Beton Bertulang 20x20cm',
+    desc: 'Tiang beton ukuran 20x20cm. Ini tulang punggung rumah - menopang semua beban dari atas ke bawah. Wajib ada di setiap sudut dan pertemuan dinding.',
     unit: 'm1',
     materials: [
       { name: 'Semen PC', coeff: 22.3, unit: 'kg' },
@@ -1392,6 +1402,7 @@ export const AHSP_EXTRA: AHSPTemplate[] = [
     id: 'str-017',
     category: 'Struktur',
     name: 'Balok Beton Bertulang 15x25cm',
+    desc: 'Balok beton yang menghubungkan antar tiang (kolom). Seperti tulang rusuk yang menguatkan rangka rumah.',
     unit: 'm1',
     materials: [
       { name: 'Semen PC', coeff: 27.9, unit: 'kg' },
@@ -1414,6 +1425,7 @@ export const AHSP_EXTRA: AHSPTemplate[] = [
     id: 'str-018',
     category: 'Struktur',
     name: 'Plat Lantai Beton Bertulang t=12cm',
+    desc: 'Lantai beton setebal 12cm untuk lantai 2 ke atas. Ini yang kamu injak di lantai atas rumah. Harus kuat menahan beban orang dan perabot.',
     unit: 'm2',
     materials: [
       { name: 'Semen PC', coeff: 44.5, unit: 'kg' },
@@ -1437,6 +1449,7 @@ export const AHSP_EXTRA: AHSPTemplate[] = [
     id: 'str-019',
     category: 'Struktur',
     name: 'Ring Balok Beton Bertulang 12x15cm',
+    desc: 'Balok beton di bagian atas dinding, tepat di bawah atap. Seperti mahkota yang mengikat semua dinding agar tidak roboh ke samping.',
     unit: 'm1',
     materials: [
       { name: 'Semen PC', coeff: 16.3, unit: 'kg' },
@@ -1459,6 +1472,7 @@ export const AHSP_EXTRA: AHSPTemplate[] = [
     id: 'str-020',
     category: 'Struktur',
     name: 'Kolom Praktis Beton Bertulang 11x11cm',
+    desc: 'Tiang beton kecil di dalam dinding bata. Bukan tiang utama, tapi membantu dinding agar tidak retak atau roboh. Dipasang setiap 3-4 meter.',
     unit: 'm1',
     materials: [
       { name: 'Semen PC', coeff: 9.2, unit: 'kg' },
@@ -1481,6 +1495,7 @@ export const AHSP_EXTRA: AHSPTemplate[] = [
     id: 'str-021',
     category: 'Struktur',
     name: 'Tangga Beton Bertulang (Per Anak Tangga)',
+    desc: 'Satu anak tangga dari beton. Dihitung per buah. Rumah 2 lantai biasanya butuh 15-18 anak tangga.',
     unit: 'buah',
     materials: [
       { name: 'Semen PC', coeff: 15, unit: 'kg' },
@@ -1504,6 +1519,7 @@ export const AHSP_EXTRA: AHSPTemplate[] = [
     id: 'lain-001',
     category: 'Lain-lain',
     name: 'Pagar Besi Hollow + Tiang Beton',
+    desc: 'Pagar dari besi kotak (hollow) dengan tiang dari beton. Lebih kuat dan tahan lama dari pagar kayu.',
     unit: 'm1',
     materials: [
       { name: 'Besi Hollow 40x40', coeff: 3.5, unit: 'kg' },
@@ -1524,6 +1540,7 @@ export const AHSP_EXTRA: AHSPTemplate[] = [
     id: 'lain-002',
     category: 'Lain-lain',
     name: 'Kanopi Baja Ringan + Atap Polycarbonate',
+    desc: 'Atap pelindung di depan pintu/garasi dari rangka baja ringan + atap plastik bening (polycarbonate). Melindungi dari hujan dan panas.',
     unit: 'm2',
     materials: [
       { name: 'Baja Ringan C75', coeff: 4.5, unit: 'kg' },
@@ -1543,6 +1560,7 @@ export const AHSP_EXTRA: AHSPTemplate[] = [
     id: 'lain-003',
     category: 'Lain-lain',
     name: 'Pemasangan Railing Tangga Besi',
+    desc: 'Pegangan tangan di sisi tangga dari besi. Wajib ada untuk keselamatan, terutama untuk anak-anak dan lansia.',
     unit: 'm1',
     materials: [
       { name: 'Besi Hollow 40x40', coeff: 2.5, unit: 'kg' },
@@ -1561,6 +1579,7 @@ export const AHSP_EXTRA: AHSPTemplate[] = [
     id: 'lain-004',
     category: 'Lain-lain',
     name: 'Pemasangan Kusen Aluminium (Per Unit)',
+    desc: 'Bingkai pintu/jendela dari aluminium. Lebih tahan karat dan rayap dibanding kayu. Dipasang sebelum daun pintu/jendela.',
     unit: 'unit',
     materials: [
       { name: 'Kusen Aluminium', coeff: 1, unit: 'set' },
@@ -1579,6 +1598,7 @@ export const AHSP_EXTRA: AHSPTemplate[] = [
     id: 'lain-005',
     category: 'Lain-lain',
     name: 'Pemasangan Kaca Tempered 8mm',
+    desc: 'Kaca tebal 8mm yang sudah diperkuat (tempered). Kalau pecah, hancur jadi butiran kecil tidak tajam - lebih aman. Biasa untuk pintu kaca atau jendela besar.',
     unit: 'm2',
     materials: [
       { name: 'Kaca Tempered 8mm', coeff: 1.02, unit: 'm2' },

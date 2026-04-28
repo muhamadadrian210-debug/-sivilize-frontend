@@ -238,6 +238,7 @@ const CustomAHSPEditor = () => {
                   <div className="min-w-0">
                     <p className="text-white text-sm font-bold truncate">{template.name}</p>
                     <p className="text-text-secondary text-xs">{template.category} • {template.unit}</p>
+                    {template.desc && <p className="text-yellow-400/70 text-[10px] mt-0.5 leading-relaxed">💡 {template.desc}</p>}
                     {custom?.notes && <p className="text-primary/70 text-xs mt-0.5 italic">"{custom.notes}"</p>}
                     {/* Log perubahan — transparan ke user */}
                     {isCustomized && custom && (

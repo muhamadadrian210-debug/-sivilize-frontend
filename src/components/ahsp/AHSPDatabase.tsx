@@ -237,6 +237,11 @@ const AHSPDatabase = () => {
                         <h4 className="text-lg font-bold text-white">{item.name}</h4>
                       </div>
                       <p className="text-text-secondary text-sm mt-1">Satuan: <span className="text-white font-medium">{item.unit}</span> {item.productivity && <>• Produktivitas: <span className="text-white font-medium">{item.productivity} {item.unit}/OH</span></>}</p>
+                      {item.desc && (
+                        <p className="text-[11px] text-yellow-400/80 bg-yellow-500/5 border border-yellow-500/20 rounded-lg px-2 py-1 mt-1.5">
+                          💡 {item.desc}
+                        </p>
+                      )}
                     </div>
                     <div className="text-right">
                       <p className="text-xs text-text-secondary uppercase font-bold tracking-widest">Harga Satuan</p>
