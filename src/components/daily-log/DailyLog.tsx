@@ -27,6 +27,7 @@ const DailyLog = () => {
   const [logDate, setLogDate] = useState(new Date().toISOString().split('T')[0]);
   const [logStatus, setLogStatus] = useState<LogStatus>('Normal');
   const [photos, setPhotos] = useState<string[]>([]);
+  const [progressPercent, setProgressPercent] = useState<number>(0);
   const [saving, setSaving] = useState(false);
 
   const allLogs = useMemo(() => {
@@ -62,6 +63,8 @@ const DailyLog = () => {
   const handleSaveLog = async () => {
     if (!logText.trim()) { showToast('Isi catatan tidak boleh kosong', 'warning'); return; }
     if (!selectedProjectId) { showToast('Pilih proyek terlebih dahulu', 'warning'); return; }
+    if (photos.length === 0) { showToast('Foto progress wajib diupload sebagai bukti lapangan', 'warning'); return; }
+    if (progressPercent < 0 || progressPercent > 100) { showToast('Progress harus antara 0-100%', 'warning'); return; }
 
     setSaving(true);
     try {
@@ -74,6 +77,7 @@ const DailyLog = () => {
         text: logText,
         photos,
         status: logStatus,
+        progressPercent,
       };
 
       updateProject(selectedProjectId, {
@@ -85,6 +89,7 @@ const DailyLog = () => {
       setLogText('');
       setPhotos([]);
       setLogStatus('Normal');
+      setProgressPercent(0);
     } catch {
       showToast('Gagal menyimpan catatan', 'error');
     } finally {
@@ -146,11 +151,37 @@ const DailyLog = () => {
                 className="w-full bg-background border border-border rounded-xl px-4 py-3 text-white focus:border-primary outline-none resize-none" />
             </div>
 
+            {/* Progress % — wajib diisi, terhubung ke Kurva S */}
             <div className="space-y-2">
-              <label className="text-text-secondary text-sm font-medium">Foto Progress (Opsional)</label>
-              <label className="flex items-center gap-3 border-2 border-dashed border-border rounded-xl p-4 cursor-pointer hover:border-primary/50 transition-colors">
-                <Upload size={20} className="text-text-secondary" />
-                <span className="text-text-secondary text-sm">Klik untuk upload foto</span>
+              <label className="text-text-secondary text-sm font-medium flex items-center gap-2">
+                Progress Keseluruhan Proyek
+                <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full font-bold">Wajib - Terhubung ke Kurva S</span>
+              </label>
+              <div className="flex items-center gap-4">
+                <input type="range" min={0} max={100} value={progressPercent}
+                  onChange={e => setProgressPercent(Number(e.target.value))}
+                  className="flex-1 accent-primary" />
+                <div className="w-16 h-10 bg-background border border-primary rounded-xl flex items-center justify-center">
+                  <span className="text-primary font-black text-sm">{progressPercent}%</span>
+                </div>
+              </div>
+              <div className="w-full bg-border rounded-full h-2">
+                <div className="bg-primary h-2 rounded-full transition-all" style={{ width: `${progressPercent}%` }} />
+              </div>
+              <p className="text-text-secondary text-xs">Angka ini akan otomatis memperbarui grafik Kurva S proyek.</p>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-text-secondary text-sm font-medium flex items-center gap-2">
+                Foto Progress
+                <span className="text-xs bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full font-bold">Wajib - Bukti Lapangan</span>
+              </label>
+              <label className={`flex items-center gap-3 border-2 border-dashed rounded-xl p-4 cursor-pointer transition-colors ${photos.length === 0 ? 'border-red-500/40 hover:border-red-500/70' : 'border-primary/40 hover:border-primary/70'}`}>
+                <Upload size={20} className={photos.length === 0 ? 'text-red-400' : 'text-primary'} />
+                <div>
+                  <span className="text-text-secondary text-sm block">Klik untuk upload foto lapangan</span>
+                  <span className="text-xs text-red-400">Foto wajib diupload sebagai bukti progress nyata</span>
+                </div>
                 <input type="file" accept="image/*" multiple onChange={handlePhotoUpload} className="hidden" />
               </label>
               {photos.length > 0 && (
@@ -170,8 +201,8 @@ const DailyLog = () => {
 
             <div className="flex gap-3 pt-2">
               <button onClick={() => setShowForm(false)} className="btn-secondary flex-1">Batal</button>
-              <button onClick={handleSaveLog} disabled={saving} className="btn-primary flex-1">
-                {saving ? 'Menyimpan...' : 'Simpan Catatan'}
+              <button onClick={handleSaveLog} disabled={saving || photos.length === 0} className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed">
+                {saving ? 'Menyimpan...' : photos.length === 0 ? 'Upload foto dulu' : 'Simpan Catatan'}
               </button>
             </div>
           </div>
@@ -243,6 +274,18 @@ const DailyLog = () => {
                     </div>
                   </div>
                   <p className="text-white text-sm leading-relaxed">{log.text}</p>
+                  {/* Progress bar dari daily log */}
+                  {(log as DailyLogType & { progressPercent?: number }).progressPercent !== undefined && (
+                    <div className="mt-3 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-text-secondary font-bold">Progress Proyek</span>
+                        <span className="text-xs font-black text-primary">{(log as DailyLogType & { progressPercent?: number }).progressPercent}%</span>
+                      </div>
+                      <div className="w-full bg-border rounded-full h-2">
+                        <div className="bg-primary h-2 rounded-full transition-all" style={{ width: `${(log as DailyLogType & { progressPercent?: number }).progressPercent}%` }} />
+                      </div>
+                    </div>
+                  )}
                   {log.photos?.length > 0 && (
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
                       {log.photos.map((photo, i) => (
@@ -253,6 +296,12 @@ const DailyLog = () => {
                           </div>
                         </div>
                       ))}
+                    </div>
+                  )}
+                  {/* Warning kalau tidak ada foto */}
+                  {(!log.photos || log.photos.length === 0) && (
+                    <div className="mt-3 flex items-center gap-2 text-yellow-400/70 text-xs">
+                      <span>⚠️ Catatan lama - tidak ada foto bukti lapangan</span>
                     </div>
                   )}
                   <div className="mt-4 pt-4 border-t border-border flex items-center gap-6">
