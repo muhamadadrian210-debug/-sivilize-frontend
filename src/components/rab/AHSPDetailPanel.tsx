@@ -1,4 +1,4 @@
-/**
+﻿/**
  * AHSPDetailPanel â€” Panel detail komposisi AHSP per item pekerjaan
  * Menampilkan: material apa saja, berapa banyak, berapa harganya, dan upah tukang
  * Referensi: SE 47/SE/Dk/2026
