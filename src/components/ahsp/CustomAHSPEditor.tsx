@@ -1,4 +1,4 @@
-/**
+﻿/**
  * CustomAHSPEditor — UI untuk user edit koefisien AHSP sesuai daerah mereka
  * Anti-curang: batas ±30% dari SNI + sumpah kejujuran + log perubahan
  */
@@ -350,6 +350,7 @@ const CustomAHSPEditor = () => {
                   {/* Notes */}
                   <div>
                     <p className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-1">Alasan Perubahan (wajib diisi)</p>
+                  <p className="text-[10px] text-yellow-400/70 mb-1">Tulis kenapa angkanya kamu ubah. Contoh: harga pasir di daerah saya lebih mahal dari biasanya.</p>
                     <input type="text" placeholder="Contoh: Upah tukang di daerah saya lebih tinggi dari rata-rata"
                       value={editValues.notes}
                       onChange={e => setEditValues(prev => ({ ...prev, notes: e.target.value }))}

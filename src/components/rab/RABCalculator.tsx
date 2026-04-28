@@ -1,4 +1,4 @@
-﻿﻿import { Fragment, useState, useMemo, useEffect } from 'react';
+﻿﻿﻿﻿import { Fragment, useState, useMemo, useEffect } from 'react';
 import { 
   Trash2, 
   ChevronRight, 
@@ -676,6 +676,7 @@ const RABCalculator = () => {
               </div>
               <div className="space-y-2">
                 <label className="text-text-secondary text-sm font-medium">Jumlah Lantai</label>
+                <p className="text-[11px] text-yellow-400/80 bg-yellow-500/5 border border-yellow-500/20 rounded-lg px-2 py-1">🏠 Berapa tingkat rumahnya? Rumah biasa = 1 lantai. Ada kamar di atas = 2 lantai.</p>
                 <input 
                   type="number" 
                   min="1"
@@ -690,6 +691,7 @@ const RABCalculator = () => {
               </div>
               <div className="space-y-2">
                 <label className="text-text-secondary text-sm font-medium">Grade Material</label>
+                <p className="text-[11px] text-yellow-400/80 bg-yellow-500/5 border border-yellow-500/20 rounded-lg px-2 py-1">🧱 Pilih kualitas bahan bangunan: Ekonomis = harga murah, Standar = harga normal, Premium = harga mahal tapi bagus.</p>
                 <select
                   value={materialGrade}
                   onChange={(e) => {
@@ -755,6 +757,7 @@ const RABCalculator = () => {
                 {/* Pilih Jenis Tanah */}
                 <div className="space-y-3">
                   <label className="text-text-secondary text-sm font-medium">Jenis Tanah di Lokasi</label>
+                  <p className="text-[11px] text-yellow-400/80 bg-yellow-500/5 border border-yellow-500/20 rounded-lg px-2 py-1">🌍 Tanah di bawah rumah kamu seperti apa? Kalau tidak tahu, tanya tukang atau tetangga yang sudah bangun rumah di sana. Jenis tanah menentukan pondasi yang cocok.</p>
                   <div className="grid grid-cols-2 gap-2">
                     {SOIL_TYPES.map(soil => (
                       <button

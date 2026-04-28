@@ -1,4 +1,4 @@
-/* eslint-disable react-refresh/only-export-components */
+﻿/* eslint-disable react-refresh/only-export-components */
 /**
  * DimensionExtras — Fitur tambahan di step 2:
  * - Validasi dimensi
@@ -250,6 +250,7 @@ const DimensionExtras = ({ projectData, setProjectData, totalArea, totalVolume, 
           <span className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-full font-bold">Akurasi Besi</span>
         </h4>
         <p className="text-text-secondary text-xs">Sesuaikan dengan gambar struktur. Default = SNI rumah tinggal 1–2 lantai.</p>
+        <p className="text-[11px] text-yellow-400/80 bg-yellow-500/5 border border-yellow-500/20 rounded-lg px-2 py-1.5">🔩 Ini ukuran besi penguat rumah. <strong>Kalau tidak punya gambar dari arsitek, biarkan saja</strong> - sudah sesuai standar pemerintah (SNI). Jangan diubah kalau tidak yakin!</p>
 
         {/* Disclaimer mudah dimengerti */}
         <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-3 space-y-1">
