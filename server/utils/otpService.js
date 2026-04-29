@@ -1,4 +1,4 @@
-/**
+﻿/**
  * OTP Service — Generate, simpan, verifikasi, dan kirim OTP
  * Email wajib dari: sivilize-hub-pro@sivilize-corp.com (Sivilize Corp)
  * PENTING: Domain sivilize-corp.com harus diverifikasi di Resend dashboard
@@ -66,18 +66,7 @@ async function sendOTPEmail(email, otp, purpose) {
     : 'Anda mencoba masuk ke Sivilize Hub Pro.';
 
   // Logo SVG inline — gedung sipil orange di background biru (logo Sivilize Corp)
-  const logoSvg = '<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">'
-    + '<circle cx="32" cy="32" r="32" fill="#1a3a6b"/>'
-    + '<g stroke="#FF7A00" stroke-linecap="round" stroke-linejoin="round">'
-    + '<rect x="16" y="44" width="32" height="12" stroke-width="2" fill="none"/>'
-    + '<rect x="18" y="24" width="28" height="20" stroke-width="2" fill="none"/>'
-    + '<polygon points="18,24 32,8 46,24" stroke-width="2" fill="none"/>'
-    + '<rect x="22" y="28" width="4" height="4" stroke-width="1.5" fill="none"/>'
-    + '<rect x="22" y="36" width="4" height="4" stroke-width="1.5" fill="none"/>'
-    + '<rect x="38" y="28" width="4" height="4" stroke-width="1.5" fill="none"/>'
-    + '<rect x="38" y="36" width="4" height="4" stroke-width="1.5" fill="none"/>'
-    + '<rect x="30" y="38" width="4" height="6" stroke-width="1.5" fill="none"/>'
-    + '</g></svg>';
+  const logoSvg = '<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">' + '<rect x="0" y="0" width="64" height="64" rx="14" ry="14" fill="#FF7A00"/>' + '<ellipse cx="32" cy="16" rx="8" ry="5" fill="#7B3F00"/>' + '<rect x="29" y="11" width="6" height="6" fill="#7B3F00"/>' + '<polygon points="14,28 32,18 50,28" fill="#8B4513"/>' + '<rect x="14" y="28" width="36" height="18" fill="#8B4513"/>' + '<rect x="17" y="28" width="4" height="18" fill="#A0522D" rx="1"/>' + '<rect x="24" y="28" width="4" height="18" fill="#A0522D" rx="1"/>' + '<rect x="36" y="28" width="4" height="18" fill="#A0522D" rx="1"/>' + '<rect x="43" y="28" width="4" height="18" fill="#A0522D" rx="1"/>' + '<rect x="28" y="36" width="8" height="10" fill="#5C2E00" rx="1"/>' + '<rect x="12" y="46" width="40" height="4" fill="#8B4513" rx="1"/>' + '<rect x="10" y="50" width="44" height="4" fill="#7B3F00" rx="1"/>' + '<rect x="8" y="54" width="48" height="3" fill="#6B3000" rx="1"/>' + '</svg>'
 
   const html = '<div style="font-family:\'Segoe UI\',sans-serif;max-width:480px;margin:0 auto;background:#0a0a0f;color:#fff;padding:40px 32px;border-radius:16px;border:1px solid #1e293b;">'
     + '<div style="text-align:center;margin-bottom:32px;">'
