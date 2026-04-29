@@ -453,9 +453,9 @@ exports.sendOtp = async (req, res, next) => {
       await sendOTPEmail(email, otp, purpose || 'login');
     } catch (emailErr) {
       console.error('Gagal kirim OTP:', emailErr.message);
-      return res.status(400).json({ 
+      return res.status(500).json({ 
         success: false, 
-        message: 'Gagal mengirim email OTP. Pastikan email Anda benar atau coba lagi nanti.',
+        message: 'Gagal mengirim email OTP. Coba lagi dalam beberapa detik.',
         ...(process.env.NODE_ENV !== 'production' && { error: emailErr.message })
       });
     }
