@@ -1,5 +1,5 @@
-/**
- * RABBreakdownCard â€” Tampilkan breakdown Material vs Upah Jasa
+﻿/**
+ * RABBreakdownCard "” Tampilkan breakdown Material vs Upah Jasa
  * Membantu kontraktor memahami komposisi biaya RAB
  */
 import { Package, Users, Info } from 'lucide-react';

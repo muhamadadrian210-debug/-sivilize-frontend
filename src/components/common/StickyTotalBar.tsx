@@ -1,4 +1,4 @@
-import { formatCurrency } from '../../utils/calculations';
+﻿import { formatCurrency } from '../../utils/calculations';
 import { TrendingUp, ChevronUp } from 'lucide-react';
 
 interface StickyTotalBarProps {
@@ -9,7 +9,7 @@ interface StickyTotalBarProps {
 }
 
 /**
- * Sticky Total Bar â€” tampil di bawah layar saat scroll
+ * Sticky Total Bar "” tampil di bawah layar saat scroll
  * Mobile-friendly, jempol-friendly
  */
 const StickyTotalBar = ({ subtotal, grandTotal, itemCount, onScrollToTop }: StickyTotalBarProps) => {

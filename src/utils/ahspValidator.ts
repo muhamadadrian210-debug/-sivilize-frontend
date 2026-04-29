@@ -1,4 +1,4 @@
-/**
+﻿/**
  * AHSP Validator - SE 47/SE/Dk/2026
  * Validasi koefisien dan harga satuan pekerjaan
  */
@@ -95,13 +95,13 @@ export const validateLaborCoeff = (
   if (pekerjaCoeff < pMin || pekerjaCoeff > pMax) {
     return {
       level: 'warning',
-      message: `Koefisien pekerja ${pekerjaCoeff} OH di luar standar PUPR (${pMin}â€“${pMax} OH)`
+      message: `Koefisien pekerja ${pekerjaCoeff} OH di luar standar PUPR (${pMin}"“${pMax} OH)`
     };
   }
   if (tukangCoeff < tMin || tukangCoeff > tMax) {
     return {
       level: 'warning',
-      message: `Koefisien tukang ${tukangCoeff} OH di luar standar PUPR (${tMin}â€“${tMax} OH)`
+      message: `Koefisien tukang ${tukangCoeff} OH di luar standar PUPR (${tMin}"“${tMax} OH)`
     };
   }
   return null;

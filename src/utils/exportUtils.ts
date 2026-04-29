@@ -1,4 +1,4 @@
-import jsPDF from 'jspdf';
+﻿import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { type RABItem, type FinancialSettings, type Project } from '../store/useStore';
@@ -159,7 +159,7 @@ export const exportToPDF = (
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
     doc.setFontSize(7); doc.setTextColor(150, 150, 150);
-    doc.text(`SIVILIZE HUB PRO â€” Halaman ${i} dari ${pageCount}`, pageW / 2, 290, { align: 'center' });
+    doc.text(`SIVILIZE HUB PRO "” Halaman ${i} dari ${pageCount}`, pageW / 2, 290, { align: 'center' });
     doc.setDrawColor(220, 220, 220); doc.setLineWidth(0.3);
     doc.line(margin, 287, pageW - margin, 287);
   }
@@ -167,7 +167,7 @@ export const exportToPDF = (
 };
 
 // ============================================================
-// EXPORT EXCEL PROFESIONAL â€” Tabel rapi, format Rp, siap kontraktor
+// EXPORT EXCEL PROFESIONAL "” Tabel rapi, format Rp, siap kontraktor
 // Menggunakan pendekatan AOA (Array of Arrays) yang kompatibel
 // dengan semua versi XLSX
 // ============================================================
@@ -196,7 +196,7 @@ export const exportToExcel = (
   data.push(['Platform Teknik Sipil Berbasis AI | sivilize-frontend.vercel.app']);
   data.push(['']);
 
-  // INFO PROYEK â€” 2 kolom
+  // INFO PROYEK "” 2 kolom
   data.push(['Nama Proyek', ':', project.name || '-', '', 'No. Dokumen', ':', projectNo]);
   data.push(['Lokasi', ':', getCityDisplayName(project.location || '-'), '', 'Tanggal', ':', today]);
   data.push(['Grade Material', ':', `Grade ${grade}`, '', 'Dibuat Oleh', ':', preparedBy]);
@@ -355,7 +355,7 @@ export const exportKurvaSPDF = (
   doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(100, 100, 100);
   doc.text('Platform Teknik Sipil Berbasis AI', margin + 22, 26);
   doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 122, 0);
-  doc.text('KURVA S â€” PROGRESS PROYEK', pageW - margin, 19, { align: 'right' });
+  doc.text('KURVA S "” PROGRESS PROYEK', pageW - margin, 19, { align: 'right' });
   doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(100, 100, 100);
   doc.text(`No. Dokumen: ${projectNo}`, pageW - margin, 24, { align: 'right' });
   doc.text(`Tanggal Cetak: ${new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}`, pageW - margin, 28, { align: 'right' });
@@ -419,7 +419,7 @@ export const exportKurvaSPDF = (
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
     doc.setFontSize(7); doc.setTextColor(150, 150, 150);
-    doc.text(`SIVILIZE HUB PRO â€” Halaman ${i} dari ${pageCount}`, pageW / 2, 290, { align: 'center' });
+    doc.text(`SIVILIZE HUB PRO "” Halaman ${i} dari ${pageCount}`, pageW / 2, 290, { align: 'center' });
   }
 
   doc.save(`KurvaS_${(project.name || 'Proyek').replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
@@ -501,7 +501,7 @@ export const exportLaborToPDF = (
 
   // Tabel per minggu
   for (const payment of payments) {
-    const weekLabel = `${new Date(payment.weekStart).toLocaleDateString('id-ID')} â€” ${new Date(payment.weekEnd).toLocaleDateString('id-ID')}`;
+    const weekLabel = `${new Date(payment.weekStart).toLocaleDateString('id-ID')} "” ${new Date(payment.weekEnd).toLocaleDateString('id-ID')}`;
     doc.setFillColor(52, 73, 94); doc.setTextColor(255, 255, 255);
     doc.setFontSize(8.5); doc.setFont('helvetica', 'bold');
     doc.rect(margin, y, pageW - margin * 2, 7, 'F');
@@ -566,7 +566,7 @@ export const exportLaborToPDF = (
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
     doc.setFontSize(7); doc.setTextColor(150, 150, 150);
-    doc.text(`SIVILIZE HUB PRO â€” Halaman ${i} dari ${pageCount}`, pageW / 2, 290, { align: 'center' });
+    doc.text(`SIVILIZE HUB PRO "” Halaman ${i} dari ${pageCount}`, pageW / 2, 290, { align: 'center' });
   }
 
   doc.save(`Upah_${options.projectName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
@@ -590,7 +590,7 @@ export const exportLaborToExcel = (
   ];
 
   for (const payment of payments) {
-    const weekLabel = `${new Date(payment.weekStart).toLocaleDateString('id-ID')} â€” ${new Date(payment.weekEnd).toLocaleDateString('id-ID')}`;
+    const weekLabel = `${new Date(payment.weekStart).toLocaleDateString('id-ID')} "” ${new Date(payment.weekEnd).toLocaleDateString('id-ID')}`;
     for (const worker of payment.workers) {
       data.push([weekLabel, worker.name, worker.role, worker.days, toRp(worker.dailyWage), toRp(worker.total)]);
     }

@@ -1,4 +1,4 @@
-import { Calendar, Clock, BarChart2, Users, Info } from 'lucide-react';
+﻿import { Calendar, Clock, BarChart2, Users, Info } from 'lucide-react';
 import { type RABItem } from '../../store/useStore';
 import { AHSP_TEMPLATES } from '../../data/ahsp';
 
@@ -111,8 +111,8 @@ const ProjectTimeline = ({ items, totalArea = 100 }: ProjectTimelineProps) => {
       {/* Info luas */}
       <div className="mb-4 flex items-center gap-2 text-xs text-text-secondary bg-primary/5 border border-primary/20 rounded-lg px-3 py-2">
         <Info size={12} className="text-primary" />
-        Estimasi untuk bangunan <span className="text-white font-bold mx-1">{totalArea} mÂ²</span>
-        â€” tim disesuaikan otomatis dengan luas bangunan
+        Estimasi untuk bangunan <span className="text-white font-bold mx-1">{totalArea} m²</span>
+        "” tim disesuaikan otomatis dengan luas bangunan
       </div>
 
       <div className="space-y-3">

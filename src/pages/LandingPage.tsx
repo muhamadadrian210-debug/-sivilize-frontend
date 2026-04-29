@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+﻿﻿﻿import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   Calculator, BarChart3, BookOpen, Database, Shield, Smartphone,
@@ -300,7 +300,7 @@ const LandingPage = ({ onGetStarted }: LandingPageProps) => {
       <section id="fitur" className="py-24 px-4 lg:px-8 max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-black mb-4">Semua yang Lo Butuhkan</h2>
-          <p className="text-text-secondary max-w-xl mx-auto">Dari hitung RAB sampai laporan progress â€” semua ada di satu platform.</p>
+          <p className="text-text-secondary max-w-xl mx-auto">Dari hitung RAB sampai laporan progress "” semua ada di satu platform.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((f, i) => {
@@ -457,7 +457,7 @@ const LandingPage = ({ onGetStarted }: LandingPageProps) => {
             </div>
             <span className="text-white font-bold text-sm">SIVILIZE HUB PRO</span>
           </div>
-          <p className="text-text-secondary text-sm">Â© {new Date().getFullYear()} SIVILIZE HUB PRO. All rights reserved.</p>
+          <p className="text-text-secondary text-sm">© {new Date().getFullYear()} SIVILIZE HUB PRO. All rights reserved.</p>
           <div className="flex items-center gap-4 text-text-secondary text-sm">
             <button onClick={onGetStarted} className="hover:text-white transition-colors">Privacy Policy</button>
             <button onClick={onGetStarted} className="hover:text-white transition-colors">Terms of Service</button>
