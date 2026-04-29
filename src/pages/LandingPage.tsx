@@ -123,9 +123,7 @@ const LandingPage = ({ onGetStarted }: LandingPageProps) => {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center shadow-glow">
-              <CivilEngineeringLogo size={22} variant="icon" className="text-white" />
-            </div>
+            <CivilEngineeringLogo size={36} variant="icon" className="shadow-glow" />
             <span className="font-black text-lg tracking-tight">SIVILIZE HUB PRO</span>
           </div>
 
@@ -452,9 +450,7 @@ const LandingPage = ({ onGetStarted }: LandingPageProps) => {
       <footer className="border-t border-border py-8 px-4 lg:px-8">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-white font-black text-sm">S</span>
-            </div>
+            <CivilEngineeringLogo size={28} variant="icon" />
             <span className="text-white font-bold text-sm">SIVILIZE HUB PRO</span>
           </div>
           <p className="text-text-secondary text-sm">© {new Date().getFullYear()} SIVILIZE HUB PRO. All rights reserved.</p>
