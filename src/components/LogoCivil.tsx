@@ -6,58 +6,44 @@ interface CivilEngineeringLogoProps {
   variant?: 'icon' | 'text' | 'full';
 }
 
-/**
- * Logo SIVILIZE HUB PRO
- * Kotak orange rounded dengan ikon gedung klasik/capitol (kolom + kubah)
- */
-const CivilEngineeringLogo: React.FC<CivilEngineeringLogoProps> = ({
-  size = 64,
-  className = '',
-  variant = 'icon'
-}) => {
+const CivilEngineeringLogo: React.FC<CivilEngineeringLogoProps> = ({ size = 64, className = '', variant = 'icon' }) => {
   if (variant === 'icon') {
     return (
-      <svg
-        width={size}
-        height={size}
-        viewBox="0 0 64 64"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        className={className}
-      >
-        {/* Background kotak orange rounded */}
-        <rect x="0" y="0" width="64" height="64" rx="14" ry="14" fill="#FF7A00" />
-
-        {/* Gedung klasik/capitol — coklat gelap */}
-        {/* Kubah atas */}
-        <ellipse cx="32" cy="16" rx="8" ry="5" fill="#7B3F00" />
-        <rect x="29" y="11" width="6" height="6" fill="#7B3F00" />
-
-        {/* Atap/pediment segitiga */}
-        <polygon points="14,28 32,18 50,28" fill="#8B4513" />
-
-        {/* Badan gedung */}
-        <rect x="14" y="28" width="36" height="18" fill="#8B4513" />
-
-        {/* Kolom-kolom */}
-        <rect x="17" y="28" width="4" height="18" fill="#A0522D" rx="1" />
-        <rect x="24" y="28" width="4" height="18" fill="#A0522D" rx="1" />
-        <rect x="36" y="28" width="4" height="18" fill="#A0522D" rx="1" />
-        <rect x="43" y="28" width="4" height="18" fill="#A0522D" rx="1" />
-
-        {/* Pintu tengah */}
-        <rect x="28" y="36" width="8" height="10" fill="#5C2E00" rx="1" />
-
-        {/* Tangga/pondasi */}
-        <rect x="12" y="46" width="40" height="4" fill="#8B4513" rx="1" />
-        <rect x="10" y="50" width="44" height="4" fill="#7B3F00" rx="1" />
-
-        {/* Garis bawah */}
-        <rect x="8" y="54" width="48" height="3" fill="#6B3000" rx="1" />
+      <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+        <defs>
+          <linearGradient id="orangeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#FF9A3C"/>
+            <stop offset="100%" stopColor="#FF6B00"/>
+          </linearGradient>
+        </defs>
+        {/* Kotak orange rounded */}
+        <rect x="0" y="0" width="64" height="64" rx="14" fill="url(#orangeGrad)"/>
+        {/* 3 gedung - tengah paling tinggi */}
+        {/* Gedung kiri */}
+        <rect x="10" y="28" width="12" height="26" fill="#1a1a2e" rx="1"/>
+        <rect x="12" y="32" width="3" height="3" fill="#FF9A3C" opacity="0.6"/>
+        <rect x="17" y="32" width="3" height="3" fill="#FF9A3C" opacity="0.6"/>
+        <rect x="12" y="38" width="3" height="3" fill="#FF9A3C" opacity="0.6"/>
+        <rect x="17" y="38" width="3" height="3" fill="#FF9A3C" opacity="0.6"/>
+        {/* Gedung tengah - paling tinggi */}
+        <rect x="24" y="16" width="16" height="38" fill="#1a1a2e" rx="1"/>
+        <rect x="27" y="20" width="4" height="4" fill="#FF9A3C" opacity="0.7"/>
+        <rect x="33" y="20" width="4" height="4" fill="#FF9A3C" opacity="0.7"/>
+        <rect x="27" y="28" width="4" height="4" fill="#FF9A3C" opacity="0.7"/>
+        <rect x="33" y="28" width="4" height="4" fill="#FF9A3C" opacity="0.7"/>
+        <rect x="27" y="36" width="4" height="4" fill="#FF9A3C" opacity="0.7"/>
+        <rect x="33" y="36" width="4" height="4" fill="#FF9A3C" opacity="0.7"/>
+        {/* Gedung kanan */}
+        <rect x="42" y="28" width="12" height="26" fill="#1a1a2e" rx="1"/>
+        <rect x="44" y="32" width="3" height="3" fill="#FF9A3C" opacity="0.6"/>
+        <rect x="49" y="32" width="3" height="3" fill="#FF9A3C" opacity="0.6"/>
+        <rect x="44" y="38" width="3" height="3" fill="#FF9A3C" opacity="0.6"/>
+        <rect x="49" y="38" width="3" height="3" fill="#FF9A3C" opacity="0.6"/>
+        {/* Tanah/garis bawah */}
+        <path d="M6 54 Q32 50 58 54" stroke="#1a1a2e" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
       </svg>
     );
   }
-
   if (variant === 'text') {
     return (
       <div className={`flex flex-col items-center ${className}`}>
@@ -66,14 +52,12 @@ const CivilEngineeringLogo: React.FC<CivilEngineeringLogoProps> = ({
       </div>
     );
   }
-
   return (
     <div className={`flex items-center gap-3 ${className}`}>
       <CivilEngineeringLogo size={size} variant="icon" />
       <div className="flex flex-col">
         <span className="text-2xl font-black text-white italic tracking-tighter">SIVILIZE</span>
         <span className="text-xs font-bold text-primary uppercase tracking-widest">HUB PRO</span>
-        <span className="text-[10px] text-text-secondary">Platform Teknik Sipil Berbasis AI</span>
       </div>
     </div>
   );
