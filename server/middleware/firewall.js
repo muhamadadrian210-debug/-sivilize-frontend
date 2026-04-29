@@ -361,3 +361,140 @@ exports.getFirewallStatus = () => ({
   bruteForceTracked: bruteForceAttempts.size,
   endpointFloodTracked: endpointFlood.size,
 });
+
+// ── 7. Rate Limiting Per User (berdasarkan JWT userId) ───────
+// Lebih akurat dari per-IP karena tidak bisa di-bypass pakai VPN
+const userRateLimit = new Map(); // { userId: { count, firstRequest, blocked, blockUntil } }
+
+const USER_RATE_CONFIG = {
+  // General API
+  GENERAL_MAX: 300,           // Max 300 request per 15 menit per user
+  GENERAL_WINDOW_MS: 15 * 60 * 1000,
+  GENERAL_BLOCK_MS: 15 * 60 * 1000,
+
+  // Export (berat, batasi lebih ketat)
+  EXPORT_MAX: 20,             // Max 20 export per jam
+  EXPORT_WINDOW_MS: 60 * 60 * 1000,
+  EXPORT_BLOCK_MS: 60 * 60 * 1000,
+
+  // RAB Generate (berat)
+  RAB_MAX: 50,                // Max 50 generate RAB per jam
+  RAB_WINDOW_MS: 60 * 60 * 1000,
+  RAB_BLOCK_MS: 30 * 60 * 1000,
+};
+
+const userExportLimit = new Map();
+const userRABLimit = new Map();
+
+function checkUserRate(store, userId, max, windowMs, blockMs) {
+  const now = Date.now();
+  const rec = store.get(userId) || { count: 0, firstRequest: now, blocked: false, blockUntil: null };
+
+  // Cek masih diblokir
+  if (rec.blocked && rec.blockUntil && now < rec.blockUntil) {
+    const waitMs = rec.blockUntil - now;
+    return { allowed: false, waitMs };
+  }
+
+  // Reset window
+  if (now - rec.firstRequest > windowMs) {
+    rec.count = 0;
+    rec.firstRequest = now;
+    rec.blocked = false;
+    rec.blockUntil = null;
+  }
+
+  rec.count++;
+
+  if (rec.count > max) {
+    rec.blocked = true;
+    rec.blockUntil = now + blockMs;
+    store.set(userId, rec);
+    return { allowed: false, waitMs: blockMs };
+  }
+
+  store.set(userId, rec);
+  return { allowed: true };
+}
+
+// Middleware: rate limit per user untuk semua protected routes
+exports.userRateLimiter = (req, res, next) => {
+  // Hanya apply kalau user sudah login (ada req.user dari protect middleware)
+  if (!req.user) return next();
+
+  const userId = String(req.user._id || req.user.id);
+  const path = req.path;
+
+  // Export endpoint
+  if (path.includes('/export')) {
+    const result = checkUserRate(userExportLimit, userId,
+      USER_RATE_CONFIG.EXPORT_MAX,
+      USER_RATE_CONFIG.EXPORT_WINDOW_MS,
+      USER_RATE_CONFIG.EXPORT_BLOCK_MS
+    );
+    if (!result.allowed) {
+      const minutes = Math.ceil(result.waitMs / 60000);
+      return res.status(429).json({
+        success: false,
+        message: `Batas export tercapai. Coba lagi dalam ${minutes} menit.`,
+        code: 'USER_EXPORT_LIMIT',
+      });
+    }
+    return next();
+  }
+
+  // RAB Calculate endpoint
+  if (path.includes('/calculate-rab')) {
+    const result = checkUserRate(userRABLimit, userId,
+      USER_RATE_CONFIG.RAB_MAX,
+      USER_RATE_CONFIG.RAB_WINDOW_MS,
+      USER_RATE_CONFIG.RAB_BLOCK_MS
+    );
+    if (!result.allowed) {
+      const minutes = Math.ceil(result.waitMs / 60000);
+      return res.status(429).json({
+        success: false,
+        message: `Batas generate RAB tercapai. Coba lagi dalam ${minutes} menit.`,
+        code: 'USER_RAB_LIMIT',
+      });
+    }
+    return next();
+  }
+
+  // General API
+  const result = checkUserRate(userRateLimit, userId,
+    USER_RATE_CONFIG.GENERAL_MAX,
+    USER_RATE_CONFIG.GENERAL_WINDOW_MS,
+    USER_RATE_CONFIG.GENERAL_BLOCK_MS
+  );
+  if (!result.allowed) {
+    const minutes = Math.ceil(result.waitMs / 60000);
+    return res.status(429).json({
+      success: false,
+      message: `Terlalu banyak request. Coba lagi dalam ${minutes} menit.`,
+      code: 'USER_RATE_LIMIT',
+    });
+  }
+
+  next();
+};
+
+// Cleanup user rate limit setiap 30 menit
+setInterval(() => {
+  const now = Date.now();
+  for (const [id, rec] of userRateLimit.entries()) {
+    if (!rec.blocked && now - rec.firstRequest > USER_RATE_CONFIG.GENERAL_WINDOW_MS * 2) {
+      userRateLimit.delete(id);
+    }
+  }
+  for (const [id, rec] of userExportLimit.entries()) {
+    if (!rec.blocked && now - rec.firstRequest > USER_RATE_CONFIG.EXPORT_WINDOW_MS * 2) {
+      userExportLimit.delete(id);
+    }
+  }
+  for (const [id, rec] of userRABLimit.entries()) {
+    if (!rec.blocked && now - rec.firstRequest > USER_RATE_CONFIG.RAB_WINDOW_MS * 2) {
+      userRABLimit.delete(id);
+    }
+  }
+}, 30 * 60 * 1000);

@@ -139,6 +139,7 @@ const {
   firewallStack,
   authFirewallStack,
   getFirewallStatus,
+  userRateLimiter,
 } = require('./middleware/firewall');
 
 // Firewall stack ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â urutan penting
@@ -249,12 +250,12 @@ app.use(async (req, res, next) => {
 // 10. ROUTES - Auth pakai rate limiter + firewall ketat
 // ============================================================
 app.use('/api/auth', authLimiter, authFirewallStack, require('./routes/auth'));
-app.use('/api/projects', require('./routes/projects'));
-app.use('/api/ahsp', require('./routes/ahsp'));
-app.use('/api/materials', require('./routes/materials'));
-app.use('/api/logs', require('./routes/logs'));
-app.use('/api/calculate-rab', require('./routes/calculation'));
-app.use('/api/export', exportLimiter, require('./routes/export'));
+app.use('/api/projects', userRateLimiter, require('./routes/projects'));
+app.use('/api/ahsp', userRateLimiter, require('./routes/ahsp'));
+app.use('/api/materials', userRateLimiter, require('./routes/materials'));
+app.use('/api/logs', userRateLimiter, require('./routes/logs'));
+app.use('/api/calculate-rab', userRateLimiter, require('./routes/calculation'));
+app.use('/api/export', exportLimiter, userRateLimiter, require('./routes/export'));
 
 // Share RAB route (public, no auth required)
 try {
