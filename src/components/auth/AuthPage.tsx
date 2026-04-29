@@ -1,6 +1,6 @@
 import { useState, type FormEvent, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, User, ArrowRight, KeyRound, CheckCircle2, Shield } from 'lucide-react';
+import { Mail, Lock, User, ArrowRight, KeyRound, CheckCircle2, Shield, Eye, EyeOff } from 'lucide-react';
 import { authService } from '../../services/api';
 import { useStore } from '../../store/useStore';
 import { LogoCivil as CivilEngineeringLogo } from '../LogoCivil';
@@ -18,6 +18,8 @@ const AuthPage = () => {
   const [success, setSuccess] = useState('');
   const { setUser, setAuthenticated } = useStore();
   const [rememberMe, setRememberMe] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
   const [resetToken, setResetToken] = useState('');
 
   // OTP state
@@ -214,6 +216,16 @@ const AuthPage = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
+        {/* Tombol kembali ke landing page */}
+        <button
+          onClick={() => window.history.back()}
+          className="flex items-center gap-2 text-text-secondary hover:text-white transition-colors text-sm mb-4 group"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:-translate-x-1 transition-transform">
+            <path d="M19 12H5M12 5l-7 7 7 7"/>
+          </svg>
+          Kembali ke Beranda
+        </button>
         <Logo />
         <AnimatePresence mode="wait">
           <motion.div key={mode} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="glass-card p-8">
@@ -365,8 +377,11 @@ const AuthPage = () => {
                       <label className="text-xs text-text-secondary uppercase font-bold">Password</label>
                       <div className="relative">
                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" size={18} />
-                        <input type="password" required value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})}
-                          className="w-full bg-background border border-border rounded-xl pl-10 pr-4 py-3 text-white focus:border-primary outline-none transition-all" placeholder="••••••••" />
+                        <input type={showPassword ? 'text' : 'password'} required value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})}
+                          className="w-full bg-background border border-border rounded-xl pl-10 pr-10 py-3 text-white focus:border-primary outline-none transition-all" placeholder="••••••••" />
+                        <button type="button" onClick={() => setShowPassword(p => !p)} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-white transition-colors">
+                          {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
                       </div>
                       {mode === 'register' && <p className="text-text-secondary text-[11px] mt-1">Min. 8 karakter</p>}
                     </div>
@@ -378,8 +393,12 @@ const AuthPage = () => {
                         <label className="text-xs text-text-secondary uppercase font-bold">Password Baru</label>
                         <div className="relative">
                           <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" size={18} />
-                          <input type="password" required value={formData.newPassword} onChange={e => setFormData({...formData, newPassword: e.target.value})}
-                            className="w-full bg-background border border-border rounded-xl pl-10 pr-4 py-3 text-white focus:border-primary outline-none transition-all" placeholder="Min. 8 karakter" />
+                          <input type={showNewPassword ? 'text' : 'password'} required value={formData.newPassword} onChange={e => setFormData({...formData, newPassword: e.target.value})}
+                            className="w-full bg-background border border-border rounded-xl pl-10 pr-10 py-3 text-white focus:border-primary outline-none transition-all" placeholder="Min. 8 karakter" />
+                          <button type="button" onClick={() => setShowNewPassword(p => !p)} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-white transition-colors">
+                            {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                          </button>
+                        </div>
                         </div>
                       </div>
                       <div className="space-y-1">
