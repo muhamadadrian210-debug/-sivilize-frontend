@@ -22,7 +22,6 @@ const AuthPage = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [resetToken, setResetToken] = useState('');
 
-  // OTP state
   const [otpPurpose, setOtpPurpose] = useState<'login' | 'register'>('login');
   const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
   const [otpCountdown, setOtpCountdown] = useState(0);
@@ -49,14 +48,12 @@ const AuthPage = () => {
     }
   }, []);
 
-  // Countdown timer untuk resend OTP
   useEffect(() => {
     if (otpCountdown <= 0) return;
     const t = setTimeout(() => setOtpCountdown(c => c - 1), 1000);
     return () => clearTimeout(t);
   }, [otpCountdown]);
 
-  // ── Handle OTP input ──────────────────────────────────────
   const handleOtpChange = (index: number, value: string) => {
     if (!/^\d*$/.test(value)) return;
     const digits = [...otpDigits];
@@ -79,22 +76,19 @@ const AuthPage = () => {
     }
   };
 
-  // ── Send OTP ──────────────────────────────────────────────
   const handleSendOtp = async (purpose: 'login' | 'register') => {
-    // Validasi format email dulu di frontend
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       setError('Format email tidak valid. Contoh: nama@gmail.com');
       return;
     }
-    setLoading(true); setError(''); setSuccess('⏳ Kode OTP sedang dikirimkan ke Gmail Anda, silahkan dicek...');
+    setLoading(true); setError(''); setSuccess('Kode OTP sedang dikirimkan ke Gmail Anda...');
     try {
       await authService.sendOtp(formData.email, purpose);
-      // Set purpose SEBELUM pindah mode agar tidak race condition
       setOtpPurpose(purpose);
       setOtpDigits(['', '', '', '', '', '']);
       setOtpCountdown(60);
-      setError(''); // pastikan error bersih sebelum pindah
+      setError('');
       setSuccess('');
       setMode('otp');
       setTimeout(() => otpRefs.current[0]?.focus(), 100);
@@ -102,41 +96,24 @@ const AuthPage = () => {
       const e = err as AxiosLikeError;
       const status = (err as { response?: { status?: number } }).response?.status;
       setSuccess('');
-      if (status === 429) {
-        setError('Terlalu banyak percobaan. Tunggu 1 menit lalu coba lagi.');
-      } else if (status === 400) {
-        setError(e.response?.data?.message || 'Gagal mengirim OTP.');
-      } else if (!e.response) {
-        setError('Tidak ada respon dari server. Periksa koneksi internet Anda.');
-      } else {
-        setError(e.response?.data?.message || 'Gagal mengirim OTP. Coba lagi.');
-      }
+      if (status === 429) setError('Terlalu banyak percobaan. Tunggu 1 menit lalu coba lagi.');
+      else if (status === 400) setError(e.response?.data?.message || 'Gagal mengirim OTP.');
+      else if (!e.response) setError('Tidak ada respon dari server. Periksa koneksi internet Anda.');
+      else setError(e.response?.data?.message || 'Gagal mengirim OTP. Coba lagi.');
     } finally { setLoading(false); }
   };
 
-  // ── Submit form (login/register → trigger OTP) ────────────
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true); setError(''); setSuccess('');
-
     try {
       if (mode === 'login') {
-        // Selalu kirim OTP untuk login — tidak ada skip
-        if (rememberMe) localStorage.setItem('sivilize_remember_me', JSON.stringify({ email: formData.email }));
-        else localStorage.removeItem('sivilize_remember_me');
-        setLoading(false);
-        await handleSendOtp('login');
-        return;
-        }
-        // Belum pernah OTP atau sudah logout — wajib OTP
-        // Simpan password sementara untuk dipakai saat verify OTP
         if (rememberMe) localStorage.setItem('sivilize_remember_me', JSON.stringify({ email: formData.email }));
         else localStorage.removeItem('sivilize_remember_me');
         setLoading(false);
         await handleSendOtp('login');
         return;
       } else if (mode === 'register') {
-        // Validasi dulu, baru kirim OTP
         if (formData.password.length < 8) {
           setError('Password minimal 8 karakter'); setLoading(false); return;
         }
@@ -168,18 +145,16 @@ const AuthPage = () => {
       const errData = axiosErr.response?.data;
       const status = (err as { response?: { status?: number } }).response?.status;
       if (errData?.errors) setError(errData.errors.map(e => e.message).join('\n'));
-      else if (!axiosErr.response) setError('Tidak ada respon dari server. Periksa koneksi internet Anda atau coba lagi beberapa saat lagi.');
+      else if (!axiosErr.response) setError('Tidak ada respon dari server. Periksa koneksi internet Anda.');
       else if (status === 500) setError('Server sedang bermasalah. Tunggu beberapa detik lalu coba lagi.');
       else setError(errData?.message || 'Terjadi kesalahan. Silakan coba lagi.');
     } finally { setLoading(false); }
   };
 
-  // ── Verify OTP ────────────────────────────────────────────
   const handleVerifyOtp = async () => {
     const otp = otpDigits.join('');
     if (otp.length < 6) { setError('Masukkan 6 digit OTP'); return; }
     setLoading(true); setError('');
-    // Capture purpose saat ini untuk menghindari stale closure
     const currentPurpose = otpPurpose;
     try {
       const response = await authService.verifyOtp({
@@ -187,10 +162,9 @@ const AuthPage = () => {
         otp,
         purpose: currentPurpose,
         name: currentPurpose === 'register' ? formData.name : undefined,
-        password: formData.password, // selalu kirim password (untuk register & login)
+        password: formData.password,
       });
       if (response.success) {
-        // Simpan flag — user ini sudah OTP verified, skip OTP di login berikutnya
         localStorage.setItem('sivilize_otp_verified', formData.email.toLowerCase());
         setUser(response.data);
         setAuthenticated(true);
@@ -216,7 +190,7 @@ const AuthPage = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
-        {/* Tombol kembali ke landing page */}
+        {/* Tombol kembali ke beranda */}
         <button
           onClick={() => window.history.back()}
           className="flex items-center gap-2 text-text-secondary hover:text-white transition-colors text-sm mb-4 group"
@@ -226,11 +200,12 @@ const AuthPage = () => {
           </svg>
           Kembali ke Beranda
         </button>
+
         <Logo />
         <AnimatePresence mode="wait">
           <motion.div key={mode} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="glass-card p-8">
 
-            {/* ── OTP STEP ── */}
+            {/* OTP STEP */}
             {mode === 'otp' && (
               <div className="space-y-6">
                 <div className="text-center">
@@ -245,7 +220,6 @@ const AuthPage = () => {
                   <p className="text-text-secondary text-xs mt-1">dari <span className="text-primary font-bold">Sivilize Corp</span></p>
                 </div>
 
-                {/* OTP Input boxes */}
                 <div className="flex gap-2 justify-center" onPaste={handleOtpPaste}>
                   {otpDigits.map((digit, i) => (
                     <input
@@ -278,15 +252,11 @@ const AuthPage = () => {
                   {loading ? (
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   ) : (
-                    <>
-                      <CheckCircle2 size={18} />
-                      <span>Verifikasi & Masuk</span>
-                    </>
+                    <><CheckCircle2 size={18} /><span>Verifikasi & Masuk</span></>
                   )}
                 </button>
 
                 <div className="text-center space-y-2">
-                  {/* Tombol buka email client */}
                   <a
                     href={`https://mail.google.com/mail/u/?authuser=${encodeURIComponent(formData.email)}`}
                     target="_blank"
@@ -298,32 +268,24 @@ const AuthPage = () => {
                     </svg>
                     Buka Gmail
                   </a>
-
                   {otpCountdown > 0 ? (
                     <p className="text-text-secondary text-xs">Kirim ulang dalam <span className="text-white font-bold">{otpCountdown}s</span></p>
                   ) : (
-                    <button
-                      type="button"
-                      onClick={() => handleSendOtp(otpPurpose)}
-                      disabled={loading}
-                      className="text-xs text-primary hover:text-primary/80 font-bold transition-colors"
-                    >
+                    <button type="button" onClick={() => handleSendOtp(otpPurpose)} disabled={loading}
+                      className="text-xs text-primary hover:text-primary/80 font-bold transition-colors">
                       Kirim ulang OTP
                     </button>
                   )}
                   <br />
-                  <button
-                    type="button"
-                    onClick={() => { setMode(otpPurpose); setError(''); setOtpDigits(['','','','','','']); }}
-                    className="text-xs text-text-secondary hover:text-white transition-colors"
-                  >
+                  <button type="button" onClick={() => { setMode(otpPurpose); setError(''); setOtpDigits(['','','','','','']); }}
+                    className="text-xs text-text-secondary hover:text-white transition-colors">
                     ← Kembali
                   </button>
                 </div>
               </div>
             )}
 
-            {/* ── LOGIN / REGISTER / FORGOT / RESET ── */}
+            {/* LOGIN / REGISTER / FORGOT / RESET */}
             {mode !== 'otp' && (
               <>
                 {(mode === 'login' || mode === 'register') && (
@@ -399,7 +361,6 @@ const AuthPage = () => {
                             {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                           </button>
                         </div>
-                        </div>
                       </div>
                       <div className="space-y-1">
                         <label className="text-xs text-text-secondary uppercase font-bold">Konfirmasi Password</label>
@@ -438,7 +399,6 @@ const AuthPage = () => {
                     </div>
                   )}
 
-                  {/* OTP info badge */}
                   {(mode === 'login' || mode === 'register') && (
                     <div className="flex items-center gap-2 bg-primary/5 border border-primary/20 rounded-lg px-3 py-2">
                       <Shield size={14} className="text-primary shrink-0" />
