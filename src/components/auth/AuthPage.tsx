@@ -119,30 +119,12 @@ const AuthPage = () => {
 
     try {
       if (mode === 'login') {
-        // Cek apakah user sudah pernah OTP verified sebelumnya
-        const otpVerified = localStorage.getItem('sivilize_otp_verified');
-        if (otpVerified === formData.email.toLowerCase()) {
-          // Sudah pernah OTP — verifikasi password langsung login
-          let response;
-          try {
-            response = await authService.login({ email: formData.email, password: formData.password, rememberMe });
-          } catch (loginErr: unknown) {
-            const e = loginErr as AxiosLikeError & { response?: { status?: number } };
-            if (!e.response) {
-              setError('Server sedang memuat... Mencoba ulang otomatis.');
-              await new Promise(r => setTimeout(r, 3000));
-              response = await authService.login({ email: formData.email, password: formData.password, rememberMe });
-            } else {
-              throw loginErr;
-            }
-          }
-          if (response.success) {
-            setUser(response.data);
-            setAuthenticated(true);
-            if (rememberMe) localStorage.setItem('sivilize_remember_me', JSON.stringify({ email: formData.email }));
-            else localStorage.removeItem('sivilize_remember_me');
-            return;
-          }
+        // Selalu kirim OTP untuk login — tidak ada skip
+        if (rememberMe) localStorage.setItem('sivilize_remember_me', JSON.stringify({ email: formData.email }));
+        else localStorage.removeItem('sivilize_remember_me');
+        setLoading(false);
+        await handleSendOtp('login');
+        return;
         }
         // Belum pernah OTP atau sudah logout — wajib OTP
         // Simpan password sementara untuk dipakai saat verify OTP
