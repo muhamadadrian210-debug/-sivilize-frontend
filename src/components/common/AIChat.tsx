@@ -1,118 +1,23 @@
-﻿﻿import { useState, useRef, useEffect } from 'react';
-import { X, Send, Sparkles, User, Trash2 } from 'lucide-react';
-import { useStore } from '../../store/useStore';
+﻿﻿import { useState } from 'react';
+import { Sparkles, X } from 'lucide-react';
 
-interface Message {
-  sender: 'user' | 'ai';
-  text: string;
-  timestamp: Date;
-}
-
-const SYSTEM_PROMPT = `Kamu adalah Kiro, AI Assistant expert di SIVILIZE HUB PRO - platform RAB & Teknik Sipil Indonesia.
-Keahlianmu: RAB, AHSP, SNI, SE 47/SE/Dk/2026, pondasi, material, K3, struktur, MEP.
-Gaya bicara: santai, bahasa Indonesia, panggil user "Bro", jawaban singkat & to the point.`;
-
-const callGemini = async (messages: Message[], userInput: string): Promise<string> => {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-  if (!apiKey) return getFallbackResponse(userInput);
-  const history = messages.slice(-10).map(m => ({
-    role: m.sender === 'user' ? 'user' : 'model',
-    parts: [{ text: m.text }]
-  }));
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-        contents: [...history, { role: 'user', parts: [{ text: userInput }] }],
-        generationConfig: { temperature: 0.7, maxOutputTokens: 1024 }
-      })
-    }
-  );
-  if (!response.ok) {
-    if (response.status === 429) throw new Error('quota');
-    throw new Error('api_error');
-  }
-  const data = await response.json();
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text) throw new Error('empty_response');
-  return text;
-};
-
-const getFallbackResponse = (input: string): string => {
-  const q = input.toLowerCase();
-  if (q.includes('rab') || q.includes('rencana anggaran'))
-    return 'RAB (Rencana Anggaran Biaya) adalah estimasi biaya konstruksi. Di SIVILIZE, generate RAB otomatis di menu Kalkulator RAB - input dimensi bangunan, sistem hitung semua item sesuai AHSP/SNI.';
-  if (q.includes('pondasi') || q.includes('fondasi'))
-    return 'Rekomendasi pondasi:\n- Tanah keras: Batu kali\n- Tanah sedang: Footplate\n- Tanah lunak: Strauss pile\n- Tanah gambut: Tiang pancang\n\nPilih jenis tanah di Kalkulator RAB, sistem otomatis rekomendasikan pondasi!';
-  if (q.includes('beton') || q.includes('k-225') || q.includes('k225'))
-    return 'Beton K-225 per m3:\n- Semen PC: 371 kg\n- Pasir beton: 0.498 m3\n- Krikil: 0.776 m3\n- Air: 215 liter\nHarga ~Rp 1.3-1.5 juta/m3 tergantung lokasi.';
-  if (q.includes('ahsp') || q.includes('harga satuan'))
-    return 'AHSP adalah standar perhitungan biaya konstruksi berdasarkan SE 47/SE/Dk/2026. Klik "Lihat Komposisi AHSP" di setiap item RAB untuk detail lengkapnya!';
-  if (q.includes('kurva s') || q.includes('progress'))
-    return 'Kurva S = grafik progress rencana vs realisasi. Isi tanggal mulai & selesai proyek, update progress di Buku Harian - Kurva S otomatis terbentuk!';
-  if (q.includes('export') || q.includes('cetak') || q.includes('pdf'))
-    return 'Cara export RAB:\n1. Klik "Cetak / Export" di halaman RAB\n2. Preview muncul\n3. Pilih Download PDF atau Excel';
-  if (q.includes('harga') || q.includes('material') || q.includes('semen'))
-    return 'Harga material 2026 per provinsi:\n- Jawa: harga basis\n- Sumatera: +8-12%\n- Kalimantan: +15-28%\n- Papua: +85%\nBisa override harga lokal di fitur Regional Price!';
-  if (q.includes('backup') || q.includes('restore'))
-    return 'Backup data: Buka Profil -> Backup & Restore -> Export Semua Data. Restore: upload file JSON yang sama.';
-  if (q.includes('share') || q.includes('bagikan'))
-    return 'Share RAB: Buka proyek -> klik "Bagikan RAB" -> kirim link ke klien via WA/email. Klien bisa lihat tanpa daftar akun!';
-  if (q.includes('halo') || q.includes('hai') || q.includes('hello'))
-    return 'Halo Bro! Gue Kiro, AI assistant SIVILIZE HUB PRO.\nBisa bantu: RAB, AHSP, pondasi, material, fitur SIVILIZE.\nMau tanya apa?';
-  if (q.includes('terima kasih') || q.includes('makasih'))
-    return 'Sama-sama Bro! Semoga proyeknya lancar!';
-  return `Gue bisa bantu seputar:\n- RAB & AHSP\n- Pondasi & struktur\n- Material & harga\n- Fitur SIVILIZE\n\nCoba tanya lebih spesifik ya Bro!`;
-};
-
+// AI Chat — Segera Hadir (dalam pengembangan)
 const AIChat = () => {
-  useStore();
   const [open, setOpen] = useState(false);
-  const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    { sender: 'ai', text: 'Halo Bro! Gue Kiro, AI assistant SIVILIZE HUB PRO. Tanya apa aja seputar RAB, AHSP, pondasi, atau konstruksi - gue siap bantu!', timestamp: new Date() }
-  ]);
-  const bottomRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
-  useEffect(() => { if (open) setTimeout(() => inputRef.current?.focus(), 100); }, [open]);
-
-  const send = async () => {
-    if (!input.trim() || loading) return;
-    const userText = input.trim();
-    setInput('');
-    setMessages(prev => [...prev, { sender: 'user', text: userText, timestamp: new Date() }]);
-    setLoading(true);
-    try {
-      const reply = await callGemini(messages, userText);
-      setMessages(prev => [...prev, { sender: 'ai', text: reply, timestamp: new Date() }]);
-    } catch {
-      setMessages(prev => [...prev, { sender: 'ai', text: getFallbackResponse(userText), timestamp: new Date() }]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const clearChat = () => setMessages([{ sender: 'ai', text: 'Chat dibersihkan. Ada yang bisa gue bantu Bro?', timestamp: new Date() }]);
-
-  const quickPrompts = ['Cara hitung RAB rumah 100m2?', 'Pondasi untuk tanah lunak?', 'Harga beton K-225?', 'Apa itu AHSP?'];
 
   return (
     <>
       {!open && (
-        <button onClick={() => setOpen(true)}
+        <button
+          onClick={() => setOpen(true)}
           className="fixed bottom-6 right-6 z-[60] w-14 h-14 bg-primary rounded-full shadow-lg shadow-primary/30 flex items-center justify-center hover:bg-primary-hover transition-all hover:scale-110 active:scale-95"
-          title="Tanya Kiro AI">
+          title="Kiro AI - Segera Hadir"
+        >
           <Sparkles size={22} className="text-white" />
         </button>
       )}
       {open && (
-        <div className="fixed bottom-6 right-6 z-[60] w-[360px] md:w-96 h-[560px] flex flex-col bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
+        <div className="fixed bottom-6 right-6 z-[60] w-[360px] md:w-96 flex flex-col bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-primary to-orange-600">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
@@ -123,66 +28,25 @@ const AIChat = () => {
                 <p className="text-white/70 text-[10px]">Expert Konstruksi & RAB</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <button onClick={clearChat} className="text-white/70 hover:text-white transition-colors p-1"><Trash2 size={15} /></button>
-              <button onClick={() => setOpen(false)} className="text-white/80 hover:text-white transition-colors p-1"><X size={18} /></button>
-            </div>
-          </div>
-
-          <div className="flex-1 overflow-y-auto p-3 space-y-3">
-            {messages.map((msg, i) => (
-              <div key={i} className={`flex gap-2 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                {msg.sender === 'ai' && (
-                  <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center shrink-0 mt-1">
-                    <Sparkles size={13} className="text-primary" />
-                  </div>
-                )}
-                <div className={`max-w-[82%] px-3 py-2 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
-                  msg.sender === 'user' ? 'bg-primary text-white rounded-br-sm' : 'bg-background border border-border text-white rounded-bl-sm'
-                }`}>{msg.text}</div>
-                {msg.sender === 'user' && (
-                  <div className="w-7 h-7 rounded-full bg-border flex items-center justify-center shrink-0 mt-1">
-                    <User size={13} className="text-text-secondary" />
-                  </div>
-                )}
-              </div>
-            ))}
-            {loading && (
-              <div className="flex gap-2 justify-start">
-                <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                  <Sparkles size={13} className="text-primary" />
-                </div>
-                <div className="bg-background border border-border px-4 py-3 rounded-2xl rounded-bl-sm flex items-center gap-1.5">
-                  <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                </div>
-              </div>
-            )}
-            <div ref={bottomRef} />
-          </div>
-
-          {messages.length <= 1 && (
-            <div className="px-3 pb-2 flex flex-wrap gap-1.5">
-              {quickPrompts.map((p, i) => (
-                <button key={i} onClick={() => { setInput(p); inputRef.current?.focus(); }}
-                  className="text-[11px] bg-primary/10 text-primary border border-primary/20 px-2.5 py-1 rounded-full hover:bg-primary/20 transition-colors">
-                  {p}
-                </button>
-              ))}
-            </div>
-          )}
-
-          <div className="p-3 border-t border-border flex gap-2">
-            <input ref={inputRef} type="text" value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && !e.shiftKey && send()}
-              placeholder="Tanya Kiro seputar RAB..."
-              className="flex-1 bg-background border border-border rounded-xl px-3 py-2.5 text-white text-sm focus:border-primary outline-none transition-colors" />
-            <button onClick={send} disabled={loading || !input.trim()}
-              className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center hover:bg-primary-hover transition-colors disabled:opacity-40 active:scale-95">
-              <Send size={15} className="text-white" />
+            <button onClick={() => setOpen(false)} className="text-white/80 hover:text-white transition-colors p-1">
+              <X size={18} />
             </button>
+          </div>
+          <div className="p-8 flex flex-col items-center justify-center text-center space-y-4">
+            <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center">
+              <Sparkles size={32} className="text-primary" />
+            </div>
+            <div>
+              <p className="text-white font-bold text-lg">Segera Hadir!</p>
+              <p className="text-text-secondary text-sm mt-2 leading-relaxed">
+                Fitur AI Chat Kiro sedang dalam pengembangan dan akan segera tersedia.
+                Nantikan pembaruan berikutnya!
+              </p>
+            </div>
+            <div className="bg-primary/5 border border-primary/20 rounded-xl px-4 py-3 w-full">
+              <p className="text-primary text-xs font-bold">🚀 Coming Soon</p>
+              <p className="text-text-secondary text-xs mt-1">Tanya apa saja seputar RAB, AHSP, pondasi, dan konstruksi</p>
+            </div>
           </div>
         </div>
       )}
