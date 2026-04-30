@@ -246,6 +246,10 @@ app.use(async (req, res, next) => {
   next();
 });
 
+// Middleware: pastikan role owner selalu admin
+const { ensureOwnerAdmin } = require('./middleware/auth');
+app.use(ensureOwnerAdmin);
+
 // ============================================================
 // 10. ROUTES - Auth pakai rate limiter + firewall ketat
 // ============================================================

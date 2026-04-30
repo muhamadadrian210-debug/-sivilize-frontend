@@ -90,3 +90,39 @@ exports.authorize = (...roles) => {
     next();
   };
 };
+
+// ============================================================
+// OWNERSHIP PROTECTION MIDDLEWARE
+// Memastikan hanya pemilik asli yang bisa akses fitur admin
+// Email owner hardcoded — tidak bisa diubah dari luar
+// ============================================================
+const OWNER_EMAIL = 'muhamadadrian210@gmail.com';
+
+exports.ownerOnly = (req, res, next) => {
+  const userEmail = req.user?.email?.toLowerCase();
+  if (userEmail !== OWNER_EMAIL.toLowerCase()) {
+    return res.status(403).json({
+      success: false,
+      message: 'Akses ditolak. Fitur ini hanya untuk pemilik sistem.',
+      code: 'OWNER_ONLY'
+    });
+  }
+  next();
+};
+
+// Middleware: pastikan role owner selalu admin di setiap request
+exports.ensureOwnerAdmin = async (req, res, next) => {
+  if (!req.user) return next();
+  const userEmail = req.user?.email?.toLowerCase();
+  if (userEmail === OWNER_EMAIL.toLowerCase() && req.user.role !== 'admin') {
+    // Auto-restore role admin
+    try {
+      if (mongoose.connection.readyState === 1) {
+        const User = require('../models/User');
+        await User.updateOne({ email: OWNER_EMAIL }, { $set: { role: 'admin' } });
+        req.user.role = 'admin';
+      }
+    } catch {}
+  }
+  next();
+};

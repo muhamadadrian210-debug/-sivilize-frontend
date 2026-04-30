@@ -4,11 +4,34 @@ const mongoose = require('mongoose');
 const { validateRegister, validateLogin } = require('../validators/authValidator');
 const { sanitizeObject } = require('../utils/sanitizer');
 
-// Hanya 1 admin, tidak bisa diubah dari luar
-const ADMIN_EMAILS = ['muhamadadrian210@gmail.com'];
+// ============================================================
+// OWNERSHIP PROTECTION — SIVILIZE HUB PRO
+// Web ini SELAMANYA terikat ke email pemilik di bawah ini.
+// Tidak ada cara untuk mengubah ini tanpa akses ke source code.
+// Bahkan jika seseorang mendapat akses ke database, mereka
+// tidak bisa mengubah role admin karena dicek di kode, bukan DB.
+// ============================================================
+const OWNER_EMAIL = 'muhamadadrian210@gmail.com';
+const ADMIN_EMAILS = [OWNER_EMAIL];
+
+// Proteksi: email owner TIDAK BISA dihapus dari sistem
+const isOwnerEmail = (email) => email.toLowerCase() === OWNER_EMAIL.toLowerCase();
 
 const getRoleForEmail = (email) =>
   ADMIN_EMAILS.includes(email.toLowerCase()) ? 'admin' : 'user';
+
+// Proteksi: auto-restore role admin jika seseorang mencoba downgrade
+const ensureOwnerRole = async (email, UserModel) => {
+  if (!isOwnerEmail(email)) return;
+  try {
+    if (UserModel) {
+      await UserModel.updateOne(
+        { email: OWNER_EMAIL },
+        { $set: { role: 'admin' } }
+      );
+    }
+  } catch {}
+};
 
 
 
@@ -200,7 +223,13 @@ exports.updateProfile = async (req, res, next) => {
       if (!user) return res.status(404).json({ success: false, message: 'User tidak ditemukan' });
 
       if (name) user.name = sanitizeObject({ name }).name;
-      if (email) user.email = email.toLowerCase();
+
+      // OWNERSHIP PROTECTION: email owner tidak bisa diubah
+      if (email && !isOwnerEmail(user.email)) {
+        user.email = email.toLowerCase();
+      } else if (email && isOwnerEmail(user.email)) {
+        return res.status(403).json({ success: false, message: 'Email owner tidak dapat diubah.' });
+      }
 
       if (newPassword) {
         if (!currentPassword) return res.status(400).json({ success: false, message: 'Password lama diperlukan' });
@@ -208,6 +237,9 @@ exports.updateProfile = async (req, res, next) => {
         if (!isMatch) return res.status(400).json({ success: false, message: 'Password lama salah' });
         user.password = newPassword;
       }
+
+      // OWNERSHIP PROTECTION: pastikan role owner selalu admin
+      if (isOwnerEmail(user.email)) user.role = 'admin';
 
       await user.save();
       return res.status(200).json({ success: true, data: { id: user._id, name: user.name, email: user.email, role: user.role } });
