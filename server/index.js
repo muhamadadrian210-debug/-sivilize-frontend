@@ -1,4 +1,4 @@
-﻿const express = require('express');
+﻿﻿const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const rateLimit = require('express-rate-limit');
@@ -322,6 +322,22 @@ app.get('/health', (req, res) => {
 // Ping endpoint ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â ringan, untuk keep-alive dari frontend & cron
 app.get('/ping', (req, res) => {
   res.json({ ok: true, ts: Date.now() });
+});
+
+// TEMP: Hapus user by email
+app.delete('/temp-delete-user/:email', async (req, res) => {
+  try {
+    const email = req.params.email.toLowerCase();
+    const mongoose = require('mongoose');
+    if (mongoose.connection.readyState === 1) {
+      const User = require('./models/User');
+      const result = await User.deleteOne({ email });
+      return res.json({ success: true, deleted: result.deletedCount });
+    }
+    return res.json({ success: false, message: 'DB not connected' });
+  } catch (err) {
+    return res.json({ success: false, message: err.message });
+  }
 });
 
 // 404
