@@ -38,6 +38,155 @@ const PrivacyPolicy = () => {
       ]
     },
     {
+      title: '4. Pernyataan Transparansi Gmail & Email',
+      icon: Mail,
+      content: [
+        'PENTING: Kami TIDAK DAPAT dan TIDAK AKAN PERNAH mengakses akun Gmail atau email Anda.',
+        'Kami hanya mengirimkan kode OTP (One-Time Password) ke alamat email Anda untuk keperluan verifikasi login dan pendaftaran.',
+        'Kode OTP yang kami kirim bersifat satu kali pakai, berlaku 5 menit, dan dihapus otomatis setelah digunakan.',
+        'Kami tidak memiliki akses ke inbox, konten email, kontak, atau data apapun di akun Gmail Anda.',
+        'Proses pengiriman OTP menggunakan protokol SMTP yang terenkripsi — kami hanya mengirim, tidak membaca.',
+        'Jika Anda menerima email dari kami yang tidak Anda minta, segera hubungi kami di muhamadadrian210@gmail.com.',
+      ]
+    },
+    {
+      title: '5. Layanan Pihak Ketiga',
+      icon: Globe,
+      content: [
+        'Gmail SMTP: Digunakan untuk pengiriman email OTP. Kami hanya mengirim email, tidak mengakses akun Gmail Anda.',
+        'MongoDB Atlas: Penyedia database cloud untuk penyimpanan data akun dan proyek.',
+        'Vercel: Platform hosting untuk frontend dan backend aplikasi.',
+        'Google Gemini AI: Digunakan untuk fitur analisis gambar denah (AI Vision). Gambar yang diunggah diproses oleh Google AI dan tidak disimpan oleh kami.',
+      ]
+    },
+    {
+      title: '6. Hak Pengguna',
+      icon: ShieldCheck,
+      content: [
+        'Hak Akses: Anda dapat melihat data akun Anda kapan saja melalui halaman profil.',
+        'Hak Koreksi: Anda dapat memperbarui nama dan email melalui pengaturan profil.',
+        'Hak Hapus: Anda dapat meminta penghapusan akun dan seluruh data dengan menghubungi kami.',
+        'Hak Portabilitas: Anda dapat mengekspor data proyek Anda dalam format JSON melalui fitur Backup.',
+      ]
+    },
+    {
+      title: '7. Retensi Data',
+      icon: Database,
+      content: [
+        'Data akun aktif disimpan selama akun masih aktif digunakan.',
+        'Jika akun tidak aktif selama 2 tahun, kami berhak menghapus data secara permanen.',
+        'Log keamanan disimpan maksimal 90 hari.',
+        'Kode OTP dihapus otomatis setelah 5 menit atau setelah digunakan.',
+      ]
+    },
+    {
+      title: '8. Pembaruan Kebijakan',
+      icon: RefreshCw,
+      content: [
+        'Kebijakan ini dapat diperbarui sewaktu-waktu. Perubahan signifikan akan diberitahukan melalui email.',
+        'Penggunaan layanan setelah pembaruan dianggap sebagai persetujuan terhadap kebijakan baru.',
+        'Versi terbaru kebijakan selalu tersedia di halaman ini.',
+      ]
+    },
+    {
+      title: '9. Hubungi Kami',
+      icon: Mail,
+      content: [
+        'Untuk pertanyaan terkait privasi, hubungi: muhamadadrian210@gmail.com',
+        'Perusahaan: Sivilize Corp',
+        'Platform: Sivilize Hub Pro — sivilize-hub-pro.vercel.app',
+      ]
+    },
+  ];
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-8 pb-12">
+      {/* Header */}
+      <div className="glass-card p-8">
+        <div className="flex items-center gap-4 mb-4">
+          <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+            <ShieldCheck size={24} className="text-primary" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-black text-white">Kebijakan Privasi</h1>
+            <p className="text-text-secondary text-sm">Sivilize Corp — Sivilize Hub Pro</p>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-4 text-xs text-text-secondary">
+          <span>Berlaku sejak: <span className="text-white font-bold">13 Februari 2026</span></span>
+          <span>Terakhir diperbarui: <span className="text-white font-bold">April 2026</span></span>
+          <span>Sivilize Corp</span>
+        </div>
+        <p className="text-text-secondary text-sm mt-4 leading-relaxed">
+          Sivilize Corp berkomitmen melindungi privasi pengguna Sivilize Hub Pro.
+          Kebijakan ini menjelaskan bagaimana kami mengumpulkan, menggunakan, dan melindungi data Anda.
+        </p>
+
+        {/* Pernyataan utama transparansi */}
+        <div className="mt-6 bg-green-500/10 border border-green-500/30 rounded-xl p-4 space-y-2">
+          <p className="text-green-400 font-black text-sm flex items-center gap-2">
+            <ShieldCheck size={16} /> Pernyataan Transparansi Utama
+          </p>
+          <p className="text-white text-sm font-bold">
+            Kami TIDAK DAPAT mengakses akun Gmail atau email Anda.
+          </p>
+          <p className="text-text-secondary text-xs leading-relaxed">
+            Kami hanya mengirimkan kode OTP ke email Anda untuk keperluan login. Kami tidak memiliki
+            akses ke inbox, konten email, kontak, atau data apapun di akun email Anda.
+            Proses ini sepenuhnya satu arah — kami kirim, Anda terima.
+          </p>
+        </div>
+      </div>
+
+      {/* Sections */}
+      {sections.map((section, i) => {
+        const Icon = section.icon;
+        return (
+          <div key={i} className={`glass-card p-6 ${section.title.includes('Transparansi') ? 'border-green-500/30' : ''}`}>
+            <div className="flex items-center gap-3 mb-4">
+              <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${section.title.includes('Transparansi') ? 'bg-green-500/10' : 'bg-primary/10'}`}>
+                <Icon size={18} className={section.title.includes('Transparansi') ? 'text-green-400' : 'text-primary'} />
+              </div>
+              <h2 className="text-white font-bold">{section.title}</h2>
+            </div>
+            <ul className="space-y-2">
+              {section.content.map((item, j) => (
+                <li key={j} className={`flex items-start gap-2 text-sm leading-relaxed ${item.startsWith('PENTING') ? 'text-green-400 font-bold' : 'text-text-secondary'}`}>
+                  <span className={`mt-1 shrink-0 ${item.startsWith('PENTING') ? 'text-green-400' : 'text-primary'}`}>•</span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+    {
+      title: '2. Tujuan Penggunaan Data',
+      icon: FileCheck,
+      content: [
+        'Menyediakan layanan perhitungan RAB dan manajemen proyek konstruksi.',
+        'Mengirimkan kode OTP untuk verifikasi identitas saat login dan pendaftaran.',
+        'Mengirimkan notifikasi terkait status akun dan pembaruan sistem.',
+        'Menjaga keamanan akun dan mencegah akses tidak sah.',
+        'Meningkatkan kualitas layanan berdasarkan pola penggunaan secara anonim.',
+      ]
+    },
+    {
+      title: '3. Penyimpanan & Keamanan Data',
+      icon: Lock,
+      content: [
+        'Data disimpan di MongoDB Atlas dengan enkripsi at-rest dan in-transit (TLS/SSL).',
+        'Kata sandi dienkripsi menggunakan bcrypt dengan salt factor 10.',
+        'Kode OTP di-hash menggunakan SHA-256 sebelum disimpan.',
+        'Sistem dilindungi oleh firewall, rate limiting, dan proteksi DDoS.',
+        'Token autentikasi (JWT) memiliki masa berlaku 30 hari dan dapat dicabut saat logout.',
+        'Kami tidak pernah menjual atau membagikan data pribadi Anda kepada pihak ketiga.',
+      ]
+    },
+    {
       title: '4. Layanan Pihak Ketiga',
       icon: Globe,
       content: [

@@ -400,11 +400,21 @@ const AuthPage = () => {
                   )}
 
                   {(mode === 'login' || mode === 'register') && (
-                    <div className="flex items-center gap-2 bg-primary/5 border border-primary/20 rounded-lg px-3 py-2">
-                      <Shield size={14} className="text-primary shrink-0" />
-                      <p className="text-text-secondary text-[11px]">
-                        Setelah ini, kode OTP akan dikirim ke email Anda dari <span className="text-primary font-bold">Sivilize Corp</span>
-                      </p>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 bg-primary/5 border border-primary/20 rounded-lg px-3 py-2">
+                        <Shield size={14} className="text-primary shrink-0" />
+                        <p className="text-text-secondary text-[11px]">
+                          Setelah ini, kode OTP akan dikirim ke email Anda dari <span className="text-primary font-bold">Sivilize Corp</span>
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 bg-green-500/5 border border-green-500/20 rounded-lg px-3 py-2">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-green-400 shrink-0">
+                          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                        <p className="text-green-400/80 text-[11px]">
+                          Kami <strong className="text-green-400">tidak dapat mengakses</strong> akun Gmail Anda. Kami hanya mengirim kode OTP, tidak lebih.
+                        </p>
+                      </div>
                     </div>
                   )}
 
