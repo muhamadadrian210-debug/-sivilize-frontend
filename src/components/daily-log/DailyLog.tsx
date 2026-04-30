@@ -24,6 +24,7 @@ const DailyLog = () => {
   const [showForm, setShowForm] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState(projects[0]?.id || '');
   const [logText, setLogText] = useState('');
+  const [workDetail, setWorkDetail] = useState('');
   const [logDate, setLogDate] = useState(new Date().toISOString().split('T')[0]);
   const [logStatus, setLogStatus] = useState<LogStatus>('Normal');
   const [photos, setPhotos] = useState<string[]>([]);
@@ -62,6 +63,7 @@ const DailyLog = () => {
 
   const handleSaveLog = async () => {
     if (!logText.trim()) { showToast('Isi catatan tidak boleh kosong', 'warning'); return; }
+    if (!workDetail.trim()) { showToast('Detail pekerjaan wajib diisi', 'warning'); return; }
     if (!selectedProjectId) { showToast('Pilih proyek terlebih dahulu', 'warning'); return; }
     if (photos.length === 0) { showToast('Foto progress wajib diupload sebagai bukti lapangan', 'warning'); return; }
     if (progressPercent < 0 || progressPercent > 100) { showToast('Progress harus antara 0-100%', 'warning'); return; }
@@ -75,6 +77,7 @@ const DailyLog = () => {
         id: Date.now().toString(),
         date: logDate,
         text: logText,
+        workDetail,
         photos,
         status: logStatus,
         progressPercent,
@@ -87,6 +90,7 @@ const DailyLog = () => {
       showToast('Catatan harian berhasil disimpan', 'success');
       setShowForm(false);
       setLogText('');
+      setWorkDetail('');
       setPhotos([]);
       setLogStatus('Normal');
       setProgressPercent(0);
@@ -142,6 +146,88 @@ const DailyLog = () => {
                   {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-text-secondary text-sm font-medium flex items-center gap-2">
+                Detail Pekerjaan
+                <span className="text-xs bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full font-bold">Wajib</span>
+              </label>
+              <select
+                value={workDetail}
+                onChange={e => setWorkDetail(e.target.value)}
+                className="w-full h-11 bg-background border border-border rounded-xl px-4 text-white focus:border-primary outline-none appearance-none"
+              >
+                <option value="">-- Pilih jenis pekerjaan hari ini --</option>
+                <optgroup label="Persiapan">
+                  <option>Pembersihan & perataan lokasi</option>
+                  <option>Pemasangan bouwplank</option>
+                  <option>Pengukuran & pematokan</option>
+                  <option>Mobilisasi alat & material</option>
+                </optgroup>
+                <optgroup label="Pondasi">
+                  <option>Galian tanah pondasi</option>
+                  <option>Urugan pasir bawah pondasi</option>
+                  <option>Pemasangan pondasi batu kali</option>
+                  <option>Pengecoran pondasi footplate</option>
+                  <option>Pembuatan strauss pile</option>
+                  <option>Pengecoran sloof</option>
+                </optgroup>
+                <optgroup label="Struktur">
+                  <option>Pemasangan bekisting kolom</option>
+                  <option>Pembesian kolom</option>
+                  <option>Pengecoran kolom</option>
+                  <option>Pemasangan bekisting balok</option>
+                  <option>Pembesian balok</option>
+                  <option>Pengecoran balok & plat lantai</option>
+                  <option>Pembongkaran bekisting</option>
+                  <option>Pemasangan ring balok</option>
+                </optgroup>
+                <optgroup label="Dinding">
+                  <option>Pasangan bata merah</option>
+                  <option>Pasangan bata ringan (hebel)</option>
+                  <option>Plesteran dinding</option>
+                  <option>Acian dinding</option>
+                </optgroup>
+                <optgroup label="Atap">
+                  <option>Pemasangan rangka atap baja ringan</option>
+                  <option>Pemasangan genteng</option>
+                  <option>Pemasangan spandek/galvalum</option>
+                  <option>Pemasangan plafon</option>
+                </optgroup>
+                <optgroup label="Lantai">
+                  <option>Urugan tanah & pasir lantai</option>
+                  <option>Pengecoran rabat beton</option>
+                  <option>Pemasangan keramik lantai</option>
+                  <option>Pemasangan granit</option>
+                  <option>Pemasangan keramik dinding KM/WC</option>
+                </optgroup>
+                <optgroup label="Kusen & Pintu">
+                  <option>Pemasangan kusen pintu & jendela</option>
+                  <option>Pemasangan daun pintu</option>
+                  <option>Pemasangan daun jendela</option>
+                </optgroup>
+                <optgroup label="Instalasi">
+                  <option>Instalasi pipa air bersih</option>
+                  <option>Instalasi pipa air kotor</option>
+                  <option>Instalasi listrik (titik lampu)</option>
+                  <option>Instalasi stop kontak</option>
+                  <option>Pemasangan panel MCB</option>
+                  <option>Pemasangan kloset & sanitasi</option>
+                </optgroup>
+                <optgroup label="Finishing">
+                  <option>Pengecatan dasar</option>
+                  <option>Pengecatan finishing</option>
+                  <option>Waterproofing</option>
+                  <option>Pemasangan aksesori & hardware</option>
+                </optgroup>
+                <optgroup label="Lain-lain">
+                  <option>Pembersihan lokasi</option>
+                  <option>Inspeksi & pengawasan</option>
+                  <option>Perbaikan/rework</option>
+                  <option>Lainnya (isi di catatan)</option>
+                </optgroup>
+              </select>
             </div>
 
             <div className="space-y-2">
@@ -201,8 +287,8 @@ const DailyLog = () => {
 
             <div className="flex gap-3 pt-2">
               <button onClick={() => setShowForm(false)} className="btn-secondary flex-1">Batal</button>
-              <button onClick={handleSaveLog} disabled={saving || photos.length === 0} className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed">
-                {saving ? 'Menyimpan...' : photos.length === 0 ? 'Upload foto dulu' : 'Simpan Catatan'}
+              <button onClick={handleSaveLog} disabled={saving || photos.length === 0 || !workDetail} className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed">
+                {saving ? 'Menyimpan...' : photos.length === 0 ? 'Upload foto dulu' : !workDetail ? 'Pilih jenis pekerjaan dulu' : 'Simpan Catatan'}
               </button>
             </div>
           </div>
@@ -274,6 +360,12 @@ const DailyLog = () => {
                     </div>
                   </div>
                   <p className="text-white text-sm leading-relaxed">{log.text}</p>
+                  {(log as DailyLogType & { workDetail?: string }).workDetail && (
+                    <div className="mt-2 flex items-center gap-2 bg-primary/5 border border-primary/20 rounded-lg px-3 py-1.5">
+                      <span className="text-primary text-[10px] font-black uppercase tracking-widest">Pekerjaan:</span>
+                      <span className="text-white text-xs font-bold">{(log as DailyLogType & { workDetail?: string }).workDetail}</span>
+                    </div>
+                  )}
                   {/* Progress bar dari daily log */}
                   {(log as DailyLogType & { progressPercent?: number }).progressPercent !== undefined && (
                     <div className="mt-3 space-y-1">
