@@ -1,4 +1,4 @@
-﻿﻿﻿﻿import { Fragment, useState, useMemo, useEffect } from 'react';
+﻿﻿﻿﻿﻿import { Fragment, useState, useMemo, useEffect } from 'react';
 import { 
   Trash2, 
   ChevronRight, 
@@ -1226,6 +1226,11 @@ const RABCalculator = () => {
                         <CalcIcon size={18} className="text-primary" />
                         Manajemen Keuangan
                       </h4>
+                      <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-3 mb-2">
+                        <p className="text-blue-300 text-xs leading-relaxed">
+                          <strong className="text-white">Overhead</strong> = uang untuk biaya kantor dan operasional kontraktor. <strong className="text-white">Profit</strong> = keuntungan kontraktor. <strong className="text-white">PPN</strong> = pajak ke pemerintah (wajib). <strong className="text-white">Contingency</strong> = dana cadangan kalau ada kejadian tidak terduga. Angka ini otomatis ditambahkan ke total harga.<br/>Kalau diisi 0, berarti tidak dihitung — total jadi lebih murah tapi tidak realistis.<br/>Kalau dinaikkan, total harga ikut naik.<br/>Kalau diturunkan, total harga ikut turun.<br/><strong className="text-yellow-400">Perubahan langsung terlihat di Grand Total di bawah.</strong>
+                        </p>
+                      </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1">
                           <label className="text-xs text-text-secondary font-medium">Overhead (%)</label>
