@@ -1,5 +1,5 @@
-﻿import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+﻿﻿import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { type RABItem, type FinancialSettings, type Project } from '../store/useStore';
 import { calculateTotalRAB, getGroupedRABItems } from './calculations';
@@ -86,7 +86,7 @@ export const exportToPDF = (
       toRp(item.unitPrice), toRp(item.total),
     ]);
     tableData.push(['', `SUBTOTAL ${group.kategori.toUpperCase()}`, '', '', '', toRp(group.subtotal)]);
-    (doc as unknown as JsPDFWithAutoTable).autoTable({
+    autoTable(doc, {
       startY: y,
       head: [['No', 'Uraian Pekerjaan', 'Volume', 'Sat', 'Harga Satuan', 'Jumlah']],
       body: tableData,
@@ -106,7 +106,7 @@ export const exportToPDF = (
       },
       margin: { left: margin, right: margin },
     });
-    y = ((doc as unknown as JsPDFWithAutoTable).lastAutoTable?.finalY ?? y) + 4;
+    y = ((doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? y) + 4;
   });
 
   // RINGKASAN
@@ -389,7 +389,7 @@ export const exportKurvaSPDF = (
     point.isManual ? 'Manual' : point.realisasi !== null ? 'Log Harian' : '-',
   ]);
 
-  (doc as unknown as JsPDFWithAutoTable).autoTable({
+  autoTable(doc, {
     startY: y,
     head: [['Periode', 'Rencana (%)', 'Realisasi (%)', 'Deviasi (%)', 'Sumber']],
     body: tableData,
@@ -513,7 +513,7 @@ export const exportLaborToPDF = (
     ]);
     tableData.push(['', 'TOTAL MINGGU INI', '', '', toRp(payment.totalAmount)]);
 
-    (doc as unknown as JsPDFWithAutoTable).autoTable({
+    autoTable(doc, {
       startY: y,
       head: [['Nama', 'Jabatan', 'Hari', 'Upah/Hari', 'Total']],
       body: tableData,
@@ -534,7 +534,7 @@ export const exportLaborToPDF = (
       },
       margin: { left: margin, right: margin },
     });
-    y = ((doc as unknown as JsPDFWithAutoTable).lastAutoTable?.finalY ?? y) + 6;
+    y = ((doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? y) + 6;
 
     if (y > 250) { doc.addPage(); y = 20; }
   }
