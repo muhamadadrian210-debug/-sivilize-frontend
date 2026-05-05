@@ -268,6 +268,12 @@ try {
   console.warn('Share routes not available:', e.message);
 }
 
+// CSRF Token endpoint
+app.get('/api/csrf-token', (req, res) => {
+  const { generateCSRFToken } = require('./middleware/firewall');
+  generateCSRFToken(req, res);
+});
+
 // ============================================================
 // 11. HONEYPOT ENDPOINTS ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â jebak hacker yang coba scan
 // ============================================================

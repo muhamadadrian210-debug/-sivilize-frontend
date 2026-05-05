@@ -498,3 +498,233 @@ setInterval(() => {
     }
   }
 }, 30 * 60 * 1000);
+
+// ── 8. CSRF Protection ───────────────────────────────────────
+const crypto = require('crypto');
+const csrfTokens = new Map(); // { token: { ip, createdAt } }
+
+// Cleanup CSRF tokens setiap 10 menit
+setInterval(() => {
+  const now = Date.now();
+  for (const [token, data] of csrfTokens.entries()) {
+    if (now - data.createdAt > 60 * 60 * 1000) { // expire 1 jam
+      csrfTokens.delete(token);
+    }
+  }
+}, 10 * 60 * 1000);
+
+exports.generateCSRFToken = (req, res) => {
+  const ip = getRealIP(req);
+  const token = crypto.randomBytes(32).toString('hex');
+  csrfTokens.set(token, { ip, createdAt: Date.now() });
+  res.json({ success: true, csrfToken: token });
+};
+
+exports.csrfProtection = (req, res, next) => {
+  // Skip untuk GET, HEAD, OPTIONS
+  if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
+  // Skip untuk auth endpoints (login/register tidak butuh CSRF)
+  if (req.path.includes('/auth/')) return next();
+
+  const token = req.headers['x-csrf-token'] || req.body?._csrf;
+  if (!token || !csrfTokens.has(token)) {
+    console.warn(`🛡️ CSRF BLOCKED: ${getRealIP(req)} → ${req.path}`);
+    return res.status(403).json({
+      success: false,
+      message: 'Invalid CSRF token.',
+      code: 'CSRF_INVALID',
+    });
+  }
+
+  // Hapus token setelah dipakai (one-time use)
+  csrfTokens.delete(token);
+  next();
+};
+
+// ── 9. Request Fingerprinting (Bot Detection) ────────────────
+const botFingerprints = new Map(); // { fingerprint: { count, firstSeen } }
+
+function generateFingerprint(req) {
+  const ua = req.headers['user-agent'] || '';
+  const accept = req.headers['accept'] || '';
+  const acceptLang = req.headers['accept-language'] || '';
+  const acceptEnc = req.headers['accept-encoding'] || '';
+  return crypto.createHash('md5')
+    .update(`${ua}:${accept}:${acceptLang}:${acceptEnc}`)
+    .digest('hex');
+}
+
+// Pola yang menandakan bot/scraper
+const BOT_INDICATORS = [
+  // Tidak ada Accept-Language (browser selalu kirim ini)
+  (req) => !req.headers['accept-language'] && req.method !== 'OPTIONS',
+  // Tidak ada Accept header sama sekali
+  (req) => !req.headers['accept'],
+  // User-Agent kosong
+  (req) => !req.headers['user-agent'],
+  // Accept hanya *//* tanpa detail (bot sederhana)
+  (req) => req.headers['accept'] === '*/*' && !req.headers['accept-language'],
+];
+
+exports.botDetection = (req, res, next) => {
+  const ip = getRealIP(req);
+
+  // Cek indikator bot
+  const botScore = BOT_INDICATORS.filter(check => check(req)).length;
+
+  if (botScore >= 2) {
+    console.warn(`🤖 BOT DETECTED: ${ip} → ${req.path} (score: ${botScore})`);
+
+    // Track fingerprint
+    const fp = generateFingerprint(req);
+    const fpRecord = botFingerprints.get(fp) || { count: 0, firstSeen: Date.now() };
+    fpRecord.count++;
+    botFingerprints.set(fp, fpRecord);
+
+    // Blacklist kalau sudah terlalu sering
+    if (fpRecord.count > 20) {
+      ipBlacklist.add(ip);
+      try {
+        const { sendSecurityAlert } = require('../utils/alertService');
+        sendSecurityAlert('brute_force', {
+          ip,
+          endpoint: req.path,
+          method: req.method,
+          userAgent: req.headers['user-agent'] || 'EMPTY',
+          attempts: fpRecord.count,
+        });
+      } catch {}
+      return res.status(403).json({
+        success: false,
+        message: 'Akses ditolak.',
+        code: 'BOT_BLACKLISTED',
+      });
+    }
+
+    // Untuk API publik, tetap lanjut tapi log
+    // Untuk endpoint sensitif, blokir
+    if (req.path.includes('/auth/') || req.path.includes('/export')) {
+      return res.status(403).json({
+        success: false,
+        message: 'Akses ditolak.',
+        code: 'BOT_BLOCKED',
+      });
+    }
+  }
+
+  next();
+};
+
+// ── 10. IP Reputation (Lightweight, no external API) ─────────
+// Daftar range IP yang dikenal sebagai sumber serangan
+// (Tor exit nodes, known bad ASNs - simplified version)
+const SUSPICIOUS_RANGES = [
+  // Contoh range yang sering dipakai untuk scanning
+  // Dalam production bisa di-update secara berkala
+];
+
+// IP yang sudah terbukti jahat dari sesi sebelumnya (persistent dalam memory)
+const knownBadIPs = new Set();
+
+exports.ipReputationCheck = (req, res, next) => {
+  const ip = getRealIP(req);
+
+  // Cek known bad IPs
+  if (knownBadIPs.has(ip)) {
+    return res.status(403).json({
+      success: false,
+      message: 'Akses ditolak.',
+      code: 'BAD_REPUTATION',
+    });
+  }
+
+  // Auto-add ke known bad IPs kalau sudah di blacklist
+  if (ipBlacklist.has(ip)) {
+    knownBadIPs.add(ip);
+    return res.status(403).json({
+      success: false,
+      message: 'Akses ditolak.',
+      code: 'BLACKLISTED',
+    });
+  }
+
+  // Cek suspicious ranges
+  for (const range of SUSPICIOUS_RANGES) {
+    if (ip.startsWith(range)) {
+      console.warn(`⚠️ SUSPICIOUS RANGE: ${ip}`);
+      return res.status(403).json({
+        success: false,
+        message: 'Akses ditolak.',
+        code: 'SUSPICIOUS_RANGE',
+      });
+    }
+  }
+
+  next();
+};
+
+// ── 11. Geo-blocking (Lightweight, header-based) ─────────────
+// Vercel inject header CF-IPCountry atau X-Vercel-IP-Country
+const BLOCKED_COUNTRIES = [
+  // Tambahkan kode negara yang mau diblokir
+  // Contoh: 'CN', 'RU', 'KP', 'IR'
+  // Kosong = tidak ada geo-blocking
+];
+
+const ALLOWED_COUNTRIES = [
+  // Kalau diisi, HANYA negara ini yang boleh akses
+  // Kosong = semua negara boleh
+  // Contoh: ['ID'] = hanya Indonesia
+];
+
+exports.geoBlocking = (req, res, next) => {
+  // Skip kalau tidak ada konfigurasi
+  if (BLOCKED_COUNTRIES.length === 0 && ALLOWED_COUNTRIES.length === 0) {
+    return next();
+  }
+
+  // Baca country dari Vercel/Cloudflare header
+  const country = req.headers['x-vercel-ip-country'] ||
+                  req.headers['cf-ipcountry'] ||
+                  req.headers['x-country-code'] ||
+                  null;
+
+  // Kalau tidak ada header country (development lokal), skip
+  if (!country) return next();
+
+  // Cek whitelist (kalau ada)
+  if (ALLOWED_COUNTRIES.length > 0 && !ALLOWED_COUNTRIES.includes(country)) {
+    console.warn(`🌍 GEO BLOCKED: ${getRealIP(req)} from ${country}`);
+    return res.status(403).json({
+      success: false,
+      message: 'Layanan tidak tersedia di wilayah Anda.',
+      code: 'GEO_BLOCKED',
+      country,
+    });
+  }
+
+  // Cek blacklist
+  if (BLOCKED_COUNTRIES.includes(country)) {
+    console.warn(`🌍 GEO BLOCKED: ${getRealIP(req)} from ${country}`);
+    return res.status(403).json({
+      success: false,
+      message: 'Layanan tidak tersedia di wilayah Anda.',
+      code: 'GEO_BLOCKED',
+      country,
+    });
+  }
+
+  next();
+};
+
+// ── Update firewallStack dengan layer baru ───────────────────
+exports.firewallStack = [
+  exports.securityResponseHeaders,
+  exports.geoBlocking,
+  exports.ipReputationCheck,
+  exports.userAgentFilter,
+  exports.botDetection,
+  exports.payloadBombProtection,
+  exports.ddosProtection,
+  exports.endpointFloodProtection,
+];
