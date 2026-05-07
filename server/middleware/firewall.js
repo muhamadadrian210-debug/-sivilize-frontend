@@ -73,7 +73,7 @@ exports.ddosProtection = (req, res, next) => {
   const ip = getRealIP(req);
   const now = Date.now();
 
-  // Cek blacklist permanen
+  // Cek blacklist permanen (in-memory)
   if (ipBlacklist.has(ip)) {
     return res.status(429).json({
       success: false,
@@ -82,161 +82,177 @@ exports.ddosProtection = (req, res, next) => {
     });
   }
 
-  const record = ipRequestCount.get(ip) || {
-    count: 0,
-    aggressiveCount: 0,
-    firstRequest: now,
-    aggressiveFirstRequest: now,
-    blocked: false,
-    blockUntil: null,
-    blockReason: null,
-  };
-
-  // Cek apakah masih diblokir
-  if (record.blocked && record.blockUntil) {
-    if (now < record.blockUntil) {
-      const waitMs = record.blockUntil - now;
+  // Cek persistent block (async, non-blocking untuk performa)
+  const { isBlocked, incrementDDoS, blockIP } = require('../utils/persistentFirewall');
+  isBlocked(ip).then(blockStatus => {
+    if (blockStatus.blocked) {
+      const waitMs = blockStatus.waitMs;
       return res.status(429).json({
         success: false,
-        message: `Terlalu banyak request. Coba lagi dalam ${formatWaitTime(waitMs)}.`,
-        code: 'RATE_LIMITED',
-        retryAfter: Math.ceil(waitMs / 1000),
+        message: waitMs ? `Terlalu banyak request. Coba lagi dalam ${formatWaitTime(waitMs)}.` : 'Akses ditolak.',
+        code: 'RATE_LIMITED_PERSISTENT',
+        retryAfter: waitMs ? Math.ceil(waitMs / 1000) : null,
       });
-    } else {
-      // Blokir sudah berakhir, reset
-      record.blocked = false;
-      record.blockUntil = null;
+    }
+
+    // Lanjut dengan in-memory tracking
+    const record = ipRequestCount.get(ip) || {
+      count: 0,
+      aggressiveCount: 0,
+      firstRequest: now,
+      aggressiveFirstRequest: now,
+      blocked: false,
+      blockUntil: null,
+      blockReason: null,
+    };
+
+    if (record.blocked && record.blockUntil) {
+      if (now < record.blockUntil) {
+        const waitMs = record.blockUntil - now;
+        return res.status(429).json({
+          success: false,
+          message: `Terlalu banyak request. Coba lagi dalam ${formatWaitTime(waitMs)}.`,
+          code: 'RATE_LIMITED',
+          retryAfter: Math.ceil(waitMs / 1000),
+        });
+      } else {
+        record.blocked = false;
+        record.blockUntil = null;
+        record.count = 0;
+        record.aggressiveCount = 0;
+        record.firstRequest = now;
+        record.aggressiveFirstRequest = now;
+      }
+    }
+
+    if (now - record.firstRequest > CONFIG.DDOS_WINDOW_MS) {
       record.count = 0;
-      record.aggressiveCount = 0;
       record.firstRequest = now;
+    }
+    if (now - record.aggressiveFirstRequest > CONFIG.AGGRESSIVE_WINDOW_MS) {
+      record.aggressiveCount = 0;
       record.aggressiveFirstRequest = now;
     }
-  }
 
-  // Reset window jika sudah lewat
-  if (now - record.firstRequest > CONFIG.DDOS_WINDOW_MS) {
-    record.count = 0;
-    record.firstRequest = now;
-  }
-  if (now - record.aggressiveFirstRequest > CONFIG.AGGRESSIVE_WINDOW_MS) {
-    record.aggressiveCount = 0;
-    record.aggressiveFirstRequest = now;
-  }
+    record.count++;
+    record.aggressiveCount++;
 
-  record.count++;
-  record.aggressiveCount++;
+    if (record.aggressiveCount > CONFIG.AGGRESSIVE_THRESHOLD) {
+      record.blocked = true;
+      record.blockUntil = now + CONFIG.AGGRESSIVE_BLOCK_DURATION_MS;
+      record.blockReason = 'aggressive_ddos';
+      ipRequestCount.set(ip, record);
+      // Persist ke MongoDB
+      blockIP(ip, 'ddos', CONFIG.AGGRESSIVE_BLOCK_DURATION_MS, 'aggressive_ddos').catch(() => {});
 
-  // Cek DDoS agresif (banyak request dalam waktu sangat singkat)
-  if (record.aggressiveCount > CONFIG.AGGRESSIVE_THRESHOLD) {
-    record.blocked = true;
-    record.blockUntil = now + CONFIG.AGGRESSIVE_BLOCK_DURATION_MS;
-    record.blockReason = 'aggressive_ddos';
-    ipRequestCount.set(ip, record);
+      console.warn(`🚨 AGGRESSIVE DDOS DETECTED: ${ip} — ${record.aggressiveCount} req in 5s — BLOCKED 2h`);
+      try {
+        const { sendSecurityAlert } = require('../utils/alertService');
+        sendSecurityAlert('brute_force', { ip, endpoint: req.path, method: req.method, userAgent: req.headers['user-agent'], attempts: record.aggressiveCount });
+      } catch {}
 
-    console.warn(`🚨 AGGRESSIVE DDOS DETECTED: ${ip} — ${record.aggressiveCount} req in 5s — BLOCKED 24h`);
-
-    // Alert ke admin
-    try {
-      const { sendSecurityAlert } = require('../utils/alertService');
-      sendSecurityAlert('brute_force', {
-        ip,
-        endpoint: req.path,
-        method: req.method,
-        userAgent: req.headers['user-agent'],
-        attempts: record.aggressiveCount,
+      return res.status(429).json({
+        success: false,
+        message: 'Aktivitas mencurigakan terdeteksi. IP Anda diblokir selama 2 jam.',
+        code: 'AGGRESSIVE_DDOS',
       });
-    } catch {}
+    }
 
-    return res.status(429).json({
-      success: false,
-      message: 'Aktivitas mencurigakan terdeteksi. IP Anda diblokir selama 24 jam.',
-      code: 'AGGRESSIVE_DDOS',
-    });
-  }
+    if (record.count > CONFIG.DDOS_MAX_REQUESTS) {
+      record.blocked = true;
+      record.blockUntil = now + CONFIG.DDOS_BLOCK_DURATION_MS;
+      record.blockReason = 'ddos';
+      ipRequestCount.set(ip, record);
+      // Persist ke MongoDB
+      blockIP(ip, 'ddos', CONFIG.DDOS_BLOCK_DURATION_MS, 'ddos').catch(() => {});
 
-  // Cek DDoS normal
-  if (record.count > CONFIG.DDOS_MAX_REQUESTS) {
-    record.blocked = true;
-    record.blockUntil = now + CONFIG.DDOS_BLOCK_DURATION_MS;
-    record.blockReason = 'ddos';
+      console.warn(`⚠️ DDOS DETECTED: ${ip} — ${record.count} req/min — BLOCKED 30min`);
+      return res.status(429).json({
+        success: false,
+        message: `Terlalu banyak request. Coba lagi dalam ${formatWaitTime(CONFIG.DDOS_BLOCK_DURATION_MS)}.`,
+        code: 'DDOS_BLOCKED',
+      });
+    }
+
     ipRequestCount.set(ip, record);
-
-    console.warn(`⚠️ DDOS DETECTED: ${ip} — ${record.count} req/min — BLOCKED 30min`);
-
-    return res.status(429).json({
-      success: false,
-      message: `Terlalu banyak request. Coba lagi dalam ${formatWaitTime(CONFIG.DDOS_BLOCK_DURATION_MS)}.`,
-      code: 'DDOS_BLOCKED',
-    });
-  }
-
-  ipRequestCount.set(ip, record);
-  next();
+    next();
+  }).catch(() => next()); // Fallback ke next() kalau persistent check gagal
 };
 
 // ── 2. Brute Force Protection (khusus auth endpoints) ────────
 const bruteForceAttempts = new Map();
 
 exports.bruteForceProtection = (req, res, next) => {
-  // Hanya apply ke endpoint auth
   if (!req.path.includes('login') && !req.path.includes('register') && !req.path.includes('forgot')) {
     return next();
   }
 
   const ip = getRealIP(req);
   const now = Date.now();
-  const record = bruteForceAttempts.get(ip) || { count: 0, firstAttempt: now, blocked: false, blockUntil: null };
 
-  // Cek blokir
-  if (record.blocked && record.blockUntil && now < record.blockUntil) {
-    const waitMs = record.blockUntil - now;
-    return res.status(429).json({
-      success: false,
-      message: `Terlalu banyak percobaan. Coba lagi dalam ${formatWaitTime(waitMs)}.`,
-      code: 'BRUTE_FORCE_BLOCKED',
-    });
-  }
+  const { isBlocked, incrementBruteForce, blockIP } = require('../utils/persistentFirewall');
 
-  // Reset window
-  if (now - record.firstAttempt > CONFIG.BRUTE_WINDOW_MS) {
-    record.count = 0;
-    record.firstAttempt = now;
-    record.blocked = false;
-    record.blockUntil = null;
-  }
-
-  // Intercept response untuk track gagal
-  const originalJson = res.json.bind(res);
-  res.json = (body) => {
-    if (res.statusCode === 401 || res.statusCode === 400) {
-      record.count++;
-      if (record.count >= CONFIG.BRUTE_MAX_ATTEMPTS) {
-        record.blocked = true;
-        record.blockUntil = now + CONFIG.BRUTE_BLOCK_DURATION_MS;
-        console.warn(`🔐 BRUTE FORCE: ${ip} — ${record.count} failed attempts — BLOCKED 1h`);
-
-        try {
-          const { sendSecurityAlert } = require('../utils/alertService');
-          sendSecurityAlert('brute_force', {
-            ip,
-            endpoint: req.path,
-            method: req.method,
-            userAgent: req.headers['user-agent'],
-            email: req.body?.email,
-            attempts: record.count,
-          });
-        } catch {}
-      }
-      bruteForceAttempts.set(ip, record);
-    } else if (res.statusCode === 200 || res.statusCode === 201) {
-      // Sukses — reset counter
-      bruteForceAttempts.delete(ip);
+  // Cek persistent block dulu
+  isBlocked(ip).then(blockStatus => {
+    if (blockStatus.blocked && blockStatus.reason === 'brute_force') {
+      const waitMs = blockStatus.waitMs;
+      return res.status(429).json({
+        success: false,
+        message: `Terlalu banyak percobaan. Coba lagi dalam ${formatWaitTime(waitMs || 3600000)}.`,
+        code: 'BRUTE_FORCE_BLOCKED',
+      });
     }
-    return originalJson(body);
-  };
 
-  bruteForceAttempts.set(ip, record);
-  next();
+    // In-memory fallback
+    const record = bruteForceAttempts.get(ip) || { count: 0, firstAttempt: now, blocked: false, blockUntil: null };
+
+    if (record.blocked && record.blockUntil && now < record.blockUntil) {
+      const waitMs = record.blockUntil - now;
+      return res.status(429).json({
+        success: false,
+        message: `Terlalu banyak percobaan. Coba lagi dalam ${formatWaitTime(waitMs)}.`,
+        code: 'BRUTE_FORCE_BLOCKED',
+      });
+    }
+
+    if (now - record.firstAttempt > CONFIG.BRUTE_WINDOW_MS) {
+      record.count = 0;
+      record.firstAttempt = now;
+      record.blocked = false;
+      record.blockUntil = null;
+    }
+
+    const originalJson = res.json.bind(res);
+    res.json = (body) => {
+      if (res.statusCode === 401 || res.statusCode === 400) {
+        record.count++;
+        if (record.count >= CONFIG.BRUTE_MAX_ATTEMPTS) {
+          record.blocked = true;
+          record.blockUntil = now + CONFIG.BRUTE_BLOCK_DURATION_MS;
+          console.warn(`🔐 BRUTE FORCE: ${ip} — ${record.count} failed attempts — BLOCKED 1h`);
+
+          // Persist ke MongoDB
+          blockIP(ip, 'brute_force', CONFIG.BRUTE_BLOCK_DURATION_MS, 'brute_force').catch(() => {});
+
+          try {
+            const { sendSecurityAlert } = require('../utils/alertService');
+            sendSecurityAlert('brute_force', {
+              ip, endpoint: req.path, method: req.method,
+              userAgent: req.headers['user-agent'],
+              email: req.body?.email, attempts: record.count,
+            });
+          } catch {}
+        }
+        bruteForceAttempts.set(ip, record);
+      } else if (res.statusCode === 200 || res.statusCode === 201) {
+        bruteForceAttempts.delete(ip);
+      }
+      return originalJson(body);
+    };
+
+    bruteForceAttempts.set(ip, record);
+    next();
+  }).catch(() => next());
 };
 
 // ── 3. Request Flood Detection ───────────────────────────────

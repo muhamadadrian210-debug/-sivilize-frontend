@@ -114,34 +114,80 @@ exports.login = async (req, res, next) => {
     const { email, password } = validatedData;
     const UserModel = getStorage();
 
+    // Tambah delay konstan untuk cegah timing attack
+    // (attacker tidak bisa bedakan "email tidak ada" vs "password salah" dari response time)
+    const loginStart = Date.now();
+    const MIN_RESPONSE_MS = 500;
+
+    const delayResponse = async (fn) => {
+      const result = await fn();
+      const elapsed = Date.now() - loginStart;
+      if (elapsed < MIN_RESPONSE_MS) {
+        await new Promise(r => setTimeout(r, MIN_RESPONSE_MS - elapsed));
+      }
+      return result;
+    };
+
     if (UserModel) {
-      // MongoDB mode
-      const user = await UserModel.findOne({ email: email.toLowerCase() }).select('+password');
-      if (!user) {
-        return res.status(401).json({ success: false, message: 'Kredensial tidak valid' });
-      }
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) {
-        return res.status(401).json({ success: false, message: 'Kredensial tidak valid' });
-      }
-      // Auto-upgrade role jika email admin
-      const correctRole = getRoleForEmail(email);
-      if (user.role !== correctRole) {
-        user.role = correctRole;
-        await user.save({ validateBeforeSave: false });
-      }
-      return sendTokenResponse({ _id: user._id, name: user.name, email: user.email, role: user.role }, 200, res);
+      return await delayResponse(async () => {
+        const user = await UserModel.findOne({ email: email.toLowerCase() }).select('+password +loginAttempts +lockUntil');
+        
+        // Cek account lockout
+        if (user && user.lockUntil && user.lockUntil > Date.now()) {
+          const waitMinutes = Math.ceil((user.lockUntil - Date.now()) / 60000);
+          return res.status(429).json({ 
+            success: false, 
+            message: `Akun terkunci. Coba lagi dalam ${waitMinutes} menit.`,
+            code: 'ACCOUNT_LOCKED'
+          });
+        }
+
+        if (!user) {
+          // Tetap jalankan bcrypt untuk cegah timing attack
+          await bcrypt.compare(password, '$2a$10$dummyhashfordummycomparison12345678901234');
+          return res.status(401).json({ success: false, message: 'Kredensial tidak valid' });
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+          // Increment login attempts
+          const attempts = (user.loginAttempts || 0) + 1;
+          const updateData = { loginAttempts: attempts };
+          
+          // Kunci akun setelah 10 gagal (lebih longgar dari firewall 5x)
+          if (attempts >= 10) {
+            updateData.lockUntil = new Date(Date.now() + 30 * 60 * 1000); // 30 menit
+            updateData.loginAttempts = 0;
+            console.warn(`🔒 ACCOUNT LOCKED: ${email} after ${attempts} failed attempts`);
+          }
+          
+          await UserModel.updateOne({ email: email.toLowerCase() }, { $set: updateData });
+          return res.status(401).json({ success: false, message: 'Kredensial tidak valid' });
+        }
+
+        // Login sukses — reset counter
+        await UserModel.updateOne({ email: email.toLowerCase() }, { $set: { loginAttempts: 0, lockUntil: null } });
+
+        const correctRole = getRoleForEmail(email);
+        if (user.role !== correctRole) {
+          user.role = correctRole;
+          await user.save({ validateBeforeSave: false });
+        }
+        return sendTokenResponse({ _id: user._id, name: user.name, email: user.email, role: user.role }, 200, res);
+      });
     } else {
-      // In-memory mode
-      const user = mockStorage.findOne('users', { email: email.toLowerCase() });
-      if (!user) {
-        return res.status(401).json({ success: false, message: 'Kredensial tidak valid' });
-      }
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) {
-        return res.status(401).json({ success: false, message: 'Kredensial tidak valid' });
-      }
-      return sendTokenResponse(user, 200, res);
+      return await delayResponse(async () => {
+        const user = mockStorage.findOne('users', { email: email.toLowerCase() });
+        if (!user) {
+          await bcrypt.compare(password, '$2a$10$dummyhashfordummycomparison12345678901234');
+          return res.status(401).json({ success: false, message: 'Kredensial tidak valid' });
+        }
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+          return res.status(401).json({ success: false, message: 'Kredensial tidak valid' });
+        }
+        return sendTokenResponse(user, 200, res);
+      });
     }
   } catch (err) {
     next(err);

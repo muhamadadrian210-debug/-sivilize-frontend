@@ -37,6 +37,17 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: null,
   },
+  // Account lockout fields
+  loginAttempts: {
+    type: Number,
+    default: 0,
+    select: false,
+  },
+  lockUntil: {
+    type: Date,
+    default: null,
+    select: false,
+  },
 });
 
 // Encrypt password using bcrypt

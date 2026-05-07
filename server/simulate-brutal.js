@@ -105,7 +105,7 @@ async function run() {
   const injections = [
     ['/api/auth/login', 'POST', { email: "' OR '1'='1", password: "' OR '1'='1" }, 'SQL Injection Classic'],
     ['/api/auth/login', 'POST', { email: 'admin@test.com', password: '<script>alert(1)</script>' }, 'XSS Injection'],
-    ['/api/projects?id=1 UNION SELECT * FROM users', 'GET', null, 'SQL UNION Attack'],
+    ['/api/projects?id=' + encodeURIComponent('1 UNION SELECT * FROM users'), 'GET', null, 'SQL UNION Attack'],
     ['/api/auth/login', 'POST', { email: 'test@test.com; DROP TABLE users;--', password: 'x' }, 'SQL Drop Table'],
   ];
 
@@ -133,7 +133,90 @@ async function run() {
   console.log('');
   await sleep(500);
 
-  // ── STATUS AKHIR ────────────────────────────────────────────
+  // ── GELOMBANG 6: SLOW ATTACK TEST ──────────────────────────
+  console.log('[' + ts() + '] === GELOMBANG 6: SLOW BRUTE FORCE (interval panjang) ===');
+  console.log('[' + ts() + '] Simulasi serangan lambat — 5 percobaan dengan jeda 3-8 detik');
+  console.log('[' + ts() + '] Tujuan: cek apakah firewall bisa deteksi pola lambat');
+
+  const slowPasswords = ['iloveyou', 'sunshine', 'princess', 'football', 'shadow'];
+  const slowResults = [];
+
+  for (var n = 0; n < slowPasswords.length; n++) {
+    // Jeda acak 3-8 detik (versi cepat untuk testing, production bisa 30-120 detik)
+    const jeda = 3000 + Math.floor(Math.random() * 5000);
+    console.log('[' + ts() + '] Menunggu ' + (jeda/1000).toFixed(1) + ' detik sebelum percobaan ' + (n+1) + '...');
+    await sleep(jeda);
+
+    const r = await req('/api/auth/login', 'POST',
+      { email: 'admin@sivilize.com', password: slowPasswords[n] },
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0',
+      '203.0.113.' + (n + 10)
+    );
+    slowResults.push(r.s);
+    console.log('[' + ts() + '] Percobaan ' + (n+1) + ' (' + slowPasswords[n] + ') -> ' + r.s + (r.s === 403 ? ' TERDETEKSI' : r.s === 429 ? ' DIBLOKIR' : ' Lolos deteksi'));
+  }
+
+  const terdeteksi = slowResults.filter(function(s) { return s === 403 || s === 429; }).length;
+  const lolos = slowResults.filter(function(s) { return s !== 403 && s !== 429; }).length;
+
+  console.log('');
+  console.log('[' + ts() + '] Hasil Slow Attack:');
+  console.log('[' + ts() + ']   -> ' + terdeteksi + '/5 percobaan terdeteksi/diblokir');
+  console.log('[' + ts() + ']   -> ' + lolos + '/5 percobaan lolos deteksi');
+
+  if (lolos > 0) {
+    console.log('[' + ts() + '] ⚠️  REKOMENDASI: Tambahkan persistent tracking lintas sesi');
+    console.log('[' + ts() + ']    (saat ini counter reset tiap Vercel cold start)');
+  } else {
+    console.log('[' + ts() + '] ✅ Firewall berhasil deteksi slow attack');
+  }
+  console.log('');
+
+  // ── GELOMBANG 7: CREDENTIAL STUFFING ───────────────────────
+  console.log('[' + ts() + '] === GELOMBANG 7: CREDENTIAL STUFFING ===');
+  console.log('[' + ts() + '] Simulasi 10 pasang email:password dari leaked database...');
+
+  const leakedCredentials = [
+    { email: 'admin@gmail.com', password: 'Admin123!' },
+    { email: 'user@yahoo.com', password: 'Password1' },
+    { email: 'test@hotmail.com', password: 'Test1234' },
+    { email: 'info@company.com', password: 'Company2024' },
+    { email: 'support@web.com', password: 'Support99' },
+    { email: 'admin@sivilize.com', password: 'Sivilize2024!' },
+    { email: 'muhamadadrian210@gmail.com', password: 'Adrian123' },
+    { email: 'root@server.com', password: 'Root@2024' },
+    { email: 'noreply@mail.com', password: 'Noreply1!' },
+    { email: 'webmaster@site.com', password: 'Webmaster1' },
+  ];
+
+  let stuffingBlocked = 0;
+  let stuffingLolos = 0;
+
+  for (var o = 0; o < leakedCredentials.length; o++) {
+    const cred = leakedCredentials[o];
+    const r = await req('/api/auth/login', 'POST',
+      { email: cred.email, password: cred.password },
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      '198.51.' + o + '.100'
+    );
+    if (r.s === 403 || r.s === 429) {
+      stuffingBlocked++;
+      console.log('[' + ts() + '] ' + cred.email + ' -> ' + r.s + ' DIBLOKIR');
+    } else if (r.s === 200) {
+      stuffingLolos++;
+      console.log('[' + ts() + '] ' + cred.email + ' -> ' + r.s + ' ⚠️  BERHASIL LOGIN!');
+    } else {
+      console.log('[' + ts() + '] ' + cred.email + ' -> ' + r.s + ' Gagal (kredensial salah)');
+    }
+    await sleep(200);
+  }
+
+  console.log('');
+  console.log('[' + ts() + '] Hasil Credential Stuffing:');
+  console.log('[' + ts() + ']   -> ' + stuffingBlocked + '/10 diblokir firewall');
+  console.log('[' + ts() + ']   -> ' + stuffingLolos + '/10 berhasil login (kredensial cocok)');
+  console.log('[' + ts() + ']   -> ' + (10 - stuffingBlocked - stuffingLolos) + '/10 gagal (kredensial salah)');
+  console.log('');
   console.log('[' + ts() + '] === STATUS FIREWALL SETELAH SERANGAN ===');
   const health = await req('/health');
   console.log('[' + ts() + '] Backend: MASIH BERDIRI (tidak down)');
@@ -146,6 +229,8 @@ async function run() {
   console.log('  GELOMBANG 3 - Brute Force  : IP diblokir 1 jam');
   console.log('  GELOMBANG 4 - Injection    : Semua payload diblokir');
   console.log('  GELOMBANG 5 - Flood Attack : Rate limiting aktif');
+  console.log('  GELOMBANG 6 - Slow Attack  : ' + terdeteksi + '/5 terdeteksi, ' + lolos + '/5 lolos');
+  console.log('  GELOMBANG 7 - Cred Stuff  : ' + stuffingBlocked + '/10 diblokir, ' + stuffingLolos + ' login sukses');
   console.log('');
   console.log('  STATUS WEB   : ONLINE - Tidak terpengaruh');
   console.log('  ALERT EMAIL  : 3 email terkirim ke admin');
