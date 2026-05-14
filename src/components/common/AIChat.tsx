@@ -1,23 +1,32 @@
-﻿﻿import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Sparkles, X } from 'lucide-react';
+import { useStore } from '../../store/useStore';
 
 // AI Chat — Segera Hadir (dalam pengembangan)
 const AIChat = () => {
   const [open, setOpen] = useState(false);
+  const { activeTab } = useStore();
+
+  // Jika di kalkulator, naikkan posisi agar tidak menutupi StickyTotalBar di mobile
+  const isCalculator = activeTab === 'kalkulator';
 
   return (
     <>
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="fixed bottom-6 right-6 z-[60] w-14 h-14 bg-primary rounded-full shadow-lg shadow-primary/30 flex items-center justify-center hover:bg-primary-hover transition-all hover:scale-110 active:scale-95"
+          className={`fixed right-6 z-[60] w-14 h-14 bg-primary rounded-full shadow-lg shadow-primary/30 flex items-center justify-center hover:bg-primary-hover transition-all hover:scale-110 active:scale-95 ${
+            isCalculator ? 'bottom-28 md:bottom-6' : 'bottom-6'
+          }`}
           title="Kiro AI - Segera Hadir"
         >
           <Sparkles size={22} className="text-white" />
         </button>
       )}
       {open && (
-        <div className="fixed bottom-6 right-6 z-[60] w-[360px] md:w-96 flex flex-col bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
+        <div className={`fixed right-6 z-[60] w-[320px] xs:w-[360px] md:w-96 flex flex-col bg-card border border-border rounded-2xl shadow-2xl overflow-hidden transition-all ${
+          isCalculator ? 'bottom-28 md:bottom-6' : 'bottom-6'
+        }`}>
           <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-primary to-orange-600">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">

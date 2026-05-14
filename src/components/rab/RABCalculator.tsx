@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿import { Fragment, useState, useMemo, useEffect } from 'react';
+﻿﻿﻿import { Fragment, useState, useMemo, useEffect } from 'react';
 import { 
   Trash2, 
   ChevronRight, 
@@ -1031,50 +1031,50 @@ const RABCalculator = () => {
               </div>
             )}
 
-             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="flex items-center gap-2 bg-background border border-border p-1 rounded-xl">
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center gap-2 bg-background border border-border p-1 rounded-xl overflow-x-auto no-scrollbar shrink-0">
                 <button 
                   onClick={() => setActiveSubTab('rab')}
-                  className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${activeSubTab === 'rab' ? 'bg-primary text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}
+                  className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeSubTab === 'rab' ? 'bg-primary text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}
                 >
                   Breakdown RAB
                 </button>
                 <button 
                   onClick={() => setActiveSubTab('split')}
-                  className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${activeSubTab === 'split' ? 'bg-primary text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}
+                  className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeSubTab === 'split' ? 'bg-primary text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}
                 >
                   Material / Pekerja
                 </button>
                 <button 
                   onClick={() => setActiveSubTab('materials')}
-                  className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${activeSubTab === 'materials' ? 'bg-primary text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}
+                  className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeSubTab === 'materials' ? 'bg-primary text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}
                 >
                   Kebutuhan Material
                 </button>
                 <button 
                   onClick={() => setActiveSubTab('prices')}
-                  className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${activeSubTab === 'prices' ? 'bg-yellow-500 text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}
+                  className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeSubTab === 'prices' ? 'bg-yellow-500 text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}
                 >
                   Update Harga
                 </button>
                 <button 
                   onClick={() => setActiveSubTab('timeline')}
-                  className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${activeSubTab === 'timeline' ? 'bg-primary text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}
+                  className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeSubTab === 'timeline' ? 'bg-primary text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}
                 >
                   Timeline & Jadwal
                 </button>
                 <button 
                   onClick={() => setActiveSubTab('template')}
-                  className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${activeSubTab === 'template' ? 'bg-primary text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}
+                  className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeSubTab === 'template' ? 'bg-primary text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}
                 >
                   Template
                 </button>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
                 <button 
                   onClick={() => setShowPreviewModal(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded-xl text-sm font-bold hover:bg-primary/20 transition-all"
+                  className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded-xl text-xs sm:text-sm font-bold hover:bg-primary/20 transition-all whitespace-nowrap"
                 >
                   <Printer size={16} />
                   <span>Cetak / Export</span>
@@ -1082,10 +1082,10 @@ const RABCalculator = () => {
                 {/* Bandingkan Versi — tampil jika ada project yang sudah disimpan */}
                 <button
                   onClick={() => setShowComparison(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-xl text-sm font-bold hover:bg-blue-500/20 transition-all"
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-xl text-xs sm:text-sm font-bold hover:bg-blue-500/20 transition-all whitespace-nowrap"
                 >
                   <GitCompare size={16} />
-                  <span className="hidden sm:inline">Bandingkan</span>
+                  <span>Bandingkan</span>
                 </button>
                 <button
                   onClick={async () => {
@@ -1098,10 +1098,10 @@ const RABCalculator = () => {
                     }
                   }}
                   disabled={shareLoading}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-500/10 text-green-400 border border-green-500/20 rounded-xl text-sm font-bold hover:bg-green-500/20 transition-all"
+                  className="flex items-center gap-2 px-4 py-2 bg-green-500/10 text-green-400 border border-border rounded-xl text-xs sm:text-sm font-bold hover:bg-green-500/20 transition-all whitespace-nowrap"
                 >
                   <Share2 size={16} />
-                  <span className="hidden sm:inline">Bagikan</span>
+                  <span>Bagikan</span>
                 </button>
               </div>
             </div>
