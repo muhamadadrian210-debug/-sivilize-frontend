@@ -278,6 +278,38 @@ export const exportKurvaSPDF = (
 // ============================================================
 // EXPORT LABOR
 // ============================================================
+export interface WorkerSummary {
+  name: string;
+  role: string;
+  totalDays: number;
+  totalAmount: number;
+  weeksWorked: number;
+}
+
+export function aggregateLaborByWorker(payments: LaborPayment[]): WorkerSummary[] {
+  const workerMap = new Map<string, WorkerSummary>();
+  for (const payment of payments) {
+    for (const worker of payment.workers) {
+      const key = `${worker.name}__${worker.role}`;
+      const existing = workerMap.get(key);
+      if (existing) {
+        existing.totalDays += worker.days;
+        existing.totalAmount += worker.total;
+        existing.weeksWorked += 1;
+      } else {
+        workerMap.set(key, {
+          name: worker.name,
+          role: worker.role,
+          totalDays: worker.days,
+          totalAmount: worker.total,
+          weeksWorked: 1,
+        });
+      }
+    }
+  }
+  return Array.from(workerMap.values()).sort((a, b) => b.totalAmount - a.totalAmount);
+}
+
 export const exportLaborToPDF = (payments: LaborPayment[], options: { projectName: string; companyName?: string }) => {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const margin = 14;
