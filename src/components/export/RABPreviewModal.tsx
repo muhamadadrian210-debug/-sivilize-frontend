@@ -61,7 +61,7 @@ const RABPreviewModal = ({ isOpen, onClose, project, items, financials, grade }:
     return acc;
   }, {} as Record<string, number>);
 
-  const saveConfigAndExport = async (exportFn: () => void) => {
+  const saveConfigAndExport = (exportFn: () => void) => {
     setIsExporting(true);
     const configToSave: ExportConfig = {
       ...config,
@@ -69,16 +69,15 @@ const RABPreviewModal = ({ isOpen, onClose, project, items, financials, grade }:
     };
     localStorage.setItem(EXPORT_CONFIG_STORAGE_KEY, JSON.stringify(configToSave));
     
-    // Beri sedikit delay agar UI sempat merespon loading state
-    setTimeout(() => {
-      try {
-        exportFn();
-      } catch (err) {
-        console.error('Export failed:', err);
-      } finally {
-        setIsExporting(false);
-      }
-    }, 500);
+    // Jalankan langsung tanpa setTimeout untuk menghindari blokir download di mobile browser
+    try {
+      exportFn();
+    } catch (err) {
+      console.error('Export failed:', err);
+      alert('Gagal mengekspor file. Silakan coba lagi.');
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const handleDownloadPDF = () => {
