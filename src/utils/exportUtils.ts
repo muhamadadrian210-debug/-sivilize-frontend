@@ -1,14 +1,22 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
-import { type RABItem, type FinancialSettings, type Project } from '../store/useStore';
+import { type RABItem, type FinancialSettings, type Project, type LaborPayment } from '../store/useStore';
 import { calculateTotalRAB, getGroupedRABItems } from './calculations';
 import { getCityDisplayName, type MaterialGrade } from '../data/prices';
+import { type KurvaSChartPoint } from './kurvaSUtils';
+
+// ============================================================
+// TYPES & HELPERS
+// ============================================================
+type JsPDFWithAutoTable = jsPDF & {
+  autoTable: (options: any) => void;
+  lastAutoTable?: { finalY: number };
+};
 
 const groupAndExportRAB = (items: RABItem[]) =>
   getGroupedRABItems(items).filter(g => g.items.length > 0);
 
-// Helper untuk format Rupiah yang sangat aman
 const toRp = (n: any): string => {
   try {
     const val = typeof n === 'number' ? n : parseFloat(n);
@@ -19,6 +27,13 @@ const toRp = (n: any): string => {
   }
 };
 
+export interface ExportOptions {
+  companyName?: string;
+  preparedBy?: string;
+  approvedBy?: string;
+  projectNo?: string;
+}
+
 // ============================================================
 // EXPORT PDF PROFESIONAL
 // ============================================================
@@ -27,20 +42,11 @@ export const exportToPDF = (
   items: RABItem[],
   financials: FinancialSettings,
   grade: MaterialGrade,
-  options?: { companyName?: string; preparedBy?: string; approvedBy?: string; projectNo?: string }
+  options?: ExportOptions
 ) => {
-  console.log('Starting PDF Export...', { project, itemCount: items?.length });
-  
   try {
-    // Inisialisasi dokumen
-    const doc = new jsPDF({ 
-      orientation: 'portrait', 
-      unit: 'mm', 
-      format: 'a4',
-      putOnlyUsedFonts: true,
-      floatPrecision: 16
-    });
-
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' }) as unknown as JsPDFWithAutoTable;
+    
     if (!items || items.length === 0) {
       alert('Peringatan: Tidak ada data RAB untuk diunduh.');
       return;
@@ -56,9 +62,8 @@ export const exportToPDF = (
     const approvedBy = options?.approvedBy || '-';
     const projectNo = options?.projectNo || `SIV-${Date.now().toString().slice(-6)}`;
 
-    // Fungsi helper untuk cetak teks dengan aman
-    const safeText = (txt: string, x: number, y: number, options?: any) => {
-      doc.text(txt || '-', x, y, options);
+    const safeText = (txt: string, x: number, y: number, opt?: any) => {
+      doc.text(txt || '-', x, y, opt);
     };
 
     // KOP SURAT
@@ -99,11 +104,7 @@ export const exportToPDF = (
     // TABEL RAB
     let itemNo = 1;
     grouped.forEach((group) => {
-      if (y > 250) {
-        doc.addPage();
-        y = 20;
-      }
-
+      if (y > 250) { doc.addPage(); y = 20; }
       doc.setFillColor(255, 122, 0); doc.setTextColor(255, 255, 255);
       doc.setFontSize(9); doc.setFont('helvetica', 'bold');
       doc.rect(margin, y, contentW, 7, 'F');
@@ -118,7 +119,6 @@ export const exportToPDF = (
         toRp(item.unitPrice), 
         toRp(item.total),
       ]);
-      
       tableData.push(['', `SUBTOTAL ${group.kategori.toUpperCase()}`, '', '', '', toRp(group.subtotal)]);
       
       autoTable(doc, {
@@ -126,13 +126,9 @@ export const exportToPDF = (
         head: [['No', 'Uraian Pekerjaan', 'Volume', 'Sat', 'Harga Satuan', 'Jumlah']],
         body: tableData,
         theme: 'grid',
-        styles: { fontSize: 7.5, cellPadding: 2, textColor: [30, 30, 30], font: 'helvetica' },
-        headStyles: { fillColor: [52, 73, 94], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
-        columnStyles: {
-          0: { cellWidth: 8, halign: 'center' }, 1: { cellWidth: 65 },
-          2: { cellWidth: 18, halign: 'right' }, 3: { cellWidth: 12, halign: 'center' },
-          4: { cellWidth: 35, halign: 'right' }, 5: { cellWidth: 35, halign: 'right' },
-        },
+        styles: { fontSize: 7.5, cellPadding: 2, textColor: [30, 30, 30] },
+        headStyles: { fillColor: [52, 73, 94], textColor: [255, 255, 255], fontStyle: 'bold' },
+        columnStyles: { 0: { cellWidth: 8, halign: 'center' }, 1: { cellWidth: 65 }, 2: { halign: 'right' }, 3: { halign: 'center' }, 4: { halign: 'right' }, 5: { halign: 'right' } },
         didParseCell: (data: any) => {
           if (data.section === 'body' && data.row.index === tableData.length - 1) {
             data.cell.styles.fontStyle = 'bold';
@@ -141,19 +137,15 @@ export const exportToPDF = (
         },
         margin: { left: margin, right: margin },
       });
-      
-      // Gunakan cara yang lebih aman untuk mengambil Y terakhir
-      const lastTable = (doc as any).lastAutoTable;
-      y = (lastTable && lastTable.finalY) ? lastTable.finalY + 4 : y + 20;
+      y = (doc as any).lastAutoTable.finalY + 4;
     });
 
-    // RINGKASAN
+    // SUMMARY
     if (y > 230) { doc.addPage(); y = 20; }
     y += 4;
     const summaryX = pageW - margin - 80;
     doc.setDrawColor(200, 200, 200); doc.setLineWidth(0.3);
     doc.line(summaryX, y, pageW - margin, y); y += 4;
-    
     const addRow = (label: string, value: number, bold = false) => {
       doc.setFontSize(8.5); doc.setFont('helvetica', bold ? 'bold' : 'normal');
       doc.setTextColor(bold ? 30 : 80, bold ? 30 : 80, bold ? 30 : 80);
@@ -161,13 +153,11 @@ export const exportToPDF = (
       safeText(toRp(value), pageW - margin, y, { align: 'right' });
       y += 5.5;
     };
-
     addRow('Subtotal Pekerjaan', summary.subtotal);
     addRow(`Overhead (${financials.overhead}%)`, summary.overheadAmount);
     addRow(`Profit (${financials.profit}%)`, summary.profitAmount);
     if (financials.contingency > 0) addRow(`Biaya Tak Terduga (${financials.contingency}%)`, summary.contingencyAmount);
     addRow(`PPN (${financials.tax}%)`, summary.taxAmount);
-    
     doc.setDrawColor(255, 122, 0); doc.setLineWidth(0.8);
     doc.line(summaryX, y, pageW - margin, y); y += 2;
     doc.setFillColor(255, 122, 0); doc.rect(summaryX, y, 80, 8, 'F');
@@ -179,115 +169,40 @@ export const exportToPDF = (
     // TANDA TANGAN
     if (y > 240) { doc.addPage(); y = 20; }
     y += 6;
-    const sigColW = contentW / 3;
-    [{ title: 'Dibuat Oleh', name: preparedBy, role: 'Estimator' },
-     { title: 'Diperiksa Oleh', name: '-', role: 'Kepala Estimator' },
-     { title: 'Disetujui Oleh', name: approvedBy, role: 'Direktur / Owner' }
-    ].forEach((box, i) => {
+    const sigColW = (pageW - margin * 2) / 3;
+    [{ t: 'Dibuat Oleh', n: preparedBy }, { t: 'Diperiksa Oleh', n: '-' }, { t: 'Disetujui Oleh', n: approvedBy }].forEach((box, i) => {
       const x = margin + i * sigColW;
-      doc.setDrawColor(200, 200, 200); doc.setLineWidth(0.3);
-      doc.rect(x, y, sigColW - 4, 30, 'S');
+      doc.setDrawColor(200, 200, 200); doc.rect(x, y, sigColW - 4, 30, 'S');
       doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 30, 30); doc.setFontSize(8);
-      safeText(box.title, x + (sigColW - 4) / 2, y + 5, { align: 'center' });
-      doc.setDrawColor(150, 150, 150);
+      safeText(box.t, x + (sigColW - 4) / 2, y + 5, { align: 'center' });
       doc.line(x + 6, y + 22, x + sigColW - 10, y + 22);
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(60, 60, 60);
-      safeText(box.name, x + (sigColW - 4) / 2, y + 26, { align: 'center' });
-      safeText(box.role, x + (sigColW - 4) / 2, y + 30, { align: 'center' });
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5);
+      safeText(box.n, x + (sigColW - 4) / 2, y + 26, { align: 'center' });
     });
 
     // FOOTER
-    const pageCount = (doc as any).internal.getNumberOfPages();
+    const pageCount = doc.internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
       doc.setFontSize(7); doc.setTextColor(150, 150, 150);
-      safeText(`SIVILIZE HUB PRO | sivilize-hub-pro.vercel.app | Halaman ${i} dari ${pageCount}`, pageW / 2, 290, { align: 'center' });
-      doc.setDrawColor(220, 220, 220); doc.setLineWidth(0.3);
-      doc.line(margin, 287, pageW - margin, 287);
+      safeText(`SIVILIZE HUB PRO | Halaman ${i} dari ${pageCount}`, pageW / 2, 290, { align: 'center' });
     }
-    
-    // Nama file yang bersih
-    const cleanName = (project.name || 'Proyek').replace(/[^a-zA-Z0-9]/g, '_');
-    const fileName = `RAB_${cleanName}_${new Date().toISOString().split('T')[0]}.pdf`;
-    
-    console.log('Attempting to save PDF:', fileName);
-    doc.save(fileName);
-    console.log('PDF Saved successfully!');
-    
-  } catch (error) {
-    console.error('CRITICAL ERROR in PDF Export:', error);
-    alert('Maaf, terjadi kesalahan teknis saat membuat PDF. \n\nError: ' + (error instanceof Error ? error.message : String(error)));
+    doc.save(`RAB_${(project.name || 'Proyek').replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
+  } catch (err) {
+    console.error('PDF Export Error:', err);
+    alert('Gagal membuat PDF. Silakan coba lagi.');
   }
-};
-
-  // RINGKASAN
-  y += 4;
-  const summaryX = pageW - margin - 80;
-  doc.setDrawColor(200, 200, 200); doc.setLineWidth(0.3);
-  doc.line(summaryX, y, pageW - margin, y); y += 4;
-  const addRow = (label: string, value: number, bold = false) => {
-    doc.setFontSize(8.5); doc.setFont('helvetica', bold ? 'bold' : 'normal');
-    doc.setTextColor(bold ? 30 : 80, bold ? 30 : 80, bold ? 30 : 80);
-    doc.text(label, summaryX, y);
-    doc.text(toRp(value), pageW - margin, y, { align: 'right' });
-    y += 5.5;
-  };
-  addRow('Subtotal Pekerjaan', summary.subtotal);
-  addRow(`Overhead (${financials.overhead}%)`, summary.overheadAmount);
-  addRow(`Profit (${financials.profit}%)`, summary.profitAmount);
-  if (financials.contingency > 0) addRow(`Biaya Tak Terduga (${financials.contingency}%)`, summary.contingencyAmount);
-  addRow(`PPN (${financials.tax}%)`, summary.taxAmount);
-  doc.setDrawColor(255, 122, 0); doc.setLineWidth(0.8);
-  doc.line(summaryX, y, pageW - margin, y); y += 2;
-  doc.setFillColor(255, 122, 0); doc.rect(summaryX, y, 80, 8, 'F');
-  doc.setTextColor(255, 255, 255); doc.setFontSize(9); doc.setFont('helvetica', 'bold');
-  doc.text('GRAND TOTAL', summaryX + 2, y + 5.5);
-  doc.text(toRp(summary.grandTotal), pageW - margin, y + 5.5, { align: 'right' });
-  y += 14;
-
-  // TANDA TANGAN
-  if (y > 240) { doc.addPage(); y = 20; }
-  y += 6;
-  const sigColW = contentW / 3;
-  [{ title: 'Dibuat Oleh', name: preparedBy, role: 'Estimator' },
-   { title: 'Diperiksa Oleh', name: '-', role: 'Kepala Estimator' },
-   { title: 'Disetujui Oleh', name: approvedBy, role: 'Direktur / Owner' }
-  ].forEach((box, i) => {
-    const x = margin + i * sigColW;
-    doc.setDrawColor(200, 200, 200); doc.setLineWidth(0.3);
-    doc.rect(x, y, sigColW - 4, 30, 'S');
-    doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 30, 30); doc.setFontSize(8);
-    doc.text(box.title, x + (sigColW - 4) / 2, y + 5, { align: 'center' });
-    doc.setDrawColor(150, 150, 150);
-    doc.line(x + 6, y + 22, x + sigColW - 10, y + 22);
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(60, 60, 60);
-    doc.text(box.name, x + (sigColW - 4) / 2, y + 26, { align: 'center' });
-    doc.text(box.role, x + (sigColW - 4) / 2, y + 30, { align: 'center' });
-  });
-
-  // FOOTER
-  const pageCount = (doc as unknown as { internal: { getNumberOfPages: () => number } }).internal.getNumberOfPages();
-  for (let i = 1; i <= pageCount; i++) {
-    doc.setPage(i);
-    doc.setFontSize(7); doc.setTextColor(150, 150, 150);
-    doc.text(`SIVILIZE HUB PRO "” Halaman ${i} dari ${pageCount}`, pageW / 2, 290, { align: 'center' });
-    doc.setDrawColor(220, 220, 220); doc.setLineWidth(0.3);
-    doc.line(margin, 287, pageW - margin, 287);
-  }
-  doc.save(`RAB_${(project.name || 'Proyek').replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
 };
 
 // ============================================================
-// EXPORT EXCEL PROFESIONAL "” Tabel rapi, format Rp, siap kontraktor
-// Menggunakan pendekatan AOA (Array of Arrays) yang kompatibel
-// dengan semua versi XLSX
+// EXPORT EXCEL PROFESIONAL
 // ============================================================
 export const exportToExcel = (
   project: Partial<Project>,
   items: RABItem[],
   financials: FinancialSettings,
   grade: MaterialGrade,
-  options?: { companyName?: string; preparedBy?: string; approvedBy?: string; projectNo?: string }
+  options?: ExportOptions
 ) => {
   const summary = calculateTotalRAB(items, financials);
   const grouped = groupAndExportRAB(items);
@@ -298,447 +213,112 @@ export const exportToExcel = (
   const projectNo = options?.projectNo || `SIV-${Date.now().toString().slice(-6)}`;
   const today = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
 
-  // â”€â”€ Sheet 1: RAB Detail â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  const data: (string | number)[][] = [];
+  const data: any[][] = [
+    [company], ['RENCANA ANGGARAN BIAYA (RAB)'], ['Platform Teknik Sipil Berbasis AI | sivilize-hub-pro.vercel.app'], [''],
+    ['Nama Proyek', ':', project.name || '-', '', 'No. Dokumen', ':', projectNo],
+    ['Lokasi', ':', getCityDisplayName(project.location || '-'), '', 'Tanggal', ':', today],
+    ['Grade Material', ':', `Grade ${grade}`, '', 'Dibuat Oleh', ':', preparedBy],
+    ['Status', ':', project.status || 'draft', '', 'Disetujui', ':', approvedBy],
+    [''],
+    ['No', 'Uraian Pekerjaan', 'Volume', 'Satuan', 'Harga Satuan', 'Jumlah (Rp)']
+  ];
 
-  // KOP SURAT
-  data.push([company]);
-  data.push(['RENCANA ANGGARAN BIAYA (RAB)']);
-  data.push(['Platform Teknik Sipil Berbasis AI | sivilize-frontend.vercel.app']);
-  data.push(['']);
-
-  // INFO PROYEK "” 2 kolom
-  data.push(['Nama Proyek', ':', project.name || '-', '', 'No. Dokumen', ':', projectNo]);
-  data.push(['Lokasi', ':', getCityDisplayName(project.location || '-'), '', 'Tanggal', ':', today]);
-  data.push(['Grade Material', ':', `Grade ${grade}`, '', 'Dibuat Oleh', ':', preparedBy]);
-  data.push(['Status', ':', project.status || 'draft', '', 'Disetujui', ':', approvedBy]);
-  data.push(['']);
-
-  // HEADER TABEL
-  data.push(['No', 'Uraian Pekerjaan', 'Volume', 'Satuan', 'Harga Satuan', 'Jumlah (Rp)']);
-  const headerRowIdx = data.length; // untuk referensi
-
-  // DATA RAB
   let itemNo = 1;
-  grouped.forEach(group => {
-    // Category header
-    data.push([group.kategori.toUpperCase(), '', '', '', '', toRp(group.subtotal)]);
-
-    // Items
-    group.items.forEach((item: RABItem) => {
-      data.push([
-        itemNo++,
-        item.name,
-        Number(item.volume.toFixed(3)),
-        item.unit,
-        toRp(item.unitPrice),
-        toRp(item.total),
-      ]);
+  grouped.forEach(g => {
+    data.push([g.kategori.toUpperCase(), '', '', '', '', toRp(g.subtotal)]);
+    g.items.forEach(item => {
+      data.push([itemNo++, item.name, Number(item.volume.toFixed(3)), item.unit, toRp(item.unitPrice), toRp(item.total)]);
     });
-
-    // Subtotal
-    data.push(['', `SUBTOTAL ${group.kategori.toUpperCase()}`, '', '', '', toRp(group.subtotal)]);
-    data.push(['']); // empty row
+    data.push(['', `SUBTOTAL ${g.kategori.toUpperCase()}`, '', '', '', toRp(g.subtotal)]);
+    data.push(['']);
   });
 
-  // RINGKASAN KEUANGAN
-  data.push(['']);
-  data.push(['', '', '', '', 'Subtotal Pekerjaan', toRp(summary.subtotal)]);
+  data.push([''], ['', '', '', '', 'Subtotal Pekerjaan', toRp(summary.subtotal)]);
   data.push(['', '', '', '', `Overhead (${financials.overhead}%)`, toRp(summary.overheadAmount)]);
-  data.push(['', '', '', '', `Profit Kontraktor (${financials.profit}%)`, toRp(summary.profitAmount)]);
-  if (financials.contingency > 0)
-    data.push(['', '', '', '', `Biaya Tak Terduga (${financials.contingency}%)`, toRp(summary.contingencyAmount)]);
+  data.push(['', '', '', '', `Profit (${financials.profit}%)`, toRp(summary.profitAmount)]);
+  if (financials.contingency > 0) data.push(['', '', '', '', `Biaya Tak Terduga (${financials.contingency}%)`, toRp(summary.contingencyAmount)]);
   data.push(['', '', '', '', `PPN (${financials.tax}%)`, toRp(summary.taxAmount)]);
   data.push(['', '', '', '', 'GRAND TOTAL', toRp(summary.grandTotal)]);
-  data.push(['']);
-
-  // TANDA TANGAN
-  data.push(['Dibuat Oleh', '', 'Diperiksa Oleh', '', 'Disetujui Oleh', '']);
-  data.push(['', '', '', '', '', '']);
-  data.push(['', '', '', '', '', '']);
-  data.push(['', '', '', '', '', '']);
-  data.push([`(${preparedBy})`, '', '(-)', '', `(${approvedBy})`, '']);
-  data.push(['Estimator', '', 'Kepala Estimator', '', 'Direktur / Owner', '']);
 
   const ws = XLSX.utils.aoa_to_sheet(data);
-
-  // Set lebar kolom
-  ws['!cols'] = [
-    { wch: 5 },   // A: No
-    { wch: 45 },  // B: Uraian
-    { wch: 12 },  // C: Volume
-    { wch: 10 },  // D: Satuan
-    { wch: 25 },  // E: Harga Satuan
-    { wch: 25 },  // F: Jumlah
-    { wch: 15 },  // G: extra
-  ];
-
-  // Merge cells untuk kop surat
-  ws['!merges'] = [
-    { s: { r: 0, c: 0 }, e: { r: 0, c: 6 } },  // Nama perusahaan
-    { s: { r: 1, c: 0 }, e: { r: 1, c: 6 } },  // Judul
-    { s: { r: 2, c: 0 }, e: { r: 2, c: 6 } },  // Subtitle
-  ];
-
-  // Freeze header row
-  ws['!freeze'] = { xSplit: 0, ySplit: headerRowIdx };
-
+  ws['!cols'] = [{ wch: 5 }, { wch: 45 }, { wch: 12 }, { wch: 10 }, { wch: 20 }, { wch: 20 }];
   XLSX.utils.book_append_sheet(wb, ws, 'RAB Detail');
-
-  // â”€â”€ Sheet 2: Rekapitulasi â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  const rekapData: (string | number)[][] = [
-    [company],
-    ['REKAPITULASI RENCANA ANGGARAN BIAYA'],
-    [''],
-    ['No', 'Uraian Pekerjaan', 'Jumlah (Rp)', '% dari Total'],
-    ...grouped.map((g, i) => [
-      i + 1,
-      g.kategori,
-      toRp(g.subtotal),
-      `${((g.subtotal / summary.subtotal) * 100).toFixed(2)}%`
-    ]),
-    [''],
-    ['', 'Subtotal Pekerjaan', toRp(summary.subtotal), '100%'],
-    ['', `Overhead & Profit (${financials.overhead + financials.profit}%)`, toRp(summary.overheadAmount + summary.profitAmount), ''],
-    ['', `PPN (${financials.tax}%)`, toRp(summary.taxAmount), ''],
-    ['', 'GRAND TOTAL', toRp(summary.grandTotal), ''],
-  ];
-  const wsRekap = XLSX.utils.aoa_to_sheet(rekapData);
-  wsRekap['!cols'] = [{ wch: 5 }, { wch: 40 }, { wch: 25 }, { wch: 15 }];
-  wsRekap['!merges'] = [
-    { s: { r: 0, c: 0 }, e: { r: 0, c: 3 } },
-    { s: { r: 1, c: 0 }, e: { r: 1, c: 3 } },
-  ];
-  XLSX.utils.book_append_sheet(wb, wsRekap, 'Rekapitulasi');
-
-  // â”€â”€ Sheet 3: AHSP â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  const ahspData: (string | number)[][] = [
-    ['ANALISA HARGA SATUAN PEKERJAAN (AHSP)'],
-    ['Referensi: SE 47/SE/Dk/2026'],
-    [''],
-    ['No', 'Uraian Pekerjaan', 'Satuan', 'Harga Satuan', 'Kategori'],
-    ...items.map((item, i) => [i + 1, item.name, item.unit, toRp(item.unitPrice), item.category]),
-  ];
-  const wsAHSP = XLSX.utils.aoa_to_sheet(ahspData);
-  wsAHSP['!cols'] = [{ wch: 5 }, { wch: 45 }, { wch: 10 }, { wch: 25 }, { wch: 15 }];
-  wsAHSP['!merges'] = [
-    { s: { r: 0, c: 0 }, e: { r: 0, c: 4 } },
-    { s: { r: 1, c: 0 }, e: { r: 1, c: 4 } },
-  ];
-  XLSX.utils.book_append_sheet(wb, wsAHSP, 'AHSP');
-
-  const filename = `RAB_${(project.name || 'Proyek').replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.xlsx`;
-  XLSX.writeFile(wb, filename);
+  XLSX.writeFile(wb, `RAB_${(project.name || 'Proyek').replace(/\s+/g, '_')}.xlsx`);
 };
 
 // ============================================================
 // EXPORT KURVA S PDF
 // ============================================================
-import { type KurvaSChartPoint } from './kurvaSUtils';
-
-export interface KurvaSExportOptions {
-  companyName?: string;
-  preparedBy?: string;
-  projectNo?: string;
-}
-
 export const exportKurvaSPDF = (
   project: Partial<Project>,
   chartData: KurvaSChartPoint[],
-  options?: KurvaSExportOptions
-): void => {
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' }) as unknown as JsPDFWithAutoTable;
-  const pageW = 210;
+  options?: ExportOptions
+) => {
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const margin = 14;
-  const company = options?.companyName || 'SIVILIZE HUB PRO';
-  const preparedBy = options?.preparedBy || '-';
-  const projectNo = options?.projectNo || `SIV-${Date.now().toString().slice(-6)}`;
-
-  // KOP SURAT
-  doc.setDrawColor(255, 122, 0); doc.setLineWidth(1.5);
-  doc.line(margin, 12, pageW - margin, 12);
-  doc.setFillColor(255, 122, 0);
-  doc.roundedRect(margin, 15, 18, 18, 2, 2, 'F');
-  doc.setTextColor(255, 255, 255); doc.setFontSize(8); doc.setFont('helvetica', 'bold');
-  doc.text('SHP', margin + 9, 25, { align: 'center' });
-  doc.setTextColor(30, 30, 30); doc.setFontSize(14);
-  doc.text(company, margin + 22, 21);
-  doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(100, 100, 100);
-  doc.text('Platform Teknik Sipil Berbasis AI', margin + 22, 26);
-  doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 122, 0);
-  doc.text('KURVA S "” PROGRESS PROYEK', pageW - margin, 19, { align: 'right' });
-  doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(100, 100, 100);
-  doc.text(`No. Dokumen: ${projectNo}`, pageW - margin, 24, { align: 'right' });
-  doc.text(`Tanggal Cetak: ${new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}`, pageW - margin, 28, { align: 'right' });
-  doc.setDrawColor(255, 122, 0); doc.setLineWidth(0.5);
-  doc.line(margin, 36, pageW - margin, 36);
-
-  // INFO PROYEK
-  let y = 42;
-  doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(80, 80, 80);
-  doc.text('Nama Proyek', margin, y);
-  doc.text('Lokasi', margin, y + 6);
-  doc.text('Tanggal Mulai', margin, y + 12);
-  doc.text('Tanggal Selesai', margin, y + 18);
-  doc.text('Dibuat Oleh', margin + 90, y);
-  doc.setFont('helvetica', 'normal'); doc.setTextColor(30, 30, 30);
-  doc.text(`: ${project.name || '-'}`, margin + 30, y);
-  doc.text(`: ${project.location || '-'}`, margin + 30, y + 6);
-  doc.text(`: ${project.startDate ? new Date(project.startDate).toLocaleDateString('id-ID') : '-'}`, margin + 30, y + 12);
-  doc.text(`: ${project.endDate ? new Date(project.endDate).toLocaleDateString('id-ID') : '-'}`, margin + 30, y + 18);
-  doc.text(`: ${preparedBy}`, margin + 120, y);
-  y += 28;
-
-  // TABEL DATA KURVA S
-  const tableData = chartData.map(point => [
-    point.label,
-    `${point.rencana.toFixed(1)}%`,
-    point.realisasi !== null ? `${point.realisasi.toFixed(1)}%` : '-',
-    point.realisasi !== null
-      ? `${(point.realisasi - point.rencana).toFixed(1)}%`
-      : '-',
-    point.isManual ? 'Manual' : point.realisasi !== null ? 'Log Harian' : '-',
-  ]);
-
+  const pageW = 210;
+  
+  doc.setFontSize(14); doc.setFont('helvetica', 'bold');
+  doc.text((options?.companyName || 'SIVILIZE HUB PRO').toUpperCase(), margin, 20);
+  doc.setFontSize(11); doc.setTextColor(255, 122, 0);
+  doc.text('KURVA S — PROGRESS PROYEK', margin, 26);
+  
+  const tableData = chartData.map(p => [p.label, `${p.rencana.toFixed(1)}%`, p.realisasi !== null ? `${p.realisasi.toFixed(1)}%` : '-']);
   autoTable(doc, {
-    startY: y,
-    head: [['Periode', 'Rencana (%)', 'Realisasi (%)', 'Deviasi (%)', 'Sumber']],
+    startY: 35,
+    head: [['Periode', 'Rencana (%)', 'Realisasi (%)']],
     body: tableData,
     theme: 'grid',
-    styles: { fontSize: 8, cellPadding: 2.5, textColor: [30, 30, 30] },
-    headStyles: { fillColor: [255, 122, 0], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8.5 },
-    columnStyles: {
-      0: { cellWidth: 20, halign: 'center' },
-      1: { cellWidth: 30, halign: 'right' },
-      2: { cellWidth: 30, halign: 'right' },
-      3: { cellWidth: 30, halign: 'right' },
-      4: { cellWidth: 30, halign: 'center' },
-    },
-    didParseCell: (data: { section: string; column: { index: number }; cell: { raw: string; styles: { textColor: number[] } } }) => {
-      if (data.section === 'body' && data.column.index === 3) {
-        const val = parseFloat(data.cell.raw as string);
-        if (!isNaN(val)) {
-          data.cell.styles.textColor = val >= 0 ? [34, 197, 94] : [239, 68, 68];
-        }
-      }
-    },
-    margin: { left: margin, right: margin },
+    headStyles: { fillColor: [255, 122, 0] }
   });
-
-  // FOOTER
-  const pageCount = (doc as unknown as { internal: { getNumberOfPages: () => number } }).internal.getNumberOfPages();
-  for (let i = 1; i <= pageCount; i++) {
-    doc.setPage(i);
-    doc.setFontSize(7); doc.setTextColor(150, 150, 150);
-    doc.text(`SIVILIZE HUB PRO "” Halaman ${i} dari ${pageCount}`, pageW / 2, 290, { align: 'center' });
-  }
-
-  doc.save(`KurvaS_${(project.name || 'Proyek').replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
+  
+  doc.save(`KurvaS_${(project.name || 'Proyek').replace(/\s+/g, '_')}.pdf`);
 };
 
 // ============================================================
-// EXPORT UPAH TENAGA KERJA
+// EXPORT LABOR
 // ============================================================
-import { type LaborPayment } from '../store/useStore';
-
-export interface LaborExportOptions {
-  projectName: string;
-  companyName?: string;
-  period?: string;
-}
-
-export interface WorkerSummary {
-  name: string;
-  role: string;
-  totalDays: number;
-  totalAmount: number;
-  weeksWorked: number;
-}
-
-export function aggregateLaborByWorker(payments: LaborPayment[]): WorkerSummary[] {
-  const workerMap = new Map<string, WorkerSummary>();
-
-  for (const payment of payments) {
-    for (const worker of payment.workers) {
-      const key = `${worker.name}__${worker.role}`;
-      const existing = workerMap.get(key);
-      if (existing) {
-        existing.totalDays += worker.days;
-        existing.totalAmount += worker.total;
-        existing.weeksWorked += 1;
-      } else {
-        workerMap.set(key, {
-          name: worker.name,
-          role: worker.role,
-          totalDays: worker.days,
-          totalAmount: worker.total,
-          weeksWorked: 1,
-        });
-      }
-    }
-  }
-
-  return Array.from(workerMap.values()).sort((a, b) => b.totalAmount - a.totalAmount);
-}
-
-export const exportLaborToPDF = (
-  payments: LaborPayment[],
-  options: LaborExportOptions
-): void => {
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' }) as unknown as JsPDFWithAutoTable;
-  const pageW = 210;
+export const exportLaborToPDF = (payments: LaborPayment[], options: { projectName: string; companyName?: string }) => {
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const margin = 14;
-  const company = options.companyName || 'SIVILIZE HUB PRO';
-  const today = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+  
+  doc.setFontSize(14); doc.setFont('helvetica', 'bold');
+  doc.text((options.companyName || 'SIVILIZE HUB PRO').toUpperCase(), margin, 20);
+  doc.setFontSize(11); doc.setTextColor(255, 122, 0);
+  doc.text('DAFTAR UPAH TENAGA KERJA', margin, 26);
+  doc.setFontSize(8); doc.setTextColor(100, 100, 100);
+  doc.text(`Proyek: ${options.projectName}`, margin, 32);
 
-  // KOP SURAT
-  doc.setDrawColor(255, 122, 0); doc.setLineWidth(1.5);
-  doc.line(margin, 12, pageW - margin, 12);
-  doc.setFillColor(255, 122, 0);
-  doc.roundedRect(margin, 15, 18, 18, 2, 2, 'F');
-  doc.setTextColor(255, 255, 255); doc.setFontSize(8); doc.setFont('helvetica', 'bold');
-  doc.text('SHP', margin + 9, 25, { align: 'center' });
-  doc.setTextColor(30, 30, 30); doc.setFontSize(14);
-  doc.text(company, margin + 22, 21);
-  doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 122, 0);
-  doc.text('DAFTAR UPAH TENAGA KERJA', pageW - margin, 19, { align: 'right' });
-  doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(100, 100, 100);
-  doc.text(`Proyek: ${options.projectName}`, pageW - margin, 24, { align: 'right' });
-  doc.text(`Tanggal: ${today}`, pageW - margin, 28, { align: 'right' });
-  doc.setDrawColor(255, 122, 0); doc.setLineWidth(0.5);
-  doc.line(margin, 36, pageW - margin, 36);
-
-  let y = 42;
-
-  // Tabel per minggu
-  for (const payment of payments) {
-    const weekLabel = `${new Date(payment.weekStart).toLocaleDateString('id-ID')} "” ${new Date(payment.weekEnd).toLocaleDateString('id-ID')}`;
-    doc.setFillColor(52, 73, 94); doc.setTextColor(255, 255, 255);
-    doc.setFontSize(8.5); doc.setFont('helvetica', 'bold');
-    doc.rect(margin, y, pageW - margin * 2, 7, 'F');
-    doc.text(`Minggu: ${weekLabel}`, margin + 3, y + 5);
-    y += 7;
-
-    const tableData = payment.workers.map(w => [
-      w.name, w.role, w.days.toString(), toRp(w.dailyWage), toRp(w.total)
-    ]);
-    tableData.push(['', 'TOTAL MINGGU INI', '', '', toRp(payment.totalAmount)]);
-
+  let y = 40;
+  payments.forEach(p => {
+    if (y > 250) { doc.addPage(); y = 20; }
+    const tableData = p.workers.map(w => [w.name, w.role, w.days, toRp(w.dailyWage), toRp(w.total)]);
+    tableData.push(['', 'TOTAL MINGGU INI', '', '', toRp(p.totalAmount)]);
     autoTable(doc, {
       startY: y,
       head: [['Nama', 'Jabatan', 'Hari', 'Upah/Hari', 'Total']],
       body: tableData,
       theme: 'grid',
-      styles: { fontSize: 7.5, cellPadding: 2, textColor: [30, 30, 30] },
-      headStyles: { fillColor: [52, 73, 94], textColor: [255, 255, 255], fontStyle: 'bold' },
-      columnStyles: {
-        0: { cellWidth: 40 }, 1: { cellWidth: 35 },
-        2: { cellWidth: 15, halign: 'center' },
-        3: { cellWidth: 35, halign: 'right' },
-        4: { cellWidth: 35, halign: 'right' },
-      },
-      didParseCell: (data: { row: { index: number }; section: string; cell: { styles: { fontStyle: string; fillColor: number[] } } }) => {
-        if (data.section === 'body' && data.row.index === tableData.length - 1) {
-          data.cell.styles.fontStyle = 'bold';
-          data.cell.styles.fillColor = [240, 240, 240];
-        }
-      },
-      margin: { left: margin, right: margin },
+      headStyles: { fillColor: [52, 73, 94] }
     });
-    y = ((doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? y) + 6;
+    y = (doc as any).lastAutoTable.finalY + 10;
+  });
 
-    if (y > 250) { doc.addPage(); y = 20; }
-  }
-
-  // Summary total
-  const totalAll = payments.reduce((s, p) => s + p.totalAmount, 0);
-  const totalPaid = payments.filter(p => p.paid).reduce((s, p) => s + p.totalAmount, 0);
-  const totalUnpaid = totalAll - totalPaid;
-
-  y += 4;
-  doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 30, 30);
-  doc.text('RINGKASAN', margin, y); y += 6;
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
-  doc.text(`Total Upah Keseluruhan: ${toRp(totalAll)}`, margin, y); y += 5;
-  doc.text(`Sudah Dibayar: ${toRp(totalPaid)}`, margin, y); y += 5;
-  doc.text(`Belum Dibayar: ${toRp(totalUnpaid)}`, margin, y); y += 10;
-
-  // Area tanda tangan mandor
-  doc.setDrawColor(200, 200, 200); doc.setLineWidth(0.3);
-  doc.rect(margin, y, 60, 25, 'S');
-  doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(80, 80, 80);
-  doc.text('Mandor', margin + 30, y + 5, { align: 'center' });
-  doc.line(margin + 5, y + 20, margin + 55, y + 20);
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5);
-  doc.text('(Tanda Tangan)', margin + 30, y + 24, { align: 'center' });
-
-  // Footer
-  const pageCount = (doc as unknown as { internal: { getNumberOfPages: () => number } }).internal.getNumberOfPages();
-  for (let i = 1; i <= pageCount; i++) {
-    doc.setPage(i);
-    doc.setFontSize(7); doc.setTextColor(150, 150, 150);
-    doc.text(`SIVILIZE HUB PRO "” Halaman ${i} dari ${pageCount}`, pageW / 2, 290, { align: 'center' });
-  }
-
-  doc.save(`Upah_${options.projectName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
+  doc.save(`Upah_${options.projectName.replace(/\s+/g, '_')}.pdf`);
 };
 
-export const exportLaborToExcel = (
-  payments: LaborPayment[],
-  options: LaborExportOptions
-): void => {
+export const exportLaborToExcel = (payments: LaborPayment[], options: { projectName: string; companyName?: string }) => {
   const wb = XLSX.utils.book_new();
-  const company = options.companyName || 'SIVILIZE HUB PRO';
-  const today = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+  const data: any[][] = [['DAFTAR UPAH TENAGA KERJA'], [`Proyek: ${options.projectName}`], ['']];
+  data.push(['Minggu', 'Nama', 'Jabatan', 'Hari Kerja', 'Upah/Hari', 'Total']);
 
-  // Sheet 1: Rekap per minggu
-  const data: (string | number)[][] = [
-    [company],
-    ['DAFTAR UPAH TENAGA KERJA'],
-    [`Proyek: ${options.projectName}`, '', '', '', `Tanggal: ${today}`],
-    [''],
-    ['Minggu', 'Nama', 'Jabatan', 'Hari Kerja', 'Upah/Hari', 'Total'],
-  ];
+  payments.forEach(p => {
+    const week = `${new Date(p.weekStart).toLocaleDateString()} - ${new Date(p.weekEnd).toLocaleDateString()}`;
+    p.workers.forEach(w => data.push([week, w.name, w.role, w.days, toRp(w.dailyWage), toRp(w.total)]));
+    data.push(['', '', '', '', 'SUBTOTAL', toRp(p.totalAmount)], ['']);
+  });
 
-  for (const payment of payments) {
-    const weekLabel = `${new Date(payment.weekStart).toLocaleDateString('id-ID')} "” ${new Date(payment.weekEnd).toLocaleDateString('id-ID')}`;
-    for (const worker of payment.workers) {
-      data.push([weekLabel, worker.name, worker.role, worker.days, toRp(worker.dailyWage), toRp(worker.total)]);
-    }
-    data.push(['', '', '', '', 'SUBTOTAL', toRp(payment.totalAmount)]);
-    data.push(['']);
-  }
-
-  const totalAll = payments.reduce((s, p) => s + p.totalAmount, 0);
-  data.push(['', '', '', '', 'GRAND TOTAL', toRp(totalAll)]);
-
-  const ws1 = XLSX.utils.aoa_to_sheet(data);
-  ws1['!cols'] = [{ wch: 30 }, { wch: 20 }, { wch: 20 }, { wch: 12 }, { wch: 20 }, { wch: 20 }];
-  ws1['!merges'] = [
-    { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } },
-    { s: { r: 1, c: 0 }, e: { r: 1, c: 5 } },
-  ];
-  XLSX.utils.book_append_sheet(wb, ws1, 'Rekap per Minggu');
-
-  // Sheet 2: Rekap per pekerja (pivot)
-  const workerSummaries = aggregateLaborByWorker(payments);
-  const data2: (string | number)[][] = [
-    [company],
-    ['REKAP UPAH PER PEKERJA'],
-    [`Proyek: ${options.projectName}`],
-    [''],
-    ['Nama', 'Jabatan', 'Total Hari', 'Minggu Kerja', 'Total Upah'],
-    ...workerSummaries.map(w => [w.name, w.role, w.totalDays, w.weeksWorked, toRp(w.totalAmount)]),
-    [''],
-    ['', '', '', 'TOTAL', toRp(workerSummaries.reduce((s, w) => s + w.totalAmount, 0))],
-  ];
-  const ws2 = XLSX.utils.aoa_to_sheet(data2);
-  ws2['!cols'] = [{ wch: 25 }, { wch: 20 }, { wch: 12 }, { wch: 15 }, { wch: 20 }];
-  ws2['!merges'] = [
-    { s: { r: 0, c: 0 }, e: { r: 0, c: 4 } },
-    { s: { r: 1, c: 0 }, e: { r: 1, c: 4 } },
-  ];
-  XLSX.utils.book_append_sheet(wb, ws2, 'Rekap per Pekerja');
-
-  XLSX.writeFile(wb, `Upah_${options.projectName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.xlsx`);
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  XLSX.utils.book_append_sheet(wb, ws, 'Upah Tenaga Kerja');
+  XLSX.writeFile(wb, `Upah_${options.projectName.replace(/\s+/g, '_')}.xlsx`);
 };
