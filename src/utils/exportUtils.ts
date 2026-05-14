@@ -276,7 +276,7 @@ export const exportKurvaSPDF = (
 };
 
 // ============================================================
-// EXPORT LABOR
+// EXPORT LABOR - FIXED VERSION
 // ============================================================
 export interface WorkerSummary {
   name: string;
