@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿import { Fragment, useState, useMemo, useEffect } from 'react';
+import { Fragment, useState, useMemo, useEffect } from 'react';
 import { 
   Trash2, 
   ChevronRight, 
@@ -1427,7 +1427,12 @@ const RABCalculator = () => {
               <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-sm sm:text-base transition-all duration-300 ${
                 step >= i ? 'bg-primary text-white shadow-glow' : 'bg-card text-text-secondary border border-border'
               }`}>
-                {step > i ? <CheckCircle2 size={16} sm:size={20} /> : i}
+                {step > i ? (
+                  <>
+                    <CheckCircle2 size={16} className="sm:hidden" />
+                    <CheckCircle2 size={20} className="hidden sm:block" />
+                  </>
+                ) : i}
               </div>
               <span className={`text-[8px] sm:text-xs font-bold uppercase tracking-wider text-center max-w-[60px] sm:max-w-none ${step >= i ? 'text-primary' : 'text-text-secondary'}`}>
                 {i === 1 ? 'Data Proyek' : i === 2 ? 'Dimensi' : 'Breakdown RAB'}

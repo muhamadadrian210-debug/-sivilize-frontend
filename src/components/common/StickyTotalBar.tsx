@@ -48,7 +48,8 @@ const StickyTotalBar = ({ subtotal, grandTotal, itemCount, onScrollToTop }: Stic
               onClick={onScrollToTop}
               className="shrink-0 w-8 h-8 xs:w-9 xs:h-9 sm:w-10 sm:h-10 bg-primary/10 border border-primary/20 rounded-lg sm:rounded-xl flex items-center justify-center text-primary hover:bg-primary/20 transition-colors"
             >
-              <ChevronUp size={16} sm:size={20} />
+              <ChevronUp size={16} className="sm:hidden" />
+              <ChevronUp size={20} className="hidden sm:block" />
             </button>
           )}
         </div>
