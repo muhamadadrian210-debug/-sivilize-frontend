@@ -354,3 +354,5 @@ export const exportLaborToExcel = (payments: LaborPayment[], options: { projectN
   XLSX.utils.book_append_sheet(wb, ws, 'Upah Tenaga Kerja');
   XLSX.writeFile(wb, `Upah_${options.projectName.replace(/\s+/g, '_')}.xlsx`);
 };
+
+// Build trigger: 2026-05-14T22:40:22.689Z
