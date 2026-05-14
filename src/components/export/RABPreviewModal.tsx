@@ -33,6 +33,7 @@ const DEFAULT_EXPORT_CONFIG: ExportConfig = {
 };
 
 const RABPreviewModal = ({ isOpen, onClose, project, items, financials, grade }: RABPreviewModalProps) => {
+  const [isExporting, setIsExporting] = useState(false);
   const [config, setConfig] = useState<ExportConfig>(() => {
     try {
       const saved = localStorage.getItem(EXPORT_CONFIG_STORAGE_KEY);
@@ -60,14 +61,24 @@ const RABPreviewModal = ({ isOpen, onClose, project, items, financials, grade }:
     return acc;
   }, {} as Record<string, number>);
 
-  const saveConfigAndExport = (exportFn: () => void) => {
+  const saveConfigAndExport = async (exportFn: () => void) => {
+    setIsExporting(true);
     const configToSave: ExportConfig = {
       ...config,
       companyName: config.companyName.trim() || DEFAULT_EXPORT_CONFIG.companyName,
     };
     localStorage.setItem(EXPORT_CONFIG_STORAGE_KEY, JSON.stringify(configToSave));
-    exportFn();
-    onClose();
+    
+    // Beri sedikit delay agar UI sempat merespon loading state
+    setTimeout(() => {
+      try {
+        exportFn();
+      } catch (err) {
+        console.error('Export failed:', err);
+      } finally {
+        setIsExporting(false);
+      }
+    }, 500);
   };
 
   const handleDownloadPDF = () => {
@@ -234,17 +245,27 @@ const RABPreviewModal = ({ isOpen, onClose, project, items, financials, grade }:
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={handleDownloadPDF}
-              className="flex items-center justify-center gap-2 px-4 py-3 bg-red-500/10 text-red-400 border border-red-500/20 rounded-xl text-sm font-bold hover:bg-red-500/20 transition-all"
+              disabled={isExporting}
+              className="flex items-center justify-center gap-2 px-4 py-3 bg-red-500/10 text-red-400 border border-red-500/20 rounded-xl text-sm font-bold hover:bg-red-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <FileDown size={16} />
-              Download PDF
+              {isExporting ? (
+                <div className="w-4 h-4 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin" />
+              ) : (
+                <FileDown size={16} />
+              )}
+              {isExporting ? 'Proses...' : 'Download PDF'}
             </button>
             <button
               onClick={handleDownloadExcel}
-              className="flex items-center justify-center gap-2 px-4 py-3 bg-green-500/10 text-green-400 border border-green-500/20 rounded-xl text-sm font-bold hover:bg-green-500/20 transition-all"
+              disabled={isExporting}
+              className="flex items-center justify-center gap-2 px-4 py-3 bg-green-500/10 text-green-400 border border-green-500/20 rounded-xl text-sm font-bold hover:bg-green-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <FileText size={16} />
-              Download Excel
+              {isExporting ? (
+                <div className="w-4 h-4 border-2 border-green-400/30 border-t-green-400 rounded-full animate-spin" />
+              ) : (
+                <FileText size={16} />
+              )}
+              {isExporting ? 'Proses...' : 'Download Excel'}
             </button>
           </div>
           <button
