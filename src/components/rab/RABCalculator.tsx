@@ -1,4 +1,4 @@
-﻿﻿﻿import { Fragment, useState, useMemo, useEffect } from 'react';
+﻿﻿﻿﻿﻿import { Fragment, useState, useMemo, useEffect } from 'react';
 import { 
   Trash2, 
   ChevronRight, 
@@ -1032,49 +1032,51 @@ const RABCalculator = () => {
             )}
 
             <div className="flex flex-col gap-4">
-              <div className="flex items-center gap-2 bg-background border border-border p-1 rounded-xl overflow-x-auto no-scrollbar shrink-0">
-                <button 
-                  onClick={() => setActiveSubTab('rab')}
-                  className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeSubTab === 'rab' ? 'bg-primary text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}
-                >
-                  Breakdown RAB
-                </button>
-                <button 
-                  onClick={() => setActiveSubTab('split')}
-                  className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeSubTab === 'split' ? 'bg-primary text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}
-                >
-                  Material / Pekerja
-                </button>
-                <button 
-                  onClick={() => setActiveSubTab('materials')}
-                  className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeSubTab === 'materials' ? 'bg-primary text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}
-                >
-                  Kebutuhan Material
-                </button>
-                <button 
-                  onClick={() => setActiveSubTab('prices')}
-                  className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeSubTab === 'prices' ? 'bg-yellow-500 text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}
-                >
-                  Update Harga
-                </button>
-                <button 
-                  onClick={() => setActiveSubTab('timeline')}
-                  className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeSubTab === 'timeline' ? 'bg-primary text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}
-                >
-                  Timeline & Jadwal
-                </button>
-                <button 
-                  onClick={() => setActiveSubTab('template')}
-                  className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeSubTab === 'template' ? 'bg-primary text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}
-                >
-                  Template
-                </button>
+              <div className="overflow-x-auto no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
+                <div className="flex items-center gap-2 bg-background border border-border p-1 rounded-xl w-max min-w-full">
+                  <button 
+                    onClick={() => setActiveSubTab('rab')}
+                    className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap flex-shrink-0 ${activeSubTab === 'rab' ? 'bg-primary text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}
+                  >
+                    Breakdown RAB
+                  </button>
+                  <button 
+                    onClick={() => setActiveSubTab('split')}
+                    className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap flex-shrink-0 ${activeSubTab === 'split' ? 'bg-primary text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}
+                  >
+                    Material / Pekerja
+                  </button>
+                  <button 
+                    onClick={() => setActiveSubTab('materials')}
+                    className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap flex-shrink-0 ${activeSubTab === 'materials' ? 'bg-primary text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}
+                  >
+                    Kebutuhan Material
+                  </button>
+                  <button 
+                    onClick={() => setActiveSubTab('prices')}
+                    className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap flex-shrink-0 ${activeSubTab === 'prices' ? 'bg-yellow-500 text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}
+                  >
+                    Update Harga
+                  </button>
+                  <button 
+                    onClick={() => setActiveSubTab('timeline')}
+                    className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap flex-shrink-0 ${activeSubTab === 'timeline' ? 'bg-primary text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}
+                  >
+                    Timeline & Jadwal
+                  </button>
+                  <button 
+                    onClick={() => setActiveSubTab('template')}
+                    className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap flex-shrink-0 ${activeSubTab === 'template' ? 'bg-primary text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}
+                  >
+                    Template
+                  </button>
+                </div>
               </div>
 
-              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 -mx-4 px-4 sm:mx-0 sm:px-0">
                 <button 
                   onClick={() => setShowPreviewModal(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded-xl text-xs sm:text-sm font-bold hover:bg-primary/20 transition-all whitespace-nowrap"
+                  className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded-xl text-xs sm:text-sm font-bold hover:bg-primary/20 transition-all whitespace-nowrap flex-shrink-0"
                 >
                   <Printer size={16} />
                   <span>Cetak / Export</span>
@@ -1082,7 +1084,7 @@ const RABCalculator = () => {
                 {/* Bandingkan Versi — tampil jika ada project yang sudah disimpan */}
                 <button
                   onClick={() => setShowComparison(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-xl text-xs sm:text-sm font-bold hover:bg-blue-500/20 transition-all whitespace-nowrap"
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-xl text-xs sm:text-sm font-bold hover:bg-blue-500/20 transition-all whitespace-nowrap flex-shrink-0"
                 >
                   <GitCompare size={16} />
                   <span>Bandingkan</span>
@@ -1098,7 +1100,7 @@ const RABCalculator = () => {
                     }
                   }}
                   disabled={shareLoading}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-500/10 text-green-400 border border-border rounded-xl text-xs sm:text-sm font-bold hover:bg-green-500/20 transition-all whitespace-nowrap"
+                  className="flex items-center gap-2 px-4 py-2 bg-green-500/10 text-green-400 border border-border rounded-xl text-xs sm:text-sm font-bold hover:bg-green-500/20 transition-all whitespace-nowrap flex-shrink-0"
                 >
                   <Share2 size={16} />
                   <span>Bagikan</span>
@@ -1418,20 +1420,20 @@ const RABCalculator = () => {
     <>
     <div className="max-w-5xl mx-auto">
       {/* Progress Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-6 sm:mb-8 px-2">
         {[1, 2, 3].map((i) => (
           <Fragment key={i}>
-            <div className="flex flex-col items-center gap-2">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all duration-300 ${
+            <div className="flex flex-col items-center gap-1.5 sm:gap-2">
+              <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-sm sm:text-base transition-all duration-300 ${
                 step >= i ? 'bg-primary text-white shadow-glow' : 'bg-card text-text-secondary border border-border'
               }`}>
-                {step > i ? <CheckCircle2 size={20} /> : i}
+                {step > i ? <CheckCircle2 size={16} sm:size={20} /> : i}
               </div>
-              <span className={`text-xs font-bold uppercase tracking-wider ${step >= i ? 'text-primary' : 'text-text-secondary'}`}>
+              <span className={`text-[8px] sm:text-xs font-bold uppercase tracking-wider text-center max-w-[60px] sm:max-w-none ${step >= i ? 'text-primary' : 'text-text-secondary'}`}>
                 {i === 1 ? 'Data Proyek' : i === 2 ? 'Dimensi' : 'Breakdown RAB'}
               </span>
             </div>
-            {i < 3 && <div className={`flex-1 h-0.5 mx-4 ${step > i ? 'bg-primary' : 'bg-border'}`} />}
+            {i < 3 && <div className={`flex-1 h-0.5 mx-2 sm:mx-4 ${step > i ? 'bg-primary' : 'bg-border'}`} />}
           </Fragment>
         ))}
       </div>
