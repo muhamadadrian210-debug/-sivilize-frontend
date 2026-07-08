@@ -70,7 +70,7 @@ const RABPreviewModal = ({ isOpen, onClose, project, items, financials, grade }:
 
   if (!isOpen) return null;
 
-  const saveConfigAndExport = (exportFn: () => void) => {
+  const saveConfigAndExport = async (exportFn: () => void | Promise<void>) => {
     setIsExporting(true);
     const configToSave: ExportConfig = {
       ...config,
@@ -80,7 +80,7 @@ const RABPreviewModal = ({ isOpen, onClose, project, items, financials, grade }:
     
     // Jalankan langsung tanpa setTimeout untuk menghindari blokir download di mobile browser
     try {
-      exportFn();
+      await exportFn();
     } catch (err) {
       console.error('Export failed:', err);
       alert('Gagal mengekspor file. Silakan coba lagi.');

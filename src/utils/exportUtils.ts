@@ -1,6 +1,7 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { utils, writeFile } from 'xlsx';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 import { type RABItem, type FinancialSettings, type Project, type LaborPayment } from '../store/useStore';
 import { calculateTotalRAB, getGroupedRABItems } from './calculations';
 import { calculateProjectTKDN } from './tkdnUtils';
@@ -215,7 +216,7 @@ export const exportToPDF = (
 // ============================================================
 // EXPORT EXCEL PROFESIONAL (STANDAR PU B2G)
 // ============================================================
-export const exportToExcel = (
+export const exportToExcel = async (
   project: Partial<Project>,
   items: RABItem[],
   financials: FinancialSettings,
@@ -224,136 +225,290 @@ export const exportToExcel = (
 ) => {
   const summary = calculateTotalRAB(items, financials);
   const grouped = groupAndExportRAB(items);
-  const wb = utils.book_new();
   const company = options?.companyName || 'SIVILIZE HUB PRO';
   const approvedBy = options?.approvedBy || '-';
   const projectNo = options?.projectNo || `SIV-${Date.now().toString().slice(-6)}`;
   const today = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
 
-  const kopSurat = [
-    ['PEMERINTAH REPUBLIK INDONESIA'],
-    ['KEMENTERIAN PEKERJAAN UMUM DAN PERUMAHAN RAKYAT (PUPR)'],
-    ['DIREKTORAT JENDERAL BINA KONSTRUKSI'],
-    ['===================================================================================================='],
-    ['KONSULTAN / KONTRAKTOR PELAKSANA : ' + company.toUpperCase()],
-    ['===================================================================================================='],
-    ['']
-  ];
+  const wb = new ExcelJS.Workbook();
+  wb.creator = company;
+  wb.created = new Date();
 
+  // Helper to add header
+  const addHeader = (ws: ExcelJS.Worksheet, title: string) => {
+    ws.addRow(['PEMERINTAH REPUBLIK INDONESIA']);
+    ws.addRow(['KEMENTERIAN PEKERJAAN UMUM DAN PERUMAHAN RAKYAT (PUPR)']);
+    ws.addRow(['DIREKTORAT JENDERAL BINA KONSTRUKSI']);
+    ws.addRow(['====================================================================================================']);
+    ws.addRow(['KONSULTAN / KONTRAKTOR PELAKSANA : ' + company.toUpperCase()]);
+    ws.addRow(['====================================================================================================']);
+    ws.addRow([]);
+    ws.addRow([title]);
+    if (title !== 'ANALISA HARGA SATUAN PEKERJAAN (AHSP)') {
+      ws.addRow(['Format Standar Dinas Pekerjaan Umum (PU)']);
+    } else {
+      ws.addRow(['Referensi: Permen PUPR']);
+    }
+    ws.addRow([]);
+    
+    // Style headers
+    for (let i = 1; i <= 6; i++) {
+      ws.getRow(i).font = { bold: true };
+    }
+    ws.getRow(8).font = { bold: true, size: 14 };
+  };
+
+  // Helper to apply borders
+  const applyBorders = (row: ExcelJS.Row, colCount: number) => {
+    for (let i = 1; i <= colCount; i++) {
+      row.getCell(i).border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
+      };
+    }
+  };
+
+  // ===============================
   // SHEET 1: REKAPITULASI
-  const rekapData: any[][] = [
-    ...kopSurat,
-    ['REKAPITULASI RENCANA ANGGARAN BIAYA (RAB)'], ['Format Standar Dinas Pekerjaan Umum (PU)'], [''],
-    ['Nama Proyek', ':', project.name || '-', '', 'No. Dokumen', ':', projectNo],
-    ['Lokasi', ':', getCityDisplayName(project.location || '-'), '', 'Tanggal', ':', today],
-    ['Status', ':', project.status || 'draft', '', 'Disetujui', ':', approvedBy],
-    [''],
-    ['No', 'Uraian Pekerjaan', 'Jumlah Harga (Rp)']
-  ];
+  // ===============================
+  const wsRekap = wb.addWorksheet('1. Rekapitulasi');
+  addHeader(wsRekap, 'REKAPITULASI RENCANA ANGGARAN BIAYA (RAB)');
+  
+  wsRekap.addRow(['Nama Proyek', ':', project.name || '-', '', 'No. Dokumen', ':', projectNo]);
+  wsRekap.addRow(['Lokasi', ':', getCityDisplayName(project.location || '-'), '', 'Tanggal', ':', today]);
+  wsRekap.addRow(['Status', ':', project.status || 'draft', '', 'Disetujui', ':', approvedBy]);
+  wsRekap.addRow([]);
+
+  const rekapHeader = wsRekap.addRow(['No', 'Uraian Pekerjaan', 'Jumlah Harga (Rp)']);
+  rekapHeader.font = { bold: true };
+  applyBorders(rekapHeader, 3);
 
   grouped.forEach((g, idx) => {
-    rekapData.push([idx + 1, g.kategori.toUpperCase(), g.subtotal]);
+    const row = wsRekap.addRow([idx + 1, g.kategori.toUpperCase(), g.subtotal]);
+    row.getCell(3).numFmt = '"Rp"#,##0';
+    applyBorders(row, 3);
   });
   
-  rekapData.push(['']);
-  rekapData.push(['', 'A. JUMLAH HARGA PEKERJAAN (SUBTOTAL)', summary.subtotal]);
-  rekapData.push(['', `B. OVERHEAD (${financials.overhead}%)`, summary.overheadAmount]);
-  rekapData.push(['', `C. PROFIT (${financials.profit}%)`, summary.profitAmount]);
-  if (financials.contingency > 0) rekapData.push(['', `D. BIAYA TAK TERDUGA (${financials.contingency}%)`, summary.contingencyAmount]);
-  rekapData.push(['', `E. PPN (${financials.tax}%)`, summary.taxAmount]);
-  rekapData.push(['', 'F. TOTAL HARGA (A+B+C+D+E)', summary.grandTotal]);
-  rekapData.push(['', 'DIBULATKAN', Math.floor(summary.grandTotal / 1000) * 1000]);
+  wsRekap.addRow([]);
+  
+  const addSummaryRow = (label: string, val: number, bold = false) => {
+    const row = wsRekap.addRow(['', label, val]);
+    row.getCell(3).numFmt = '"Rp"#,##0';
+    if (bold) row.font = { bold: true };
+    applyBorders(row, 3);
+  };
 
-  const wsRekap = utils.aoa_to_sheet(rekapData);
-  wsRekap['!cols'] = [{ wch: 5 }, { wch: 45 }, { wch: 20 }];
-  utils.book_append_sheet(wb, wsRekap, '1. Rekapitulasi');
+  addSummaryRow('A. JUMLAH HARGA PEKERJAAN (SUBTOTAL)', summary.subtotal, true);
+  addSummaryRow(`B. OVERHEAD (${financials.overhead}%)`, summary.overheadAmount);
+  addSummaryRow(`C. PROFIT (${financials.profit}%)`, summary.profitAmount);
+  if (financials.contingency > 0) {
+    addSummaryRow(`D. BIAYA TAK TERDUGA (${financials.contingency}%)`, summary.contingencyAmount);
+  }
+  addSummaryRow(`E. PPN (${financials.tax}%)`, summary.taxAmount);
+  addSummaryRow('F. TOTAL HARGA (A+B+C+D+E)', summary.grandTotal, true);
+  addSummaryRow('DIBULATKAN', Math.floor(summary.grandTotal / 1000) * 1000, true);
 
-  // SHEET 2: DAFTAR KUANTITAS DAN HARGA (BoQ)
-  const boqData: any[][] = [
-    ...kopSurat,
-    ['DAFTAR KUANTITAS DAN HARGA'], [''],
-    ['No', 'Uraian Pekerjaan', 'Satuan', 'Volume', 'Harga Satuan (Rp)', 'Jumlah Harga (Rp)']
+  wsRekap.columns = [
+    { width: 10 },
+    { width: 50 },
+    { width: 25 },
+    { width: 5 },
+    { width: 15 },
+    { width: 5 },
+    { width: 20 },
   ];
+
+  // ===============================
+  // SHEET 2: DAFTAR KUANTITAS (BoQ)
+  // ===============================
+  const wsBoQ = wb.addWorksheet('2. Daftar Kuantitas');
+  addHeader(wsBoQ, 'DAFTAR KUANTITAS DAN HARGA');
+  wsBoQ.addRow(['Nama Proyek', ':', project.name || '-', '', 'No. Dokumen', ':', projectNo]);
+  wsBoQ.addRow(['Lokasi', ':', getCityDisplayName(project.location || '-'), '', 'Tanggal', ':', today]);
+  wsBoQ.addRow([]);
+
+  const boqHeader = wsBoQ.addRow(['No', 'Uraian Pekerjaan', 'Satuan', 'Volume', 'Harga Satuan (Rp)', 'Jumlah Harga (Rp)']);
+  boqHeader.font = { bold: true };
+  applyBorders(boqHeader, 6);
 
   let itemNo = 1;
   grouped.forEach(g => {
-    boqData.push([g.kategori.toUpperCase(), '', '', '', '', g.subtotal]);
+    const catRow = wsBoQ.addRow([g.kategori.toUpperCase(), '', '', '', '', g.subtotal]);
+    catRow.font = { bold: true };
+    catRow.getCell(6).numFmt = '"Rp"#,##0';
+    applyBorders(catRow, 6);
+    
     g.items.forEach(item => {
-      boqData.push([itemNo++, item.name, item.unit, Number(item.volume.toFixed(3)), item.unitPrice, item.total]);
+      const row = wsBoQ.addRow([itemNo++, item.name, item.unit, Number(item.volume.toFixed(3)), item.unitPrice, item.total]);
+      row.getCell(5).numFmt = '"Rp"#,##0';
+      row.getCell(6).numFmt = '"Rp"#,##0';
+      applyBorders(row, 6);
     });
-    boqData.push(['']);
+    
+    const subRow = wsBoQ.addRow(['', `SUBTOTAL ${g.kategori.toUpperCase()}`, '', '', '', g.subtotal]);
+    subRow.font = { bold: true, italic: true };
+    subRow.getCell(6).numFmt = '"Rp"#,##0';
+    applyBorders(subRow, 6);
+    wsBoQ.addRow([]);
   });
 
-  const wsBoQ = utils.aoa_to_sheet(boqData);
-  wsBoQ['!cols'] = [{ wch: 5 }, { wch: 45 }, { wch: 10 }, { wch: 12 }, { wch: 18 }, { wch: 20 }];
-  utils.book_append_sheet(wb, wsBoQ, '2. Daftar Kuantitas');
-
-  // SHEET 3: ANALISA HARGA SATUAN (Detail AHSP)
-  // Simplified detail representation to avoid massive code logic here
-  // Real PU AHS requires deep fetching of ahsp templates, for now we list the prices per item
-  const ahspData: any[][] = [
-    ...kopSurat,
-    ['ANALISA HARGA SATUAN PEKERJAAN (AHSP)'], ['Referensi: Permen PUPR'], [''],
-    ['No', 'Item Pekerjaan / Komponen', 'Satuan', 'Koefisien', 'Harga Satuan (Rp)', 'Jumlah Harga (Rp)']
+  wsBoQ.columns = [
+    { width: 8 },
+    { width: 50 },
+    { width: 12 },
+    { width: 15 },
+    { width: 25 },
+    { width: 25 },
   ];
+
+  // ===============================
+  // SHEET 3: AHSP (Detailed)
+  // ===============================
+  const wsAhsp = wb.addWorksheet('3. AHSP');
+  addHeader(wsAhsp, 'ANALISA HARGA SATUAN PEKERJAAN (AHSP)');
+  
+  wsAhsp.columns = [
+    { width: 8 },
+    { width: 60 },
+    { width: 15 },
+    { width: 15 },
+    { width: 25 },
+    { width: 25 },
+  ];
+
   itemNo = 1;
   grouped.forEach(g => {
     g.items.forEach(item => {
-      ahspData.push([itemNo++, `Analisa: ${item.name}`, '1.00', item.unit, item.unitPrice, item.unitPrice]);
-      ahspData.push(['', 'Catatan: Rincian komponen material, upah, & alat tersedia di database Sivilize Hub', '', '', '', '']);
-      ahspData.push(['']);
+      // Header item
+      const headerRow = wsAhsp.addRow([itemNo++, `Analisa: ${item.name}`, '1.00', item.unit, '', item.unitPrice]);
+      headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+      headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF34495E' } };
+      headerRow.getCell(6).numFmt = '"Rp"#,##0';
+      applyBorders(headerRow, 6);
+
+      // Sub-header columns
+      const subHeader = wsAhsp.addRow(['', 'Komponen', 'Satuan', 'Koefisien', 'Harga Satuan (Rp)', 'Total (Rp)']);
+      subHeader.font = { bold: true, italic: true };
+      applyBorders(subHeader, 6);
+
+      let totalBahan = 0;
+      let totalUpah = 0;
+
+      // Materials
+      if (item.analysis?.materials && item.analysis.materials.length > 0) {
+        wsAhsp.addRow(['', 'A. BAHAN', '', '', '', '']).font = { bold: true };
+        item.analysis.materials.forEach(mat => {
+          const matTotal = mat.coeff * mat.price;
+          totalBahan += matTotal;
+          const r = wsAhsp.addRow(['', mat.name, mat.unit, mat.coeff, mat.price, matTotal]);
+          r.getCell(5).numFmt = '"Rp"#,##0';
+          r.getCell(6).numFmt = '"Rp"#,##0';
+          applyBorders(r, 6);
+        });
+        const subBahan = wsAhsp.addRow(['', 'Jumlah Harga Bahan (A)', '', '', '', totalBahan]);
+        subBahan.font = { bold: true };
+        subBahan.getCell(6).numFmt = '"Rp"#,##0';
+        applyBorders(subBahan, 6);
+      }
+
+      // Labor
+      if (item.analysis?.labor && item.analysis.labor.length > 0) {
+        wsAhsp.addRow(['', 'B. TENAGA KERJA', '', '', '', '']).font = { bold: true };
+        item.analysis.labor.forEach(lab => {
+          const labTotal = lab.coeff * lab.wage;
+          totalUpah += labTotal;
+          const r = wsAhsp.addRow(['', lab.name, lab.unit, lab.coeff, lab.wage, labTotal]);
+          r.getCell(5).numFmt = '"Rp"#,##0';
+          r.getCell(6).numFmt = '"Rp"#,##0';
+          applyBorders(r, 6);
+        });
+        const subUpah = wsAhsp.addRow(['', 'Jumlah Harga Tenaga Kerja (B)', '', '', '', totalUpah]);
+        subUpah.font = { bold: true };
+        subUpah.getCell(6).numFmt = '"Rp"#,##0';
+        applyBorders(subUpah, 6);
+      }
+      
+      const totalAhsp = wsAhsp.addRow(['', 'TOTAL HARGA (A + B)', '', '', '', totalBahan + totalUpah]);
+      totalAhsp.font = { bold: true };
+      totalAhsp.getCell(6).numFmt = '"Rp"#,##0';
+      applyBorders(totalAhsp, 6);
+      
+      wsAhsp.addRow([]);
     });
   });
 
-  const wsAhsp = utils.aoa_to_sheet(ahspData);
-  wsAhsp['!cols'] = [{ wch: 5 }, { wch: 55 }, { wch: 10 }, { wch: 12 }, { wch: 18 }, { wch: 20 }];
-  utils.book_append_sheet(wb, wsAhsp, '3. AHSP');
-
-  writeFile(wb, `RAB_PU_${(project.name || 'Proyek').replace(/\s+/g, '_')}.xlsx`);
+  const buffer = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  saveAs(blob, `RAB_PU_${(project.name || 'Proyek').replace(/\s+/g, '_')}.xlsx`);
 };
 
-export const exportBoQBlank = (
+export const exportBoQBlank = async (
   project: Partial<Project>,
   items: RABItem[],
   options?: ExportOptions
 ) => {
   const grouped = groupAndExportRAB(items);
-  const wb = utils.book_new();
   const company = options?.companyName || 'SIVILIZE HUB PRO';
   const projectNo = options?.projectNo || `SIV-${Date.now().toString().slice(-6)}`;
   const today = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
 
-  const kopSurat = [
-    [company.toUpperCase()],
-    ['Alamat: Jl. Jend. Sudirman Kav. 52-53, Jakarta Selatan'],
-    ['Telp: (021) 1234567 | Email: info@' + company.toLowerCase().replace(/\s+/g, '') + '.com'],
-    ['===================================================================================================='],
-    ['']
-  ];
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet('BoQ Kosong');
 
-  const data: any[][] = [
-    ...kopSurat,
-    ['BILL OF QUANTITIES (BoQ) - BLANK FORM'], ['Dokumen Penawaran Subkon / Vendor'], [''],
-    ['Nama Proyek', ':', project.name || '-', '', 'No. Dokumen', ':', projectNo],
-    ['Lokasi', ':', getCityDisplayName(project.location || '-'), '', 'Tanggal', ':', today],
-    [''],
-    ['No', 'Uraian Pekerjaan', 'Satuan', 'Volume', 'Harga Satuan (Rp)', 'Jumlah Harga (Rp)']
-  ];
+  ws.addRow([company.toUpperCase()]).font = { bold: true, size: 14 };
+  ws.addRow(['Alamat: Jl. Jend. Sudirman Kav. 52-53, Jakarta Selatan']);
+  ws.addRow(['Telp: (021) 1234567 | Email: info@' + company.toLowerCase().replace(/\s+/g, '') + '.com']);
+  ws.addRow(['====================================================================================================']);
+  ws.addRow([]);
+  ws.addRow(['BILL OF QUANTITIES (BoQ) - BLANK FORM']).font = { bold: true, size: 14 };
+  ws.addRow(['Dokumen Penawaran Subkon / Vendor']);
+  ws.addRow([]);
+  
+  ws.addRow(['Nama Proyek', ':', project.name || '-', '', 'No. Dokumen', ':', projectNo]);
+  ws.addRow(['Lokasi', ':', getCityDisplayName(project.location || '-'), '', 'Tanggal', ':', today]);
+  ws.addRow([]);
+
+  const applyBorders = (row: ExcelJS.Row, colCount: number) => {
+    for (let i = 1; i <= colCount; i++) {
+      row.getCell(i).border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+    }
+  };
+
+  const boqHeader = ws.addRow(['No', 'Uraian Pekerjaan', 'Satuan', 'Volume', 'Harga Satuan (Rp)', 'Jumlah Harga (Rp)']);
+  boqHeader.font = { bold: true };
+  applyBorders(boqHeader, 6);
 
   let itemNo = 1;
   grouped.forEach(g => {
-    data.push([g.kategori.toUpperCase(), '', '', '', '', '']);
+    const catRow = ws.addRow([g.kategori.toUpperCase(), '', '', '', '', '']);
+    catRow.font = { bold: true };
+    applyBorders(catRow, 6);
+    
     g.items.forEach(item => {
-      data.push([itemNo++, item.name, item.unit, Number(item.volume.toFixed(3)), '', '']);
+      const row = ws.addRow([itemNo++, item.name, item.unit, Number(item.volume.toFixed(3)), '', '']);
+      applyBorders(row, 6);
     });
-    data.push(['', `SUBTOTAL ${g.kategori.toUpperCase()}`, '', '', '', '']);
-    data.push(['']);
+    
+    const subRow = ws.addRow(['', `SUBTOTAL ${g.kategori.toUpperCase()}`, '', '', '', '']);
+    subRow.font = { bold: true, italic: true };
+    applyBorders(subRow, 6);
+    ws.addRow([]);
   });
 
-  const ws = utils.aoa_to_sheet(data);
-  ws['!cols'] = [{ wch: 5 }, { wch: 45 }, { wch: 10 }, { wch: 12 }, { wch: 20 }, { wch: 20 }];
-  utils.book_append_sheet(wb, ws, 'BoQ Kosong');
-  writeFile(wb, `BoQ_Kosong_${(project.name || 'Proyek').replace(/\s+/g, '_')}.xlsx`);
+  ws.columns = [
+    { width: 8 },
+    { width: 50 },
+    { width: 12 },
+    { width: 15 },
+    { width: 25 },
+    { width: 25 },
+  ];
+
+  const buffer = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  saveAs(blob, `BoQ_Kosong_${(project.name || 'Proyek').replace(/\s+/g, '_')}.xlsx`);
 };
 
 // ============================================================
@@ -449,20 +604,52 @@ export const exportLaborToPDF = (payments: LaborPayment[], options: { projectNam
   doc.save(`Upah_${options.projectName.replace(/\s+/g, '_')}.pdf`);
 };
 
-export const exportLaborToExcel = (payments: LaborPayment[], options: { projectName: string; companyName?: string }) => {
-  const wb = utils.book_new();
-  const data: any[][] = [['DAFTAR UPAH TENAGA KERJA'], [`Proyek: ${options.projectName}`], ['']];
-  data.push(['Minggu', 'Nama', 'Jabatan', 'Hari Kerja', 'Upah/Hari', 'Total']);
+export const exportLaborToExcel = async (payments: LaborPayment[], options: { projectName: string; companyName?: string }) => {
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet('Upah Tenaga Kerja');
+  
+  ws.addRow(['DAFTAR UPAH TENAGA KERJA']).font = { bold: true, size: 14 };
+  ws.addRow([`Proyek: ${options.projectName}`]);
+  ws.addRow([]);
+
+  const header = ws.addRow(['Minggu', 'Nama', 'Jabatan', 'Hari Kerja', 'Upah/Hari', 'Total']);
+  header.font = { bold: true };
+  for (let i = 1; i <= 6; i++) {
+    header.getCell(i).border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+  }
 
   payments.forEach(p => {
     const week = `${new Date(p.weekStart).toLocaleDateString()} - ${new Date(p.weekEnd).toLocaleDateString()}`;
-    p.workers.forEach(w => data.push([week, w.name, w.role, w.days, toRp(w.dailyWage), toRp(w.total)]));
-    data.push(['', '', '', '', 'SUBTOTAL', toRp(p.totalAmount)], ['']);
+    p.workers.forEach(w => {
+      const row = ws.addRow([week, w.name, w.role, w.days, w.dailyWage, w.total]);
+      row.getCell(5).numFmt = '"Rp"#,##0';
+      row.getCell(6).numFmt = '"Rp"#,##0';
+      for (let i = 1; i <= 6; i++) {
+        row.getCell(i).border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+      }
+    });
+    
+    const sub = ws.addRow(['', '', '', '', 'SUBTOTAL', p.totalAmount]);
+    sub.font = { bold: true };
+    sub.getCell(6).numFmt = '"Rp"#,##0';
+    for (let i = 1; i <= 6; i++) {
+      sub.getCell(i).border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+    }
+    ws.addRow([]);
   });
 
-  const ws = utils.aoa_to_sheet(data);
-  utils.book_append_sheet(wb, ws, 'Upah Tenaga Kerja');
-  writeFile(wb, `Upah_${options.projectName.replace(/\s+/g, '_')}.xlsx`);
+  ws.columns = [
+    { width: 25 },
+    { width: 30 },
+    { width: 20 },
+    { width: 15 },
+    { width: 20 },
+    { width: 20 },
+  ];
+
+  const buffer = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  saveAs(blob, `Upah_${options.projectName.replace(/\s+/g, '_')}.xlsx`);
 };
 
-// Build trigger: 2026-05-14T22:40:22.689Z
+// Build trigger
