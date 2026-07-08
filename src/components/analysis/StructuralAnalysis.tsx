@@ -14,9 +14,11 @@ const StructuralAnalysis = () => {
     seismicZone: '1'
   });
 
+  const isInfrastructure = params.buildingFunction === 'jembatan' || params.buildingFunction === 'bendungan';
+
   const calculation = useMemo(() => {
     // Dead Load (Beban Mati) - kg/m2
-    const wallLoad = params.wallType === 'bata-merah' ? 250 : 120;
+    const wallLoad = isInfrastructure ? 0 : (params.wallType === 'bata-merah' ? 250 : 120);
     const roofLoadMap: Record<string, number> = {
       '1-air': 35,
       '2-air': 45,
@@ -26,7 +28,7 @@ const StructuralAnalysis = () => {
       genteng: 50,
       spandek: 20,
     };
-    const roofLoad = roofLoadMap[params.roofType] || 45;
+    const roofLoad = isInfrastructure ? 0 : (roofLoadMap[params.roofType] || 45);
     const concreteLoad = 2400 * 0.12; // 12cm slab estimate
     const deadLoad = wallLoad + roofLoad + concreteLoad;
 
@@ -136,32 +138,36 @@ const StructuralAnalysis = () => {
                 </select>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-xs text-text-secondary uppercase font-bold tracking-widest">Jenis Dinding</label>
-                <select 
-                  value={params.wallType}
-                  onChange={(e) => setParams({...params, wallType: e.target.value})}
-                  className="w-full h-11 bg-background border border-border rounded-xl px-4 text-white focus:border-primary outline-none appearance-none transition-all"
-                >
-                  <option value="bata-merah">Bata Merah (250 kg/m²)</option>
-                  <option value="hebel">Bata Ringan/Hebel (120 kg/m²)</option>
-                </select>
-              </div>
+              {!isInfrastructure && (
+                <>
+                  <div className="space-y-2">
+                    <label className="text-xs text-text-secondary uppercase font-bold tracking-widest">Jenis Dinding</label>
+                    <select 
+                      value={params.wallType}
+                      onChange={(e) => setParams({...params, wallType: e.target.value})}
+                      className="w-full h-11 bg-background border border-border rounded-xl px-4 text-white focus:border-primary outline-none appearance-none transition-all"
+                    >
+                      <option value="bata-merah">Bata Merah (250 kg/m²)</option>
+                      <option value="hebel">Bata Ringan/Hebel (120 kg/m²)</option>
+                    </select>
+                  </div>
 
-              <div className="space-y-2">
-                <label className="text-xs text-text-secondary uppercase font-bold tracking-widest">Jenis Penutup Atap</label>
-                <select 
-                  value={params.roofType}
-                  onChange={(e) => setParams({...params, roofType: e.target.value})}
-                  className="w-full h-11 bg-background border border-border rounded-xl px-4 text-white focus:border-primary outline-none appearance-none transition-all"
-                >
-                  <option value="1-air">Atap 1 Air</option>
-                  <option value="2-air">Atap 2 Air</option>
-                  <option value="3-air">Atap 3 Air</option>
-                  <option value="4-air">Atap 4 Air</option>
-                  <option value="dak">Atap Dak Beton</option>
-                </select>
-              </div>
+                  <div className="space-y-2">
+                    <label className="text-xs text-text-secondary uppercase font-bold tracking-widest">Jenis Penutup Atap</label>
+                    <select 
+                      value={params.roofType}
+                      onChange={(e) => setParams({...params, roofType: e.target.value})}
+                      className="w-full h-11 bg-background border border-border rounded-xl px-4 text-white focus:border-primary outline-none appearance-none transition-all"
+                    >
+                      <option value="1-air">Atap 1 Air</option>
+                      <option value="2-air">Atap 2 Air</option>
+                      <option value="3-air">Atap 3 Air</option>
+                      <option value="4-air">Atap 4 Air</option>
+                      <option value="dak">Atap Dak Beton</option>
+                    </select>
+                  </div>
+                </>
+              )}
 
               <div className="space-y-2">
                 <label className="text-xs text-text-secondary uppercase font-bold tracking-widest">Kecepatan Angin (m/s)</label>
