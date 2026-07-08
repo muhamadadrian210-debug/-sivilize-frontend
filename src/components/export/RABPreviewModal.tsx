@@ -41,7 +41,7 @@ const RABPreviewModal = ({ isOpen, onClose, project, items, financials, grade }:
     try {
       const saved = localStorage.getItem(EXPORT_CONFIG_STORAGE_KEY);
       if (saved) {
-        const parsed = JSON.parse(saved) as Partial<ExportConfig>;
+        const parsed = (JSON.parse(saved) || {}) as Partial<ExportConfig>;
         return {
           companyName: parsed.companyName || DEFAULT_EXPORT_CONFIG.companyName,
           estimatorName: parsed.estimatorName || '',
@@ -171,9 +171,9 @@ const RABPreviewModal = ({ isOpen, onClose, project, items, financials, grade }:
               {Object.entries(categoryTotals)
                 .sort((a, b) => b[1] - a[1])
                 .map(([category, total]) => (
-                  <div key={category} className="flex items-center justify-between py-2 border-b border-border/50">
-                    <span className="text-text-secondary text-sm">{category}</span>
-                    <span className="text-white font-bold text-sm">{formatCurrency(total)}</span>
+                  <div key={category || 'Uncategorized'} className="flex items-center justify-between py-2 border-b border-border/50">
+                    <span className="text-text-secondary text-sm">{category || 'Lain-lain'}</span>
+                    <span className="text-white font-bold text-sm">{formatCurrency(total || 0)}</span>
                   </div>
                 ))}
             </div>

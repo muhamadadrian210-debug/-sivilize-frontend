@@ -5,6 +5,7 @@ import { type RABItem } from '../store/useStore';
  * Return persentase TKDN (0 - 100)
  */
 export const getMaterialTKDN = (materialName: string): number => {
+  if (!materialName) return 75;
   const name = materialName.toLowerCase();
   
   // 1. Material Alam & Lokal 100%
