@@ -94,7 +94,7 @@ const SOIL_TYPES = [
 ] as const;
 
 const FOUNDATION_TYPES = [
-  { id: 'batu-kali',     label: 'Pondasi Batu Kali',    desc: 'Untuk bangunan 1–2 lantai di tanah keras/sedang' },
+  { id: 'batu-kali',     label: 'Pondasi Batu Kali',    desc: 'Untuk struktur beban ringan (1–2 lantai) di tanah keras/sedang' },
   { id: 'footplate',     label: 'Pondasi Footplate',     desc: 'Beton bertulang, cocok untuk tanah sedang–keras' },
   { id: 'strauss-pile',  label: 'Pondasi Strauss Pile',  desc: 'Bor manual, untuk tanah lunak hingga 6m' },
   { id: 'tiang-pancang', label: 'Pondasi Tiang Pancang', desc: 'Untuk tanah sangat lunak/gambut, beban berat' },
@@ -105,14 +105,14 @@ const FOUNDATION_TYPES = [
 // Matriks rekomendasi: soilType → [foundationId, alasan, level]
 const FOUNDATION_RECOMMENDATIONS: Record<string, { id: string; reason: string; level: 'recommended' | 'possible' | 'avoid' }[]> = {
   keras: [
-    { id: 'batu-kali',    reason: 'Paling ekonomis dan efisien untuk tanah keras, cocok 1–2 lantai', level: 'recommended' },
+    { id: 'batu-kali',    reason: 'Paling ekonomis dan efisien untuk tanah keras, beban ringan-menengah', level: 'recommended' },
     { id: 'footplate',    reason: 'Alternatif baik jika beban kolom besar', level: 'possible' },
     { id: 'sumuran',      reason: 'Jika lapisan keras ada di kedalaman tertentu', level: 'possible' },
     { id: 'tiang-pancang',reason: 'Berlebihan untuk tanah keras, tidak efisien biaya', level: 'avoid' },
   ],
   sedang: [
     { id: 'footplate',    reason: 'Distribusi beban merata, cocok untuk tanah sedang', level: 'recommended' },
-    { id: 'batu-kali',    reason: 'Bisa dipakai untuk 1 lantai dengan pengawasan ketat', level: 'possible' },
+    { id: 'batu-kali',    reason: 'Bisa dipakai untuk struktur ringan dengan pengawasan ketat', level: 'possible' },
     { id: 'strauss-pile', reason: 'Jika ada lapisan lunak di bawah', level: 'possible' },
     { id: 'raft',         reason: 'Jika tanah sedang tidak merata', level: 'possible' },
   ],
@@ -820,7 +820,8 @@ const RABCalculator = () => {
               </div>
             </div>
 
-            {/* Jenis Tanah & Rekomendasi Pondasi */}
+            {/* Jenis Tanah & Rekomendasi Pondasi (Hanya untuk bangunan) */}
+            {['rumah', 'sekolah', 'rumah_sakit'].includes(projectData.type) && (
             <div className="border-t border-border pt-6">
               <h4 className="text-sm font-bold text-text-secondary uppercase tracking-widest mb-4 flex items-center gap-2">
                 <Lightbulb size={14} className="text-primary" />
@@ -878,11 +879,11 @@ const RABCalculator = () => {
                           >
                             <div className="flex items-center justify-between mb-1">
                               <p className="font-bold text-sm text-white">{found.label}</p>
-                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${LEVEL_STYLE[rec.level]}`}>
-                                {LEVEL_LABEL[rec.level]}
-                              </span>
+                              {rec.level === 'recommended' && <span className="text-[10px] bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full flex items-center gap-1"><CheckCircle2 size={10} /> Direkomendasikan</span>}
+                              {rec.level === 'possible' && <span className="text-[10px] bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full flex items-center gap-1"><Minus size={10} /> Bisa Dipakai</span>}
+                              {rec.level === 'avoid' && <span className="text-[10px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full flex items-center gap-1"><X size={10} /> Hindari</span>}
                             </div>
-                            <p className="text-[11px] text-text-secondary">{rec.reason}</p>
+                            <p className="text-xs text-text-secondary">{found.desc}</p>
                           </button>
                         );
                       })}
@@ -891,11 +892,13 @@ const RABCalculator = () => {
                 </div>
               </div>
 
-              {/* Summary pilihan */}
-              {projectData.soilType && projectData.foundationType && (() => {
+              {/* Visual Feedback Pilihan Pondasi */}
+              {(() => {
+                if (!projectData.soilType || !projectData.foundationType) return null;
                 const soil = SOIL_TYPES.find(s => s.id === projectData.soilType);
                 const found = FOUNDATION_TYPES.find(f => f.id === projectData.foundationType);
-                const rec = FOUNDATION_RECOMMENDATIONS[projectData.soilType!]?.find(r => r.id === projectData.foundationType);
+                const rec = FOUNDATION_RECOMMENDATIONS[projectData.soilType]?.find(r => r.id === projectData.foundationType);
+                
                 return (
                   <div className="mt-4 p-4 bg-green-500/10 border border-green-500/20 rounded-xl flex items-start gap-3">
                     <CheckCircle2 size={18} className="text-green-400 shrink-0 mt-0.5" />
