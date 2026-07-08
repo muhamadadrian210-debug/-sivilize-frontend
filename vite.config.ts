@@ -19,7 +19,7 @@ export default defineConfig({
             if (id.includes('react') || id.includes('react-dom')) {
               return 'vendor';
             }
-            if (id.includes('xlsx') || id.includes('jspdf') || id.includes('html2canvas')) {
+            if (id.includes('exceljs') || id.includes('jspdf') || id.includes('html2canvas')) {
               return 'utils';
             }
             return 'vendor';
@@ -30,7 +30,7 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'xlsx', 'jspdf', 'html2canvas']
+    include: ['react', 'react-dom', 'exceljs', 'jspdf', 'jspdf-autotable', 'html2canvas']
   },
   server: {
     host: true,
