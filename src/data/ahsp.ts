@@ -1735,6 +1735,24 @@ const AHSP_SPECIALIZED: AHSPTemplate[] = [
     laborCoefficients: [{ name: 'Pekerja', coeff: 0.2, unit: 'OH' }, { name: 'Tukang Aspal', coeff: 0.1, unit: 'OH' }, { name: 'Mandor', coeff: 0.01, unit: 'OH' }],
     tags: ['Infrastruktur Jembatan']
   },
+  {
+    id: 'jbt-004', category: 'Tanah & Pondasi', name: 'Pemancangan Tiang Pancang Beton (Spun Pile) Dia. 50cm', unit: 'm', desc: 'Pondasi dalam untuk jembatan.',
+    materials: [{ name: 'Tiang Pancang Beton Dia. 50cm', coeff: 1.05, unit: 'm' }, { name: 'Solar', coeff: 1.5, unit: 'liter' }],
+    laborCoefficients: [{ name: 'Pekerja', coeff: 0.2, unit: 'OH' }, { name: 'Tukang Pancang', coeff: 0.1, unit: 'OH' }, { name: 'Mandor', coeff: 0.05, unit: 'OH' }],
+    tags: ['Infrastruktur Jembatan']
+  },
+  {
+    id: 'jbt-005', category: 'Struktur', name: 'Pengecoran Beton K-350 (Pier & Abutment)', unit: 'm3', desc: 'Beton kekuatan tinggi untuk pilar jembatan.',
+    materials: [{ name: 'Semen Portland', coeff: 400, unit: 'kg' }, { name: 'Pasir Beton', coeff: 700, unit: 'kg' }, { name: 'Batu Pecah / Split', coeff: 1050, unit: 'kg' }, { name: 'Sewa Concrete Pump', coeff: 0.05, unit: 'jam' }],
+    laborCoefficients: [{ name: 'Pekerja', coeff: 1.2, unit: 'OH' }, { name: 'Tukang Batu', coeff: 0.2, unit: 'OH' }, { name: 'Mandor', coeff: 0.1, unit: 'OH' }],
+    tags: ['Infrastruktur Jembatan']
+  },
+  {
+    id: 'jbt-006', category: 'Struktur', name: 'Pembesian Baja Tulangan Ulir D16-D32 (Jembatan)', unit: 'kg', desc: 'Besi tulangan struktur utama jembatan.',
+    materials: [{ name: 'Besi Beton Ulir', coeff: 1.05, unit: 'kg' }, { name: 'Kawat Beton', coeff: 0.015, unit: 'kg' }],
+    laborCoefficients: [{ name: 'Pekerja', coeff: 0.007, unit: 'OH' }, { name: 'Tukang Besi', coeff: 0.007, unit: 'OH' }, { name: 'Mandor', coeff: 0.0004, unit: 'OH' }],
+    tags: ['Infrastruktur Jembatan']
+  },
 
   // --- BENDUNGAN ---
   {
@@ -1753,6 +1771,18 @@ const AHSP_SPECIALIZED: AHSPTemplate[] = [
     id: 'bdg-003', category: 'Lain-lain', name: 'Pemasangan Pintu Air Baja (Sluice Gate)', unit: 'ton', desc: 'Pintu pengatur debit air raksasa.',
     materials: [{ name: 'Pintu Air Baja Pabrikasi', coeff: 1.05, unit: 'ton' }, { name: 'Karet Seal Waterstop', coeff: 5, unit: 'm' }],
     laborCoefficients: [{ name: 'Pekerja', coeff: 1, unit: 'OH' }, { name: 'Tukang Besi', coeff: 1.5, unit: 'OH' }, { name: 'Mandor', coeff: 0.1, unit: 'OH' }],
+    tags: ['Infrastruktur Bendungan']
+  },
+  {
+    id: 'bdg-004', category: 'Tanah & Pondasi', name: 'Timbunan Tanah Inti (Impervious Core) Bendungan', unit: 'm3', desc: 'Tanah kedap air untuk mencegah kebocoran bendungan.',
+    materials: [{ name: 'Tanah Lempung Pilihan', coeff: 1.2, unit: 'm3' }, { name: 'Sewa Sheep Foot Roller', coeff: 0.1, unit: 'jam' }],
+    laborCoefficients: [{ name: 'Pekerja', coeff: 0.3, unit: 'OH' }, { name: 'Mandor', coeff: 0.05, unit: 'OH' }],
+    tags: ['Infrastruktur Bendungan']
+  },
+  {
+    id: 'bdg-005', category: 'Struktur', name: 'Pengecoran Beton K-300 (Spillway/Pelimpah)', unit: 'm3', desc: 'Beton tahan erosi air untuk saluran pelimpah.',
+    materials: [{ name: 'Semen Portland', coeff: 380, unit: 'kg' }, { name: 'Pasir Beton', coeff: 720, unit: 'kg' }, { name: 'Batu Pecah / Split', coeff: 1050, unit: 'kg' }],
+    laborCoefficients: [{ name: 'Pekerja', coeff: 1.5, unit: 'OH' }, { name: 'Tukang Batu', coeff: 0.25, unit: 'OH' }, { name: 'Mandor', coeff: 0.1, unit: 'OH' }],
     tags: ['Infrastruktur Bendungan']
   }
 ];

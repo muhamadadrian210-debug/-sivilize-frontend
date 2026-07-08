@@ -267,7 +267,22 @@ interface AppState {
 export const useStore = create<AppState>()(
   persist(
     (set, get) => ({
-      projects: [],
+      projects: [
+        {
+          id: `proj_default_${Date.now()}`,
+          name: 'Proyek Percontohan (Standar SNI & AHSP Juli 2026)',
+          location: 'jakarta-1',
+          type: 'rumah',
+          status: 'draft',
+          materialGrade: 'B',
+          floors: 1,
+          dimensions: [{ length: 15, width: 10, height: 4 }],
+          versions: [],
+          dailyLogs: [],
+          costRealizations: [],
+          laborPayments: []
+        }
+      ],
       activeProjectId: null,
       activeVersionId: null,
       userRole: 'admin',

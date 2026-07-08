@@ -70,7 +70,7 @@ export const calculateProjectTKDN = (rabItems: RABItem[]) => {
     const { materials, labor } = item.analysis;
 
     // Hitung komponen material (Domestic vs Total)
-    materials.forEach(mat => {
+    materials?.forEach(mat => {
       const matTotalCost = mat.price * mat.coeff * item.volume;
       const tkdnPercent = getMaterialTKDN(mat.name) / 100;
       
@@ -79,7 +79,7 @@ export const calculateProjectTKDN = (rabItems: RABItem[]) => {
     });
 
     // Hitung komponen upah tenaga kerja (Selalu 100% lokal karena menggunakan tenaga kerja dalam negeri)
-    labor.forEach(lab => {
+    labor?.forEach(lab => {
       const labTotalCost = lab.wage * lab.coeff * item.volume;
       totalProjectValue += labTotalCost;
       totalDomesticValue += labTotalCost; // 100% TKDN
