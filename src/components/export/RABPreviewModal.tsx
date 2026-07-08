@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { X, FileDown, FileText, Building2, User, Hash, MessageCircle } from 'lucide-react';
 import { type Project, type RABItem, type FinancialSettings } from '../../store/useStore';
 import { calculateTotalRAB } from '../../utils/calculations';
 import { exportToPDF, exportToExcel, exportBoQBlank } from '../../utils/exportUtils';
 import { generateWAText, openWhatsApp } from '../../utils/whatsappShare';
 import { formatCurrency } from '../../utils/calculations';
+import { calculateProjectTKDN } from '../../utils/tkdnUtils';
 import { type MaterialGrade } from '../../data/prices';
 import { useToast } from '../common/Toast';
 
@@ -58,10 +59,14 @@ const RABPreviewModal = ({ isOpen, onClose, project, items, financials, grade }:
   const summary = calculateTotalRAB(items, financials);
 
   // Hitung subtotal per kategori
-  const categoryTotals = items.reduce((acc, item) => {
-    acc[item.category] = (acc[item.category] || 0) + item.total;
-    return acc;
-  }, {} as Record<string, number>);
+  const categoryTotals = useMemo<Record<string, number>>(() => {
+    return items.reduce((acc, item) => {
+      acc[item.category] = (acc[item.category] || 0) + item.total;
+      return acc;
+    }, {} as Record<string, number>);
+  }, [items]);
+
+  const tkdn = useMemo(() => calculateProjectTKDN(items), [items]);
 
   const saveConfigAndExport = (exportFn: () => void) => {
     setIsExporting(true);
@@ -171,6 +176,21 @@ const RABPreviewModal = ({ isOpen, onClose, project, items, financials, grade }:
                     <span className="text-white font-bold text-sm">{formatCurrency(total)}</span>
                   </div>
                 ))}
+            </div>
+          </div>
+
+          {/* Sertifikat TKDN */}
+          <div className="space-y-3">
+            <p className="text-text-secondary text-xs font-bold uppercase tracking-widest">Tingkat Komponen Dalam Negeri (TKDN)</p>
+            <div className={`p-4 rounded-xl border ${tkdn.overallTKDN >= 80 ? 'bg-green-500/10 border-green-500/20 text-green-400' : 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400'}`}>
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-bold">Estimasi Nilai TKDN</span>
+                <span className="text-2xl font-black">{tkdn.overallTKDN.toFixed(1)}%</span>
+              </div>
+              <div className="flex justify-between text-xs mt-2 pt-2 border-t border-white/10">
+                <span className="opacity-80">Nilai Komponen Lokal</span>
+                <span className="font-bold">{formatCurrency(tkdn.totalDomesticValue)}</span>
+              </div>
             </div>
           </div>
 

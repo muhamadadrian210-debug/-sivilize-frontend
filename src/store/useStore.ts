@@ -101,6 +101,11 @@ export interface Project {
   bathroomCount?: number;
   doorCount?: number;
   windowCount?: number;
+  // Spesifik Infrastruktur
+  bridgePillarCount?: number;
+  bridgeSpanLength?: number;
+  waterGateCount?: number;
+  damCapacity?: number;
   // Ukuran rata-rata bukaan untuk pengurangan luas dinding
   doorWidth?: number;   // meter, default 0.9
   doorHeight?: number;  // meter, default 2.1

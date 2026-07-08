@@ -3,6 +3,7 @@ import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { type RABItem, type FinancialSettings, type Project, type LaborPayment } from '../store/useStore';
 import { calculateTotalRAB, getGroupedRABItems } from './calculations';
+import { calculateProjectTKDN } from './tkdnUtils';
 import { getCityDisplayName, type MaterialGrade } from '../data/prices';
 import { type KurvaSChartPoint } from './kurvaSUtils';
 
@@ -140,9 +141,21 @@ export const exportToPDF = (
       y = (doc as any).lastAutoTable.finalY + 4;
     });
 
-    // SUMMARY
-    if (y > 230) { doc.addPage(); y = 20; }
+    // TKDN & SUMMARY
+    const tkdn = calculateProjectTKDN(items);
+    
+    if (y > 220) { doc.addPage(); y = 20; }
     y += 4;
+    
+    // TKDN Box
+    doc.setDrawColor(200, 200, 200); doc.rect(margin, y, 70, 25, 'S');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(30, 30, 30);
+    safeText('TINGKAT KOMPONEN DALAM NEGERI', margin + 3, y + 5);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5);
+    safeText(`Total Nilai Lokal: ${toRp(tkdn.totalDomesticValue)}`, margin + 3, y + 12);
+    doc.setFont('helvetica', 'bold'); doc.setTextColor(0, 150, 0); doc.setFontSize(10);
+    safeText(`Estimasi TKDN: ${tkdn.overallTKDN.toFixed(1)}%`, margin + 3, y + 20);
+
     const summaryX = pageW - margin - 80;
     doc.setDrawColor(200, 200, 200); doc.setLineWidth(0.3);
     doc.line(summaryX, y, pageW - margin, y); y += 4;
