@@ -1,6 +1,6 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import ExcelJS from 'exceljs';
+import ExcelJS from 'exceljs/dist/exceljs.min.js';
 import { saveAs } from 'file-saver';
 import { type RABItem, type FinancialSettings, type Project, type LaborPayment } from '../store/useStore';
 import { calculateTotalRAB, getGroupedRABItems } from './calculations';
