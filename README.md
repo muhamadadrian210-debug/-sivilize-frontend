@@ -6,69 +6,291 @@
 
 ---
 
-## 📋 Tentang Sivilize Hub Pro
+## 📋 Tentang Project
 
-**Sivilize Hub Pro** adalah platform manajemen konstruksi komprehensif dan cerdas yang dirancang khusus untuk memodernisasi cara kontraktor, konsultan, dan insinyur teknik sipil dalam merencanakan, menghitung, dan memantau proyek. Kami mendigitalisasi perhitungan Rencana Anggaran Biaya (RAB) berdasarkan standar AHSP/SNI Indonesia dan menggabungkannya dengan fitur kecerdasan buatan (AI) serta manajemen proyek end-to-end.
-
----
-
-## 🎯 Visi & Misi
-
-**Visi Kami**
-Menjadi pusat peradaban digital bagi industri konstruksi Indonesia, di mana setiap proyek infrastruktur, mulai dari perumahan hingga bendungan skala besar, dapat direncanakan secara presisi, transparan, dan efisien tanpa batas waktu dan ruang.
-
-**Misi Kami**
-1. **Mengakselerasi Digitalisasi**: Membawa proses perhitungan dan manajemen sipil tradisional ke ranah cloud yang modern dan dapat diakses dari mana saja.
-2. **Meningkatkan Akurasi & Standarisasi**: Memastikan setiap perhitungan mengacu pada standar nasional (SNI/AHSP) yang ter-update dan valid.
-3. **Mengintegrasikan Kecerdasan Buatan (AI)**: Memanfaatkan teknologi masa depan (AI Vision) untuk membantu otomasi estimasi dari gambar teknis/denah kasar.
-4. **Memberdayakan Profesional Sipil**: Memberikan alat (tools) all-in-one yang menghemat waktu perencanaan dari hitungan minggu menjadi hitungan menit.
+Sivilize Hub Pro adalah aplikasi web fullstack untuk kalkulasi **Rencana Anggaran Biaya (RAB)** konstruksi yang mengacu pada standar **AHSP/SNI Indonesia**. Dirancang untuk kontraktor, konsultan, dan mahasiswa teknik sipil yang membutuhkan perhitungan biaya konstruksi yang akurat, cepat, dan profesional.
 
 ---
 
-## 🌍 Latar Belakang
+## ✨ Fitur Utama
 
-Industri konstruksi di Indonesia masih banyak yang beroperasi menggunakan metode tradisional—spreadsheets manual yang rentan terhadap human error, data harga material yang tidak terpusat, serta kesulitan dalam melacak realisasi biaya vs anggaran yang telah ditetapkan. Selain itu, perhitungan struktur dasar untuk berbagai jenis bangunan seringkali tersebar di banyak dokumen fisik.
+### 🧮 Kalkulator RAB
+- Perhitungan otomatis berdasarkan standar AHSP/SNI
+- 4 kategori pekerjaan: Struktur, Dinding, Lantai, Finishing
+- Subtotal per kategori + Grand Total dengan PPN & Profit
+- Harga material per wilayah Indonesia
 
-Sivilize Hub Pro lahir dari keresahan tersebut. Kami membangun sebuah ekosistem (Hub) yang tidak hanya menghitung biaya, tetapi juga menjadi "Pusat Peradaban" (Sivilize) untuk manajemen konstruksi. Dengan pendekatan modern yang intuitif, aplikasi ini dirancang untuk menjawab tantangan inefisiensi dan minimnya transparansi dalam proyek-proyek konstruksi di lapangan.
+### 📊 Manajemen Proyek
+- Buat, edit, dan kelola multiple proyek
+- Status proyek: Draft, Ongoing, Completed
+- Timeline dan estimasi waktu pengerjaan
+- Kurva S untuk monitoring progress
+
+### 🗄️ Database AHSP
+- Database AHSP/SNI lengkap
+- Custom AHSP editor
+- HSPK Manager per wilayah
+
+### 📤 Export Profesional
+- Export PDF format RAB siap presentasi
+- Export Excel multi-sheet dengan grouped structure
+- Preview sebelum export
+
+### 📅 Buku Harian
+- Log aktivitas harian proyek
+- Tracking progress pekerjaan
+
+### 💰 Laporan Keuangan
+- Realisasi biaya vs anggaran
+- Cost tracker per item pekerjaan
+
+### 🤖 AI Vision
+- Analisis gambar denah otomatis menggunakan Google Gemini AI
+- Estimasi RAB dari foto denah
+
+### 🔐 Autentikasi & Keamanan
+- Register & Login dengan OTP via email
+- JWT Authentication (30 hari)
+- Enkripsi password bcrypt
+- Rate limiting & firewall custom
+- Proteksi NoSQL injection, XSS, HPP
+
+### 👤 Admin Panel
+- Activity log viewer
+- User management
+- Backend status monitoring
 
 ---
 
-## ✨ Fitur Komprehensif
+## 🛠️ Tech Stack
 
-Sivilize Hub Pro dilengkapi dengan serangkaian fitur profesional yang disesuaikan untuk berbagai jenis proyek (Rumah Tinggal, Sekolah/Gedung, Kantor/Perkantoran, Rumah Sakit, Jembatan, dan Bendungan):
+### Frontend
+| Teknologi | Versi | Fungsi |
+|-----------|-------|--------|
+| React | 19 | UI Framework |
+| TypeScript | 5.9 | Bahasa utama |
+| Vite | 8 | Build tool |
+| Tailwind CSS | 4 | Styling |
+| Zustand | 5 | State management |
+| Axios | 1.14 | HTTP client |
+| Framer Motion | 12 | Animasi |
+| Recharts | 3 | Grafik & chart |
+| jsPDF + autoTable | 2.5 / 3.8 | Export PDF |
+| XLSX | 0.18 | Export Excel |
+| Lucide React | 0.475 | Icon library |
+| Firebase | 12 | Auth tambahan |
 
-### 🧮 Kalkulator RAB AI & SNI
-- **Perhitungan Otomatis**: Estimasi biaya instan berdasarkan standar AHSP/SNI.
-- **Kustomisasi Tipe Proyek**: Form dinamis yang menyesuaikan input berdasarkan tipe proyek (contoh: Ruang CEO untuk Kantor, Ruang Kelas untuk Sekolah, Pilar & Bentang untuk Jembatan, Pintu Air untuk Bendungan).
-- **Pembagian Kategori**: Struktur yang jelas (Pekerjaan Persiapan, Struktur, Dinding, Lantai, Finishing).
-- **Penyesuaian Regional**: Integrasi harga material per wilayah/provinsi di Indonesia.
+### Backend
+| Teknologi | Versi | Fungsi |
+|-----------|-------|--------|
+| Node.js | ≥18 | Runtime |
+| Express.js | 4.21 | Web framework |
+| Mongoose | 9.3 | MongoDB ODM |
+| JWT | 9 | Autentikasi |
+| bcryptjs | 3 | Enkripsi password |
+| Nodemailer | 8 | Kirim email OTP |
+| Helmet | 8 | Security headers |
+| express-rate-limit | 8 | Rate limiting |
+| express-mongo-sanitize | 2 | Proteksi NoSQL injection |
+| HPP | 0.2 | HTTP Parameter Pollution protection |
+| Multer | 1.4 | Upload file |
+| ExcelJS | 4.4 | Generate Excel di server |
+| PDFKit | 0.18 | Generate PDF di server |
 
-### 📊 Manajemen Proyek (Project Management)
-- **Multi-Project Handling**: Buat, edit, dan kelola banyak proyek dalam satu dashboard terpusat.
-- **Timeline & Kurva S**: Monitoring progress pekerjaan secara visual dengan grafik Kurva S untuk melihat tren keterlambatan atau percepatan proyek.
-- **Project Status Tracking**: Pemantauan status dari *Draft*, *Ongoing*, hingga *Completed*.
+### Database & Infrastructure
+| Teknologi | Fungsi |
+|-----------|--------|
+| MongoDB Atlas | Database cloud (NoSQL) |
+| Vercel | Hosting frontend + backend |
+| GitHub | Source control + CI/CD |
 
-### 📐 Analisis Struktur & Beban
-- **Dynamic Live Loads**: Perhitungan otomatis Beban Hidup (Live Load) sesuai fungsi bangunan (contoh: 200 kg/m² untuk rumah, 250 kg/m² untuk sekolah/kantor, hingga 500 kg/m² untuk bendungan).
-- **Analisis Beban Komplit**: Menghitung Beban Mati, Beban Angin, dan estimasi Beban Gempa berdasarkan zona seismik.
+---
 
-### 🤖 AI Vision Estimator
-- **Analisis Gambar**: Unggah foto denah atau sketsa kasar, dan AI (Google Gemini) akan menganalisis dimensi serta kebutuhan ruangan secara otomatis untuk menghasilkan draf RAB.
+## 🚀 Cara Setup & Jalankan
 
-### 🗄️ Database AHSP & Material (HSPK)
-- **Database Lengkap**: Akses ke ribuan item pekerjaan dan harga satuan material berdasarkan standar nasional.
-- **Custom Editor**: Pengguna dapat menambahkan atau memodifikasi harga material (HSPK) sesuai harga pasar lokal terkini.
+### Prerequisites
+- Node.js >= 18.0.0
+- npm >= 8.0.0
+- Akun MongoDB Atlas
+- Akun Vercel
 
-### 💰 Laporan Keuangan & Realisasi (Cost Realization Tracker)
-- **Budget vs Actual**: Pelacakan ketat antara anggaran yang direncanakan (RAB) dengan pengeluaran aktual di lapangan.
-- **Cost Tracker**: Analisis pengeluaran per item pekerjaan untuk mencegah *over-budget*.
+### 1. Clone Repository
+```bash
+git clone https://github.com/muhamadadrian/sivilize-hub-pro.git
+cd sivilize-hub-pro
+```
 
-### 📅 Buku Harian Proyek (Daily Logs)
-- **Pencatatan Harian**: Dokumentasi aktivitas proyek sehari-hari, cuaca, jumlah pekerja, dan kendala di lapangan, berguna untuk pelaporan progres mingguan.
+### 2. Setup Frontend
+```bash
+# Install dependencies
+npm install
 
-### 📤 Export & Presentasi Profesional
-- **Generate PDF**: Cetak dokumen RAB yang rapi, berlogo, dan siap diserahkan kepada klien.
-- **Export Excel**: Unduh format multi-sheet (dikategorikan per pekerjaan) untuk diolah lebih lanjut oleh estimator.
+# Copy env file
+cp .env.example .env.local
+
+# Edit .env.local
+VITE_API_URL=http://localhost:5000/api
+VITE_GEMINI_API_KEY=your_gemini_api_key
+```
+
+### 3. Setup Backend
+```bash
+cd server
+
+# Install dependencies
+npm install
+
+# Copy env file
+cp .env.example .env
+
+# Edit .env
+PORT=5000
+NODE_ENV=development
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/sivilize
+JWT_SECRET=your_jwt_secret_key
+ALLOWED_ORIGINS=http://localhost:5173
+SMTP_USER=your_email@gmail.com
+SMTP_PASS=your_gmail_app_password
+ADMIN_ALERT_EMAIL=your_email@gmail.com
+```
+
+### 4. Jalankan Development
+```bash
+# Terminal 1 - Backend
+cd server
+npm run dev
+
+# Terminal 2 - Frontend
+cd ..
+npm run dev
+```
+
+Frontend: `http://localhost:5173`
+Backend: `http://localhost:5000`
+
+---
+
+## 🌐 Deploy ke Vercel
+
+### Backend
+```bash
+cd server
+npx vercel --prod
+```
+
+Set environment variables di Vercel Dashboard → Settings → Environment Variables:
+- `MONGODB_URI`
+- `JWT_SECRET`
+- `SMTP_USER`
+- `SMTP_PASS`
+- `ADMIN_ALERT_EMAIL`
+- `NODE_ENV=production`
+- `ALLOWED_ORIGINS=https://your-frontend.vercel.app`
+
+### Frontend
+```bash
+# Di root project
+npx vercel --prod
+```
+
+Set environment variables:
+- `VITE_API_URL=https://your-backend.vercel.app/api`
+- `VITE_GEMINI_API_KEY=your_gemini_api_key`
+
+---
+
+## 📁 Struktur Project
+
+```
+sivilize-hub-pro/
+├── src/
+│   ├── components/
+│   │   ├── admin/          # Admin dashboard & activity log
+│   │   ├── ahsp/           # AHSP database & editor
+│   │   ├── analysis/       # Analisis struktur
+│   │   ├── auth/           # Halaman login/register
+│   │   ├── common/         # Navbar, Sidebar, Toast, dll
+│   │   ├── daily-log/      # Buku harian
+│   │   ├── dashboard/      # Dashboard utama
+│   │   ├── export/         # Preview & export RAB
+│   │   ├── financial/      # Laporan keuangan
+│   │   ├── legal/          # Privacy Policy, ToS
+│   │   └── rab/            # Kalkulator RAB & fitur terkait
+│   ├── contexts/           # React context (Language)
+│   ├── data/               # Data statis AHSP, harga
+│   ├── hooks/              # Custom hooks
+│   ├── i18n/               # Terjemahan (ID/EN)
+│   ├── lib/                # Firebase config
+│   ├── services/           # API service (axios)
+│   ├── store/              # Zustand store
+│   ├── types/              # TypeScript types
+│   └── utils/              # Helper functions
+├── server/
+│   ├── api/                # Vercel serverless entry
+│   ├── config/             # Database config
+│   ├── controllers/        # Business logic
+│   ├── middleware/         # Auth, firewall, security
+│   ├── models/             # MongoDB models
+│   ├── routes/             # API routes
+│   ├── utils/              # Email, export, calculator
+│   └── validators/         # Input validation
+├── public/                 # Static assets
+├── .env.example            # Template env frontend
+└── package.json
+```
+
+---
+
+## 🔌 API Endpoints
+
+### Auth
+| Method | Endpoint | Deskripsi |
+|--------|----------|-----------|
+| POST | `/api/auth/register` | Daftar akun baru |
+| POST | `/api/auth/login` | Login + kirim OTP |
+| POST | `/api/auth/verify-otp` | Verifikasi OTP |
+| POST | `/api/auth/logout` | Logout |
+| GET | `/api/auth/me` | Data user login |
+
+### Projects
+| Method | Endpoint | Deskripsi |
+|--------|----------|-----------|
+| GET | `/api/projects` | Ambil semua proyek |
+| POST | `/api/projects` | Buat proyek baru |
+| PUT | `/api/projects/:id` | Update proyek |
+| DELETE | `/api/projects/:id` | Hapus proyek |
+
+### AHSP
+| Method | Endpoint | Deskripsi |
+|--------|----------|-----------|
+| GET | `/api/ahsp` | Ambil data AHSP |
+| POST | `/api/ahsp` | Tambah AHSP custom |
+
+### Export
+| Method | Endpoint | Deskripsi |
+|--------|----------|-----------|
+| POST | `/api/export/pdf` | Export RAB ke PDF |
+| POST | `/api/export/excel` | Export RAB ke Excel |
+
+### Health
+| Method | Endpoint | Deskripsi |
+|--------|----------|-----------|
+| GET | `/health` | Status server & database |
+| GET | `/ping` | Keep-alive check |
+
+---
+
+## 🔒 Keamanan
+
+- Password dienkripsi dengan **bcrypt** (salt factor 10)
+- Autentikasi menggunakan **JWT** (expire 30 hari)
+- OTP di-hash dengan **SHA-256**, expire 5 menit
+- **Rate limiting** per endpoint (global, auth, export)
+- **Helmet** untuk security headers (XSS, Clickjacking, HSTS)
+- **NoSQL injection protection** via express-mongo-sanitize
+- **HTTP Parameter Pollution** protection via HPP
+- **Custom firewall** middleware untuk deteksi serangan
+- **Honeypot endpoints** untuk jebak scanner/hacker
 
 ---
 

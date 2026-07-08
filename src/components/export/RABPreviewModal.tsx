@@ -1,13 +1,11 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { X, FileDown, FileText, Building2, User, Hash, MessageCircle } from 'lucide-react';
 import { type Project, type RABItem, type FinancialSettings } from '../../store/useStore';
 import { calculateTotalRAB } from '../../utils/calculations';
-import { exportToPDF, exportToExcel, exportBoQBlank } from '../../utils/exportUtils';
+import { exportToPDF, exportToExcel } from '../../utils/exportUtils';
 import { generateWAText, openWhatsApp } from '../../utils/whatsappShare';
 import { formatCurrency } from '../../utils/calculations';
-import { calculateProjectTKDN } from '../../utils/tkdnUtils';
 import { type MaterialGrade } from '../../data/prices';
-import { useToast } from '../common/Toast';
 
 interface RABPreviewModalProps {
   isOpen: boolean;
@@ -35,7 +33,6 @@ const DEFAULT_EXPORT_CONFIG: ExportConfig = {
 };
 
 const RABPreviewModal = ({ isOpen, onClose, project, items, financials, grade }: RABPreviewModalProps) => {
-  const { showToast } = useToast();
   const [isExporting, setIsExporting] = useState(false);
   const [config, setConfig] = useState<ExportConfig>(() => {
     try {
@@ -59,14 +56,10 @@ const RABPreviewModal = ({ isOpen, onClose, project, items, financials, grade }:
   const summary = calculateTotalRAB(items, financials);
 
   // Hitung subtotal per kategori
-  const categoryTotals = useMemo<Record<string, number>>(() => {
-    return items.reduce((acc, item) => {
-      acc[item.category] = (acc[item.category] || 0) + item.total;
-      return acc;
-    }, {} as Record<string, number>);
-  }, [items]);
-
-  const tkdn = useMemo(() => calculateProjectTKDN(items), [items]);
+  const categoryTotals = items.reduce((acc, item) => {
+    acc[item.category] = (acc[item.category] || 0) + item.total;
+    return acc;
+  }, {} as Record<string, number>);
 
   const saveConfigAndExport = (exportFn: () => void) => {
     setIsExporting(true);
@@ -102,20 +95,8 @@ const RABPreviewModal = ({ isOpen, onClose, project, items, financials, grade }:
       exportToExcel(project, items, financials, grade, {
         companyName: config.companyName.trim() || DEFAULT_EXPORT_CONFIG.companyName,
         preparedBy: config.estimatorName,
-        approvedBy: config.estimatorName,
-        projectNo: config.documentNumber
+        projectNo: config.documentNumber,
       });
-      showToast('RAB (Excel PU Format) berhasil diunduh', 'success');
-    });
-  };
-
-  const handleDownloadBoQ = () => {
-    saveConfigAndExport(() => {
-      exportBoQBlank(project, items, {
-        companyName: config.companyName.trim() || DEFAULT_EXPORT_CONFIG.companyName,
-        projectNo: config.documentNumber
-      });
-      showToast('BoQ Kosong berhasil diunduh', 'success');
     });
   };
 
@@ -176,21 +157,6 @@ const RABPreviewModal = ({ isOpen, onClose, project, items, financials, grade }:
                     <span className="text-white font-bold text-sm">{formatCurrency(total)}</span>
                   </div>
                 ))}
-            </div>
-          </div>
-
-          {/* Sertifikat TKDN */}
-          <div className="space-y-3">
-            <p className="text-text-secondary text-xs font-bold uppercase tracking-widest">Tingkat Komponen Dalam Negeri (TKDN)</p>
-            <div className={`p-4 rounded-xl border ${tkdn.overallTKDN >= 80 ? 'bg-green-500/10 border-green-500/20 text-green-400' : 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400'}`}>
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-bold">Estimasi Nilai TKDN</span>
-                <span className="text-2xl font-black">{tkdn.overallTKDN.toFixed(1)}%</span>
-              </div>
-              <div className="flex justify-between text-xs mt-2 pt-2 border-t border-white/10">
-                <span className="opacity-80">Nilai Komponen Lokal</span>
-                <span className="font-bold">{formatCurrency(tkdn.totalDomesticValue)}</span>
-              </div>
             </div>
           </div>
 
@@ -298,17 +264,9 @@ const RABPreviewModal = ({ isOpen, onClose, project, items, financials, grade }:
               ) : (
                 <FileText size={16} />
               )}
-              {isExporting ? 'Proses...' : 'Export Excel (Dengan Harga)'}
+              {isExporting ? 'Proses...' : 'Download Excel'}
             </button>
           </div>
-          <button
-            onClick={handleDownloadBoQ}
-            disabled={isExporting}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-xl text-sm font-bold hover:bg-purple-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <FileText size={16} />
-            Export BoQ Excel (Tanpa Harga)
-          </button>
           <button
             onClick={handleSendWA}
             className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#25D366]/10 text-[#25D366] border border-[#25D366]/20 rounded-xl text-sm font-bold hover:bg-[#25D366]/20 transition-all"

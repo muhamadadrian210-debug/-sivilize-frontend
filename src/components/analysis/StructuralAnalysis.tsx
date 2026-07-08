@@ -14,11 +14,9 @@ const StructuralAnalysis = () => {
     seismicZone: '1'
   });
 
-  const isInfrastructure = params.buildingFunction === 'jembatan' || params.buildingFunction === 'bendungan';
-
   const calculation = useMemo(() => {
     // Dead Load (Beban Mati) - kg/m2
-    const wallLoad = isInfrastructure ? 0 : (params.wallType === 'bata-merah' ? 250 : 120);
+    const wallLoad = params.wallType === 'bata-merah' ? 250 : 120;
     const roofLoadMap: Record<string, number> = {
       '1-air': 35,
       '2-air': 45,
@@ -28,19 +26,12 @@ const StructuralAnalysis = () => {
       genteng: 50,
       spandek: 20,
     };
-    const roofLoad = isInfrastructure ? 0 : (roofLoadMap[params.roofType] || 45);
+    const roofLoad = roofLoadMap[params.roofType] || 45;
     const concreteLoad = 2400 * 0.12; // 12cm slab estimate
     const deadLoad = wallLoad + roofLoad + concreteLoad;
 
-    // Live Load (Beban Hidup) - kg/m2 (Berdasarkan Fungsi)
-    let liveLoad = 200;
-    if (params.buildingFunction === 'sekolah' || params.buildingFunction === 'kantor' || params.buildingFunction === 'rumah_sakit') {
-      liveLoad = 250;
-    } else if (params.buildingFunction === 'jembatan') {
-      liveLoad = 400; // Contoh SNI 1725 beban lalu lintas
-    } else if (params.buildingFunction === 'bendungan') {
-      liveLoad = 500; // Beban ekstra genangan air/hidrostatik
-    }
+    // Live Load (Beban Hidup) - kg/m2
+    const liveLoad = 200;
 
     // Wind Load (Beban Angin) - kg/m2
     const windLoad = (params.windSpeed * params.windSpeed) / 16;
@@ -75,10 +66,10 @@ const StructuralAnalysis = () => {
     },
     {
       name: 'Beban Hidup (Live Load)',
-      description: `Beban dinamis penghuni dan furnitur untuk fungsi ${params.buildingFunction.replace('_', ' ')}.`,
+      description: `Beban dinamis penghuni dan furnitur untuk fungsi ${params.buildingFunction}.`,
       icon: Users,
       value: `${Math.round(calculation.live)} kg/m²`,
-      tooltip: `Beban Hidup adalah beban yang dapat berubah posisi dan besarnya.\n\nKomponen:\n• Berat penghuni dan aktivitas\n• Berat furnitur dan peralatan\n• Nilai standar rumah tinggal: 200 kg/m², fasilitas umum (sekolah/kantor/rs): 250 kg/m²\n\nReferensi: SNI 1727:2020 Tabel 4.3-1`
+      tooltip: `Beban Hidup adalah beban yang dapat berubah posisi dan besarnya.\n\nKomponen:\n• Berat penghuni dan aktivitas\n• Berat furnitur dan peralatan\n• Nilai standar rumah tinggal: 200 kg/m²\n\nReferensi: SNI 1727:2020 Tabel 4.3-1`
     },
     {
       name: 'Beban Angin (Wind Load)',
@@ -93,14 +84,7 @@ const StructuralAnalysis = () => {
     <div className="space-y-8 pb-12">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h2 className="text-3xl font-bold text-white italic tracking-tight">Analisis Beban Struktur ({
-            params.buildingFunction === 'rumah' ? 'Rumah Tinggal' :
-            params.buildingFunction === 'sekolah' ? 'Sekolah / Gedung' :
-            params.buildingFunction === 'kantor' ? 'Kantor / Perkantoran' :
-            params.buildingFunction === 'rumah_sakit' ? 'Rumah Sakit' :
-            params.buildingFunction === 'jembatan' ? 'Jembatan' :
-            'Bendungan'
-          })</h2>
+          <h2 className="text-3xl font-bold text-white italic tracking-tight">Analisis Beban Struktur (Rumah Tinggal)</h2>
           <p className="text-text-secondary mt-1 italic text-sm">Kalkulasi beban teknis berdasarkan standar SNI 1727:2020</p>
         </div>
         <div className="flex items-center gap-3 p-4 bg-primary/5 border border-primary/20 rounded-2xl">
@@ -124,50 +108,39 @@ const StructuralAnalysis = () => {
             <div className="space-y-4">
               <div className="space-y-2">
                 <label className="text-xs text-text-secondary uppercase font-bold tracking-widest">Fungsi Bangunan</label>
-                <select
-                  value={params.buildingFunction}
-                  onChange={(e) => setParams({...params, buildingFunction: e.target.value})}
+                <input
+                  value="Rumah Tinggal"
+                  disabled
+                  className="w-full h-11 bg-background/60 border border-border rounded-xl px-4 text-white outline-none"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs text-text-secondary uppercase font-bold tracking-widest">Jenis Dinding</label>
+                <select 
+                  value={params.wallType}
+                  onChange={(e) => setParams({...params, wallType: e.target.value})}
                   className="w-full h-11 bg-background border border-border rounded-xl px-4 text-white focus:border-primary outline-none appearance-none transition-all"
                 >
-                  <option value="rumah">Rumah Tinggal</option>
-                  <option value="sekolah">Sekolah / Gedung</option>
-                  <option value="kantor">Kantor / Perkantoran</option>
-                  <option value="rumah_sakit">Rumah Sakit</option>
-                  <option value="jembatan">Jembatan</option>
-                  <option value="bendungan">Bendungan</option>
+                  <option value="bata-merah">Bata Merah (250 kg/m²)</option>
+                  <option value="hebel">Bata Ringan/Hebel (120 kg/m²)</option>
                 </select>
               </div>
 
-              {!isInfrastructure && (
-                <>
-                  <div className="space-y-2">
-                    <label className="text-xs text-text-secondary uppercase font-bold tracking-widest">Jenis Dinding</label>
-                    <select 
-                      value={params.wallType}
-                      onChange={(e) => setParams({...params, wallType: e.target.value})}
-                      className="w-full h-11 bg-background border border-border rounded-xl px-4 text-white focus:border-primary outline-none appearance-none transition-all"
-                    >
-                      <option value="bata-merah">Bata Merah (250 kg/m²)</option>
-                      <option value="hebel">Bata Ringan/Hebel (120 kg/m²)</option>
-                    </select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-xs text-text-secondary uppercase font-bold tracking-widest">Jenis Penutup Atap</label>
-                    <select 
-                      value={params.roofType}
-                      onChange={(e) => setParams({...params, roofType: e.target.value})}
-                      className="w-full h-11 bg-background border border-border rounded-xl px-4 text-white focus:border-primary outline-none appearance-none transition-all"
-                    >
-                      <option value="1-air">Atap 1 Air</option>
-                      <option value="2-air">Atap 2 Air</option>
-                      <option value="3-air">Atap 3 Air</option>
-                      <option value="4-air">Atap 4 Air</option>
-                      <option value="dak">Atap Dak Beton</option>
-                    </select>
-                  </div>
-                </>
-              )}
+              <div className="space-y-2">
+                <label className="text-xs text-text-secondary uppercase font-bold tracking-widest">Jenis Penutup Atap</label>
+                <select 
+                  value={params.roofType}
+                  onChange={(e) => setParams({...params, roofType: e.target.value})}
+                  className="w-full h-11 bg-background border border-border rounded-xl px-4 text-white focus:border-primary outline-none appearance-none transition-all"
+                >
+                  <option value="1-air">Atap 1 Air</option>
+                  <option value="2-air">Atap 2 Air</option>
+                  <option value="3-air">Atap 3 Air</option>
+                  <option value="4-air">Atap 4 Air</option>
+                  <option value="dak">Atap Dak Beton</option>
+                </select>
+              </div>
 
               <div className="space-y-2">
                 <label className="text-xs text-text-secondary uppercase font-bold tracking-widest">Kecepatan Angin (m/s)</label>

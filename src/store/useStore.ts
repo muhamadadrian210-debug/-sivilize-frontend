@@ -84,7 +84,7 @@ export interface Project {
   name: string;
   location: string;
   materialGrade?: 'A' | 'B' | 'C';
-  type: 'rumah' | 'sekolah' | 'kantor' | 'jembatan' | 'bendungan' | 'rumah_sakit';
+  type: 'rumah';
   roofModel?: '1-air' | '2-air' | '3-air' | '4-air' | 'dak';
   floors: number;
   dimensions: { length: number; width: number; height: number }[];
@@ -101,35 +101,6 @@ export interface Project {
   bathroomCount?: number;
   doorCount?: number;
   windowCount?: number;
-  // Spesifik Sekolah
-  schoolClassrooms?: number;
-  schoolTeacherRooms?: number;
-  schoolPrincipalRoom?: number;
-  schoolAdminRoom?: number;
-  schoolLibrary?: number;
-  schoolLaboratory?: number;
-  schoolUKS?: number;
-  schoolStudentToilets?: number;
-  schoolTeacherToilets?: number;
-  schoolWorshipRoom?: number;
-  // Spesifik Rumah Sakit
-  hospitalInpatientRooms?: number;
-  hospitalSurgeryRooms?: number;
-  hospitalEmergencyRooms?: number;
-  hospitalMorgue?: number;
-  // Spesifik Kantor
-  officeWorkspace?: number;
-  officeMeetingRoom?: number;
-  officePantry?: number;
-  officeReception?: number;
-  officeServerRoom?: number;
-  officeDirectorRoom?: number; // Ruang Kepala Dinas / CEO
-  officeManagerRoom?: number; // Ruang Manager / Kepala Bagian
-  // Spesifik Infrastruktur
-  bridgePillarCount?: number;
-  bridgeSpanLength?: number;
-  waterGateCount?: number;
-  damCapacity?: number;
   // Ukuran rata-rata bukaan untuk pengurangan luas dinding
   doorWidth?: number;   // meter, default 0.9
   doorHeight?: number;  // meter, default 2.1
@@ -267,22 +238,7 @@ interface AppState {
 export const useStore = create<AppState>()(
   persist(
     (set, get) => ({
-      projects: [
-        {
-          id: `proj_default_${Date.now()}`,
-          name: 'Proyek Percontohan (Standar SNI & AHSP Juli 2026)',
-          location: 'jakarta-1',
-          type: 'rumah',
-          status: 'draft',
-          materialGrade: 'B',
-          floors: 1,
-          dimensions: [{ length: 15, width: 10, height: 4 }],
-          versions: [],
-          dailyLogs: [],
-          costRealizations: [],
-          laborPayments: []
-        }
-      ],
+      projects: [],
       activeProjectId: null,
       activeVersionId: null,
       userRole: 'admin',

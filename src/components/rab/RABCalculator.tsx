@@ -1,4 +1,4 @@
-import { Fragment, useState, useMemo, useEffect } from 'react';
+﻿import { Fragment, useState, useMemo, useEffect } from 'react';
 import { 
   Trash2, 
   ChevronRight, 
@@ -19,12 +19,9 @@ import {
   Lightbulb,
   Printer,
   GitCompare,
-  Share2,
-  Target,
-  Minus,
-  X
+  Share2
 } from 'lucide-react';
-import { useStore, type RABItem, type Project, type FinancialSettings } from '../../store/useStore';
+import { useStore, type RABItem, type Project } from '../../store/useStore';
 import { AHSP_TEMPLATES } from '../../data/ahsp';
 import {
   PROVINCES,
@@ -96,7 +93,7 @@ const SOIL_TYPES = [
 ] as const;
 
 const FOUNDATION_TYPES = [
-  { id: 'batu-kali',     label: 'Pondasi Batu Kali',    desc: 'Untuk struktur beban ringan (1–2 lantai) di tanah keras/sedang' },
+  { id: 'batu-kali',     label: 'Pondasi Batu Kali',    desc: 'Untuk bangunan 1–2 lantai di tanah keras/sedang' },
   { id: 'footplate',     label: 'Pondasi Footplate',     desc: 'Beton bertulang, cocok untuk tanah sedang–keras' },
   { id: 'strauss-pile',  label: 'Pondasi Strauss Pile',  desc: 'Bor manual, untuk tanah lunak hingga 6m' },
   { id: 'tiang-pancang', label: 'Pondasi Tiang Pancang', desc: 'Untuk tanah sangat lunak/gambut, beban berat' },
@@ -107,14 +104,14 @@ const FOUNDATION_TYPES = [
 // Matriks rekomendasi: soilType → [foundationId, alasan, level]
 const FOUNDATION_RECOMMENDATIONS: Record<string, { id: string; reason: string; level: 'recommended' | 'possible' | 'avoid' }[]> = {
   keras: [
-    { id: 'batu-kali',    reason: 'Paling ekonomis dan efisien untuk tanah keras, beban ringan-menengah', level: 'recommended' },
+    { id: 'batu-kali',    reason: 'Paling ekonomis dan efisien untuk tanah keras, cocok 1–2 lantai', level: 'recommended' },
     { id: 'footplate',    reason: 'Alternatif baik jika beban kolom besar', level: 'possible' },
     { id: 'sumuran',      reason: 'Jika lapisan keras ada di kedalaman tertentu', level: 'possible' },
     { id: 'tiang-pancang',reason: 'Berlebihan untuk tanah keras, tidak efisien biaya', level: 'avoid' },
   ],
   sedang: [
     { id: 'footplate',    reason: 'Distribusi beban merata, cocok untuk tanah sedang', level: 'recommended' },
-    { id: 'batu-kali',    reason: 'Bisa dipakai untuk struktur ringan dengan pengawasan ketat', level: 'possible' },
+    { id: 'batu-kali',    reason: 'Bisa dipakai untuk 1 lantai dengan pengawasan ketat', level: 'possible' },
     { id: 'strauss-pile', reason: 'Jika ada lapisan lunak di bawah', level: 'possible' },
     { id: 'raft',         reason: 'Jika tanah sedang tidak merata', level: 'possible' },
   ],
@@ -169,9 +166,7 @@ const RABCalculator = () => {
   const [showVisionUpload, setShowVisionUpload] = useState(false);
   const [rebarConfig, setRebarConfig] = useState<RebarConfig>(DEFAULT_REBAR_CONFIG);
   const [showQuranPopup, setShowQuranPopup] = useState(false);
-  const [activeSubTab, setActiveSubTab] = useState<'rab' | 'split' | 'materials' | 'prices' | 'timeline' | 'template' | 'bidding'>('rab');
-  const [targetHPS, setTargetHPS] = useState<number | ''>('');
-  const [biddingStatus, setBiddingStatus] = useState<{success: boolean, msg: string} | null>(null);
+  const [activeSubTab, setActiveSubTab] = useState<'rab' | 'split' | 'materials' | 'prices' | 'timeline' | 'template'>('rab');
   const [customPrices, setCustomPrices] = useState<Record<string, number>>({});
   const [selectedProvince, setSelectedProvince] = useState(DEFAULT_PROVINCE_ID);
   const [materialGrade, setMaterialGrade] = useState<MaterialGrade>(DEFAULT_MATERIAL_GRADE);
@@ -206,11 +201,11 @@ const RABCalculator = () => {
 
   const [rabItems, setRabItems] = useState<RABItem[]>([]);
   const [selectedItemForTeam, setSelectedItemForTeam] = useState<string | null>(null);
-  const [financials, setFinancials] = useState<FinancialSettings>({
-    overhead: 10,
+  const [financials, setFinancials] = useState({
+    overhead: 5,
     profit: 10,
+    tax: 11,
     contingency: 0,
-    tax: 12,
   });
 
   const cityOptions = useMemo(() => getCitiesByProvince(selectedProvince), [selectedProvince]);
@@ -294,48 +289,6 @@ const RABCalculator = () => {
   const costPerM2 = totalArea > 0 ? summary.grandTotal / totalArea : 0;
   const category = getCostCategory(costPerM2);
 
-  // Auto-Bidding Logic
-  const handleAutoBidding = () => {
-    if (!targetHPS || targetHPS <= 0) {
-      setBiddingStatus({ success: false, msg: 'Masukkan angka HPS yang valid' });
-      return;
-    }
-    const currentSubtotal = summary.subtotal;
-    if (currentSubtotal === 0) {
-      setBiddingStatus({ success: false, msg: 'Subtotal RAB masih 0' });
-      return;
-    }
-    
-    // Reverse engineer
-    const requiredBeforeTax = Number(targetHPS) / (1 + financials.tax / 100);
-    const requiredMargin = requiredBeforeTax - currentSubtotal - summary.contingencyAmount;
-    
-    if (requiredMargin < 0) {
-      setBiddingStatus({ 
-        success: false, 
-        msg: `TARGET HPS TERLALU RENDAH! Anda rugi ${formatCurrency(Math.abs(requiredMargin))}. Turunkan spesifikasi material!`
-      });
-      return;
-    }
-
-    const newOverheadAmount = requiredMargin * 0.3;
-    const newProfitAmount = requiredMargin * 0.7;
-    
-    const newOverheadPercent = (newOverheadAmount / currentSubtotal) * 100;
-    const newProfitPercent = (newProfitAmount / currentSubtotal) * 100;
-
-    setFinancials(prev => ({
-      ...prev,
-      overhead: Number(newOverheadPercent.toFixed(2)),
-      profit: Number(newProfitPercent.toFixed(2))
-    }));
-    
-    setBiddingStatus({ 
-      success: true, 
-      msg: `Sukses! Overhead diatur ke ${newOverheadPercent.toFixed(2)}% dan Profit ke ${newProfitPercent.toFixed(2)}%`
-    });
-  };
-
   // Auto-generate basic items based on dimensions
   const handleGenerateRAB = () => {
     setLoading(true);
@@ -388,9 +341,8 @@ const RABCalculator = () => {
         });
       };
       
-      if (['rumah', 'sekolah', 'rumah_sakit', 'kantor'].includes(projectData.type || 'rumah')) {
-        // ── PEKERJAAN PERSIAPAN ──────────────────────────────────
-        addItem('per-001', totalArea, { 'Pekerja': 3, 'Mandor': 1 });           // Pembersihan lokasi
+      // ── PEKERJAAN PERSIAPAN ──────────────────────────────────
+      addItem('per-001', totalArea, { 'Pekerja': 3, 'Mandor': 1 });           // Pembersihan lokasi
       addItem('per-002', perimeter * 1.2, { 'Pekerja': 2, 'Tukang Kayu': 2, 'Mandor': 1 }); // Bowplank
       addItem('per-003', 12, { 'Pekerja': 2, 'Tukang Kayu': 2, 'Mandor': 1 }); // Gudang bahan 12m²
       addItem('per-004', 9, { 'Pekerja': 2, 'Tukang Kayu': 2, 'Mandor': 1 });  // Direksi keet 9m²
@@ -524,76 +476,6 @@ const RABCalculator = () => {
       // Finishing
       addItem('fin-001', paintArea, { 'Pekerja': 2, 'Tukang Cat': 2, 'Mandor': 1 });
 
-        // ── KHUSUS RUMAH SAKIT ──
-        if (projectData.type === 'rumah_sakit') {
-          // Lantai Vinyl Anti-Bakteri untuk ruang operasi/UGD/IGD
-          const operationRoomArea = (projectData.hospitalSurgeryRooms || 0) * 36; // Asumsi 36m2 per ruang operasi
-          const ugdArea = (projectData.hospitalEmergencyRooms || 0) * 48; // Asumsi 48m2 per UGD
-          if (operationRoomArea + ugdArea > 0) {
-            addItem('rs-001', operationRoomArea + ugdArea, { 'Pekerja': 2, 'Tukang Khusus': 2, 'Mandor': 1 });
-          }
-          
-          // Pintu Lapis Timbal untuk radiologi/operasi
-          if ((projectData.hospitalSurgeryRooms || 0) > 0) {
-            addItem('rs-002', projectData.hospitalSurgeryRooms || 0, { 'Pekerja': 2, 'Tukang Besi': 2, 'Mandor': 1 });
-          }
-          
-          // Gas Medis untuk ruang rawat/operasi/UGD
-          const gasMedisLength = ((projectData.hospitalInpatientRooms || 0) * 5) + ((projectData.hospitalSurgeryRooms || 0) * 10) + ((projectData.hospitalEmergencyRooms || 0) * 10);
-          if (gasMedisLength > 0) {
-            addItem('rs-003', gasMedisLength, { 'Tukang Pipa Khusus': 2, 'Pekerja': 2 });
-          }
-          
-          // Kamar Mayat
-          if ((projectData.hospitalMorgue || 0) > 0) {
-            addItem('fin-003', (projectData.hospitalMorgue || 0) * 24, { 'Pekerja': 2, 'Tukang Batu': 2 });
-          }
-        }
-        
-        // ── KHUSUS SEKOLAH ──
-        if (projectData.type === 'sekolah') {
-          // Lab butuh ekstra plumbing & elektrikal
-          const labCount = projectData.schoolLaboratory || 0;
-          if (labCount > 0) {
-            addItem('ins-002', labCount * 2, { 'Pekerja': 2, 'Tukang Pipa': 2 }); // Titik air ekstra
-            addItem('elkal-002', labCount * 4, { 'Pekerja': 1, 'Tukang Listrik': 1 }); // Stop kontak ekstra
-          }
-          
-          // UKS butuh vinyl anti bakteri seperti rumah sakit
-          const uksCount = projectData.schoolUKS || 0;
-          if (uksCount > 0) {
-            addItem('rs-001', uksCount * 12, { 'Pekerja': 2, 'Tukang Khusus': 2, 'Mandor': 1 }); // 12m2 per UKS
-          }
-        }
-        
-        // ── KHUSUS KANTOR ──
-        if (projectData.type === 'kantor') {
-          const meetingCount = projectData.officeMeetingRoom || 0;
-          if (meetingCount > 0) {
-            addItem('elkal-002', meetingCount * 6, { 'Pekerja': 2, 'Tukang Listrik': 2 }); // Stop kontak & audio ekstra
-          }
-          
-          const serverCount = projectData.officeServerRoom || 0;
-          if (serverCount > 0) {
-            addItem('elkal-001', serverCount * 4, { 'Pekerja': 2, 'Tukang Listrik': 2 }); // Kabel server/data ekstra
-          }
-
-          const directorCount = projectData.officeDirectorRoom || 0;
-          if (directorCount > 0) {
-            addItem('ars-003', directorCount * 1, { 'Pekerja': 2, 'Tukang Khusus': 1 }); // Interior ekstra untuk ruang direktur/kepala dinas
-          }
-
-          const managerCount = projectData.officeManagerRoom || 0;
-          if (managerCount > 0) {
-            addItem('elkal-002', managerCount * 2, { 'Pekerja': 1, 'Tukang Listrik': 1 }); // Stop kontak ekstra ruang manager
-          }
-
-          const pantryCount = projectData.officePantry || 0;
-          if (pantryCount > 0) {
-            addItem('ins-002', pantryCount * 2, { 'Pekerja': 1, 'Tukang Pipa': 1 }); // Air bersih & kotor pantry
-          }
-        }
-
       // Bukaan - Pintu & Jendela (sudah dideklarasi di atas)
       const bathroomCount = projectData.bathroomCount ?? 2;
 
@@ -625,29 +507,12 @@ const RABCalculator = () => {
         addItem(toiletId, bathroomCount, { 'Pekerja': 1, 'Tukang Pipa': 1, 'Mandor': 1 });
       }
 
-        // Elektrikal
-        const lightPts = projectData.lightPointCount ?? 10;
-        const socketPts = projectData.socketPointCount ?? 8;
-        if (lightPts > 0) addItem('elk-001', lightPts, { 'Pekerja': 1, 'Tukang Listrik': 2, 'Mandor': 1 });
-        if (socketPts > 0) addItem('elk-002', socketPts, { 'Pekerja': 1, 'Tukang Listrik': 2, 'Mandor': 1 });
-        addItem('elk-003', 1, { 'Pekerja': 1, 'Tukang Listrik': 2, 'Mandor': 1 });
-      } else if (projectData.type === 'jembatan') {
-        // ── PEKERJAAN INFRASTRUKTUR (JEMBATAN) ──────────────────────────────────
-        const span = projectData.bridgeSpanLength || 10;
-        const pillars = projectData.bridgePillarCount || 2;
-        addItem('per-001', span * 5, { 'Pekerja': 5, 'Mandor': 1 }); // Pembersihan
-        addItem('infra-001', pillars * 10, { 'Pekerja': 4, 'Operator Alat Berat': 1 }); // Spun pile
-        addItem('infra-002', pillars * 15, { 'Pekerja': 5, 'Tukang Batu': 2 }); // Pier beton
-        addItem('infra-003', span * 200, { 'Pekerja': 3, 'Tukang Las': 2 }); // Baja WF Jembatan
-      } else if (projectData.type === 'bendungan') {
-        // ── PEKERJAAN INFRASTRUKTUR (BENDUNGAN) ──────────────────────────────────
-        const gates = projectData.waterGateCount || 1;
-        const capacity = projectData.damCapacity || 1000;
-        addItem('per-001', capacity * 0.1, { 'Pekerja': 10, 'Mandor': 2 }); // Pembersihan area luas
-        addItem('str-001', capacity * 0.5, { 'Pekerja': 10, 'Operator Alat Berat': 2 }); // Galian bendungan (approx)
-        addItem('infra-002', capacity * 0.3, { 'Pekerja': 8, 'Tukang Batu': 4 }); // Beton massa spillway
-        addItem('infra-003', gates * 500, { 'Pekerja': 4, 'Tukang Las': 2 }); // Pintu Air Besi / Baja
-      }
+      // Elektrikal
+      const lightPts = projectData.lightPointCount ?? 10;
+      const socketPts = projectData.socketPointCount ?? 8;
+      if (lightPts > 0) addItem('elk-001', lightPts, { 'Pekerja': 1, 'Tukang Listrik': 2, 'Mandor': 1 });
+      if (socketPts > 0) addItem('elk-002', socketPts, { 'Pekerja': 1, 'Tukang Listrik': 2, 'Mandor': 1 });
+      addItem('elk-003', 1, { 'Pekerja': 1, 'Tukang Listrik': 2, 'Mandor': 1 });
 
       setRabItems(generated);
       setLoading(false);
@@ -802,37 +667,28 @@ const RABCalculator = () => {
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-text-secondary text-sm font-medium">Tipe Proyek</label>
-                <select
-                  value={projectData.type}
-                  onChange={(e) => setProjectData({ ...projectData, type: e.target.value as Project['type'] })}
-                  className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary appearance-none transition-all"
-                >
-                  <option value="rumah">Rumah Minimalis</option>
-                  <option value="sekolah">Sekolah / Gedung</option>
-                  <option value="kantor">Kantor / Perkantoran</option>
-                  <option value="rumah_sakit">Rumah Sakit</option>
-                  <option value="jembatan">Jembatan</option>
-                  <option value="bendungan">Bendungan</option>
-                </select>
+                <label className="text-text-secondary text-sm font-medium">Tipe Bangunan</label>
+                <input
+                  value="Rumah Minimalis"
+                  disabled
+                  className="w-full h-12 bg-background/60 border border-border rounded-xl px-4 text-white outline-none"
+                />
               </div>
-              {['rumah', 'sekolah', 'rumah_sakit', 'kantor'].includes(projectData.type) && (
-                <div className="space-y-2">
-                  <label className="text-text-secondary text-sm font-medium">Jumlah Lantai</label>
-                  <p className="text-[11px] text-yellow-400/80 bg-yellow-500/5 border border-yellow-500/20 rounded-lg px-2 py-1">🏠 Berapa tingkat bangunannya? Biasa = 1 lantai.</p>
-                  <input 
-                    type="number" 
-                    min="1"
-                    value={projectData.floors}
-                    onChange={(e) => {
-                      const floors = parseInt(e.target.value) || 1;
-                      const dims = Array(floors).fill(0).map((_, i) => projectData.dimensions![i] || { length: 0, width: 0, height: 3 });
-                      setProjectData({...projectData, floors, dimensions: dims});
-                    }}
-                    className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                  />
-                </div>
-              )}
+              <div className="space-y-2">
+                <label className="text-text-secondary text-sm font-medium">Jumlah Lantai</label>
+                <p className="text-[11px] text-yellow-400/80 bg-yellow-500/5 border border-yellow-500/20 rounded-lg px-2 py-1">🏠 Berapa tingkat rumahnya? Rumah biasa = 1 lantai. Ada kamar di atas = 2 lantai.</p>
+                <input 
+                  type="number" 
+                  min="1"
+                  value={projectData.floors}
+                  onChange={(e) => {
+                    const floors = parseInt(e.target.value) || 1;
+                    const dims = Array(floors).fill(0).map((_, i) => projectData.dimensions![i] || { length: 0, width: 0, height: 3 });
+                    setProjectData({...projectData, floors, dimensions: dims});
+                  }}
+                  className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                />
+              </div>
               <div className="space-y-2">
                 <label className="text-text-secondary text-sm font-medium">Grade Material</label>
                 <p className="text-[11px] text-yellow-400/80 bg-yellow-500/5 border border-yellow-500/20 rounded-lg px-2 py-1">🧱 Pilih kualitas bahan bangunan: Ekonomis = harga murah, Standar = harga normal, Premium = harga mahal tapi bagus.</p>
@@ -855,22 +711,20 @@ const RABCalculator = () => {
                   Transparansi merek material tampil di tab Kebutuhan Material.
                 </p>
               </div>
-              {['rumah', 'sekolah', 'rumah_sakit', 'kantor'].includes(projectData.type) && (
-                <div className="space-y-2">
-                  <label className="text-text-secondary text-sm font-medium">Model Atap</label>
-                  <select
-                    value={projectData.roofModel}
-                    onChange={(e) => setProjectData({ ...projectData, roofModel: e.target.value as Project['roofModel'] })}
-                    className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary appearance-none transition-all"
-                  >
-                    <option value="1-air">Atap 1 Air</option>
-                    <option value="2-air">Atap 2 Air</option>
-                    <option value="3-air">Atap 3 Air</option>
-                    <option value="4-air">Atap 4 Air</option>
-                    <option value="dak">Atap Dak Beton</option>
-                  </select>
-                </div>
-              )}
+              <div className="space-y-2">
+                <label className="text-text-secondary text-sm font-medium">Model Atap</label>
+                <select
+                  value={projectData.roofModel}
+                  onChange={(e) => setProjectData({ ...projectData, roofModel: e.target.value as Project['roofModel'] })}
+                  className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary appearance-none transition-all"
+                >
+                  <option value="1-air">Atap 1 Air</option>
+                  <option value="2-air">Atap 2 Air</option>
+                  <option value="3-air">Atap 3 Air</option>
+                  <option value="4-air">Atap 4 Air</option>
+                  <option value="dak">Atap Dak Beton</option>
+                </select>
+              </div>
               <div className="space-y-2 md:col-span-2">
                 <label className="text-text-secondary text-sm font-medium flex items-center gap-2">
                   Tipe Lokasi Proyek
@@ -893,8 +747,7 @@ const RABCalculator = () => {
               </div>
             </div>
 
-            {/* Jenis Tanah & Rekomendasi Pondasi (Hanya untuk bangunan) */}
-            {['rumah', 'sekolah', 'rumah_sakit', 'kantor'].includes(projectData.type) && (
+            {/* Jenis Tanah & Rekomendasi Pondasi */}
             <div className="border-t border-border pt-6">
               <h4 className="text-sm font-bold text-text-secondary uppercase tracking-widest mb-4 flex items-center gap-2">
                 <Lightbulb size={14} className="text-primary" />
@@ -904,7 +757,7 @@ const RABCalculator = () => {
                 {/* Pilih Jenis Tanah */}
                 <div className="space-y-3">
                   <label className="text-text-secondary text-sm font-medium">Jenis Tanah di Lokasi</label>
-                  <p className="text-[11px] text-yellow-400/80 bg-yellow-500/5 border border-yellow-500/20 rounded-lg px-2 py-1">🌍 Kondisi tanah di lokasi proyek seperti apa? Jika kurang yakin, cek kondisi sekitar atau tanyakan pada ahli/warga lokal. Jenis tanah sangat menentukan kekuatan pondasi.</p>
+                  <p className="text-[11px] text-yellow-400/80 bg-yellow-500/5 border border-yellow-500/20 rounded-lg px-2 py-1">🌍 Tanah di bawah rumah kamu seperti apa? Kalau tidak tahu, tanya tukang atau tetangga yang sudah bangun rumah di sana. Jenis tanah menentukan pondasi yang cocok.</p>
                   <div className="grid grid-cols-2 gap-2">
                     {SOIL_TYPES.map(soil => (
                       <button
@@ -952,11 +805,11 @@ const RABCalculator = () => {
                           >
                             <div className="flex items-center justify-between mb-1">
                               <p className="font-bold text-sm text-white">{found.label}</p>
-                              {rec.level === 'recommended' && <span className="text-[10px] bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full flex items-center gap-1"><CheckCircle2 size={10} /> Direkomendasikan</span>}
-                              {rec.level === 'possible' && <span className="text-[10px] bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full flex items-center gap-1"><Minus size={10} /> Bisa Dipakai</span>}
-                              {rec.level === 'avoid' && <span className="text-[10px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full flex items-center gap-1"><X size={10} /> Hindari</span>}
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${LEVEL_STYLE[rec.level]}`}>
+                                {LEVEL_LABEL[rec.level]}
+                              </span>
                             </div>
-                            <p className="text-xs text-text-secondary">{found.desc}</p>
+                            <p className="text-[11px] text-text-secondary">{rec.reason}</p>
                           </button>
                         );
                       })}
@@ -965,13 +818,11 @@ const RABCalculator = () => {
                 </div>
               </div>
 
-              {/* Visual Feedback Pilihan Pondasi */}
-              {(() => {
-                if (!projectData.soilType || !projectData.foundationType) return null;
+              {/* Summary pilihan */}
+              {projectData.soilType && projectData.foundationType && (() => {
                 const soil = SOIL_TYPES.find(s => s.id === projectData.soilType);
                 const found = FOUNDATION_TYPES.find(f => f.id === projectData.foundationType);
-                const rec = FOUNDATION_RECOMMENDATIONS[projectData.soilType]?.find(r => r.id === projectData.foundationType);
-                
+                const rec = FOUNDATION_RECOMMENDATIONS[projectData.soilType!]?.find(r => r.id === projectData.foundationType);
                 return (
                   <div className="mt-4 p-4 bg-green-500/10 border border-green-500/20 rounded-xl flex items-start gap-3">
                     <CheckCircle2 size={18} className="text-green-400 shrink-0 mt-0.5" />
@@ -987,316 +838,93 @@ const RABCalculator = () => {
                 );
               })()}
             </div>
-            )}
 
-
-
-            {/* Form Khusus Bangunan Gedung (Rumah & Sekolah) */}
-            {['rumah', 'sekolah', 'rumah_sakit', 'kantor'].includes(projectData.type) && (
-              <>
-                {/* Detail Ruangan & Bukaan */}
-                <div className="border-t border-border pt-6">
-                  <h4 className="text-sm font-bold text-text-secondary uppercase tracking-widest mb-4">Detail Ruangan &amp; Bukaan</h4>
-                  
-                  {projectData.type === 'rumah_sakit' ? (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="space-y-2">
-                        <label className="text-text-secondary text-sm font-medium">Ruang Rawat Inap</label>
-                        <input type="number" min="0" value={projectData.hospitalInpatientRooms || 0}
-                          onChange={(e) => setProjectData({...projectData, hospitalInpatientRooms: parseInt(e.target.value) || 0})}
-                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-text-secondary text-sm font-medium">Ruang Operasi</label>
-                        <input type="number" min="0" value={projectData.hospitalSurgeryRooms || 0}
-                          onChange={(e) => setProjectData({...projectData, hospitalSurgeryRooms: parseInt(e.target.value) || 0})}
-                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-text-secondary text-sm font-medium">UGD / IGD</label>
-                        <input type="number" min="0" value={projectData.hospitalEmergencyRooms || 0}
-                          onChange={(e) => setProjectData({...projectData, hospitalEmergencyRooms: parseInt(e.target.value) || 0})}
-                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-text-secondary text-sm font-medium">Kamar Mayat</label>
-                        <input type="number" min="0" value={projectData.hospitalMorgue || 0}
-                          onChange={(e) => setProjectData({...projectData, hospitalMorgue: parseInt(e.target.value) || 0})}
-                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-text-secondary text-sm font-medium">Toilet Pasien/Umum</label>
-                        <input type="number" min="0" value={projectData.bathroomCount || 0}
-                          onChange={(e) => setProjectData({...projectData, bathroomCount: parseInt(e.target.value) || 0})}
-                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-text-secondary text-sm font-medium">Jumlah Pintu</label>
-                        <input type="number" min="0" value={projectData.doorCount || 0}
-                          onChange={(e) => setProjectData({...projectData, doorCount: parseInt(e.target.value) || 0})}
-                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-text-secondary text-sm font-medium">Jumlah Jendela</label>
-                        <input type="number" min="0" value={projectData.windowCount || 0}
-                          onChange={(e) => setProjectData({...projectData, windowCount: parseInt(e.target.value) || 0})}
-                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                        />
-                      </div>
-                    </div>
-                  ) : projectData.type === 'kantor' ? (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="space-y-2">
-                        <label className="text-text-secondary text-sm font-medium">Ruang Kerja (Workspace)</label>
-                        <input type="number" min="0" value={projectData.officeWorkspace || 0}
-                          onChange={(e) => setProjectData({...projectData, officeWorkspace: parseInt(e.target.value) || 0})}
-                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-text-secondary text-sm font-medium">Ruang Meeting</label>
-                        <input type="number" min="0" value={projectData.officeMeetingRoom || 0}
-                          onChange={(e) => setProjectData({...projectData, officeMeetingRoom: parseInt(e.target.value) || 0})}
-                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-text-secondary text-sm font-medium">Pantri</label>
-                        <input type="number" min="0" value={projectData.officePantry || 0}
-                          onChange={(e) => setProjectData({...projectData, officePantry: parseInt(e.target.value) || 0})}
-                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-text-secondary text-sm font-medium">Resepsionis / Lobi</label>
-                        <input type="number" min="0" value={projectData.officeReception || 0}
-                          onChange={(e) => setProjectData({...projectData, officeReception: parseInt(e.target.value) || 0})}
-                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-text-secondary text-sm font-medium">Ruang CEO / Kadis</label>
-                        <input type="number" min="0" value={projectData.officeDirectorRoom || 0}
-                          onChange={(e) => setProjectData({...projectData, officeDirectorRoom: parseInt(e.target.value) || 0})}
-                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-text-secondary text-sm font-medium">Ruang Manager</label>
-                        <input type="number" min="0" value={projectData.officeManagerRoom || 0}
-                          onChange={(e) => setProjectData({...projectData, officeManagerRoom: parseInt(e.target.value) || 0})}
-                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-text-secondary text-sm font-medium">Ruang Server</label>
-                        <input type="number" min="0" value={projectData.officeServerRoom || 0}
-                          onChange={(e) => setProjectData({...projectData, officeServerRoom: parseInt(e.target.value) || 0})}
-                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-text-secondary text-sm font-medium">Kamar Mandi / Toilet</label>
-                        <input type="number" min="0" value={projectData.bathroomCount || 0}
-                          onChange={(e) => setProjectData({...projectData, bathroomCount: parseInt(e.target.value) || 0})}
-                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-text-secondary text-sm font-medium">Jumlah Pintu</label>
-                        <input type="number" min="0" value={projectData.doorCount || 0}
-                          onChange={(e) => setProjectData({...projectData, doorCount: parseInt(e.target.value) || 0})}
-                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-text-secondary text-sm font-medium">Jumlah Jendela</label>
-                        <input type="number" min="0" value={projectData.windowCount || 0}
-                          onChange={(e) => setProjectData({...projectData, windowCount: parseInt(e.target.value) || 0})}
-                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                        />
-                      </div>
-                    </div>
-                  ) : projectData.type === 'sekolah' ? (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="space-y-2">
-                        <label className="text-text-secondary text-sm font-medium">Ruang Kelas</label>
-                        <input type="number" min="0" value={projectData.schoolClassrooms || 0}
-                          onChange={(e) => setProjectData({...projectData, schoolClassrooms: parseInt(e.target.value) || 0})}
-                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-text-secondary text-sm font-medium">Ruang Guru</label>
-                        <input type="number" min="0" value={projectData.schoolTeacherRooms || 0}
-                          onChange={(e) => setProjectData({...projectData, schoolTeacherRooms: parseInt(e.target.value) || 0})}
-                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-text-secondary text-sm font-medium">Ruang Kepsek</label>
-                        <input type="number" min="0" value={projectData.schoolPrincipalRoom || 0}
-                          onChange={(e) => setProjectData({...projectData, schoolPrincipalRoom: parseInt(e.target.value) || 0})}
-                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-text-secondary text-sm font-medium">Ruang TU</label>
-                        <input type="number" min="0" value={projectData.schoolAdminRoom || 0}
-                          onChange={(e) => setProjectData({...projectData, schoolAdminRoom: parseInt(e.target.value) || 0})}
-                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-text-secondary text-sm font-medium">Perpustakaan</label>
-                        <input type="number" min="0" value={projectData.schoolLibrary || 0}
-                          onChange={(e) => setProjectData({...projectData, schoolLibrary: parseInt(e.target.value) || 0})}
-                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-text-secondary text-sm font-medium">Laboratorium</label>
-                        <input type="number" min="0" value={projectData.schoolLaboratory || 0}
-                          onChange={(e) => setProjectData({...projectData, schoolLaboratory: parseInt(e.target.value) || 0})}
-                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-text-secondary text-sm font-medium">Ruang UKS</label>
-                        <input type="number" min="0" value={projectData.schoolUKS || 0}
-                          onChange={(e) => setProjectData({...projectData, schoolUKS: parseInt(e.target.value) || 0})}
-                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-text-secondary text-sm font-medium">Mushola / Ibadah</label>
-                        <input type="number" min="0" value={projectData.schoolWorshipRoom || 0}
-                          onChange={(e) => setProjectData({...projectData, schoolWorshipRoom: parseInt(e.target.value) || 0})}
-                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-text-secondary text-sm font-medium">Toilet Siswa</label>
-                        <input type="number" min="0" value={projectData.schoolStudentToilets || 0}
-                          onChange={(e) => setProjectData({...projectData, schoolStudentToilets: parseInt(e.target.value) || 0})}
-                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-text-secondary text-sm font-medium">Toilet Guru</label>
-                        <input type="number" min="0" value={projectData.schoolTeacherToilets || 0}
-                          onChange={(e) => setProjectData({...projectData, schoolTeacherToilets: parseInt(e.target.value) || 0})}
-                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-text-secondary text-sm font-medium">Jumlah Pintu</label>
-                        <input type="number" min="0" value={projectData.doorCount || 0}
-                          onChange={(e) => setProjectData({...projectData, doorCount: parseInt(e.target.value) || 0})}
-                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-text-secondary text-sm font-medium">Jumlah Jendela</label>
-                        <input type="number" min="0" value={projectData.windowCount || 0}
-                          onChange={(e) => setProjectData({...projectData, windowCount: parseInt(e.target.value) || 0})}
-                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                        />
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="space-y-2">
-                        <label className="text-text-secondary text-sm font-medium">Kamar Tidur</label>
-                        <input type="number" min="0" value={projectData.bedroomCount}
-                          onChange={(e) => setProjectData({...projectData, bedroomCount: parseInt(e.target.value) || 0})}
-                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-text-secondary text-sm font-medium">Kamar Mandi</label>
-                        <input type="number" min="0" value={projectData.bathroomCount}
-                          onChange={(e) => setProjectData({...projectData, bathroomCount: parseInt(e.target.value) || 0})}
-                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-text-secondary text-sm font-medium">Jumlah Pintu</label>
-                        <input type="number" min="0" value={projectData.doorCount}
-                          onChange={(e) => setProjectData({...projectData, doorCount: parseInt(e.target.value) || 0})}
-                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-text-secondary text-sm font-medium">Jumlah Jendela</label>
-                        <input type="number" min="0" value={projectData.windowCount}
-                          onChange={(e) => setProjectData({...projectData, windowCount: parseInt(e.target.value) || 0})}
-                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                        />
-                      </div>
-                    </div>
-                  )}
+            {/* Detail Ruangan & Bukaan */}
+            <div className="border-t border-border pt-6">
+              <h4 className="text-sm font-bold text-text-secondary uppercase tracking-widest mb-4">Detail Ruangan &amp; Bukaan</h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="space-y-2">
+                  <label className="text-text-secondary text-sm font-medium">Kamar Tidur</label>
+                  <input type="number" min="0" value={projectData.bedroomCount}
+                    onChange={(e) => setProjectData({...projectData, bedroomCount: parseInt(e.target.value) || 0})}
+                    className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                  />
                 </div>
-
-                {/* Mekanikal & Elektrikal */}
-                <div className="border-t border-border pt-6">
-                  <h4 className="text-sm font-bold text-text-secondary uppercase tracking-widest mb-4">Mekanikal &amp; Elektrikal</h4>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-text-secondary text-sm font-medium">Titik Air Bersih</label>
-                      <input type="number" min="0" value={projectData.waterPointCount}
-                        onChange={(e) => setProjectData({...projectData, waterPointCount: parseInt(e.target.value) || 0})}
-                        className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-text-secondary text-sm font-medium">Titik Air Kotor</label>
-                      <input type="number" min="0" value={projectData.drainPointCount}
-                        onChange={(e) => setProjectData({...projectData, drainPointCount: parseInt(e.target.value) || 0})}
-                        className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-text-secondary text-sm font-medium">Titik Air Konsumsi</label>
-                      <input type="number" min="0" value={projectData.drinkingPointCount}
-                        onChange={(e) => setProjectData({...projectData, drinkingPointCount: parseInt(e.target.value) || 0})}
-                        className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-text-secondary text-sm font-medium">Titik Lampu</label>
-                      <input type="number" min="0" value={projectData.lightPointCount}
-                        onChange={(e) => setProjectData({...projectData, lightPointCount: parseInt(e.target.value) || 0})}
-                        className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-text-secondary text-sm font-medium">Titik Stop Kontak</label>
-                      <input type="number" min="0" value={projectData.socketPointCount}
-                        onChange={(e) => setProjectData({...projectData, socketPointCount: parseInt(e.target.value) || 0})}
-                        className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-text-secondary text-sm font-medium">Tipe Kloset</label>
-                      <select value={projectData.toiletType}
-                        onChange={(e) => setProjectData({...projectData, toiletType: e.target.value as 'duduk' | 'jongkok'})}
-                        className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary appearance-none transition-all"
-                      >
-                        <option value="duduk">Kloset Duduk</option>
-                        <option value="jongkok">Kloset Jongkok</option>
-                      </select>
-                    </div>
-                  </div>
+                <div className="space-y-2">
+                  <label className="text-text-secondary text-sm font-medium">Kamar Mandi</label>
+                  <input type="number" min="0" value={projectData.bathroomCount}
+                    onChange={(e) => setProjectData({...projectData, bathroomCount: parseInt(e.target.value) || 0})}
+                    className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                  />
                 </div>
-              </>
-            )}
+                <div className="space-y-2">
+                  <label className="text-text-secondary text-sm font-medium">Jumlah Pintu</label>
+                  <input type="number" min="0" value={projectData.doorCount}
+                    onChange={(e) => setProjectData({...projectData, doorCount: parseInt(e.target.value) || 0})}
+                    className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-text-secondary text-sm font-medium">Jumlah Jendela</label>
+                  <input type="number" min="0" value={projectData.windowCount}
+                    onChange={(e) => setProjectData({...projectData, windowCount: parseInt(e.target.value) || 0})}
+                    className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Mekanikal & Elektrikal */}
+            <div className="border-t border-border pt-6">
+              <h4 className="text-sm font-bold text-text-secondary uppercase tracking-widest mb-4">Mekanikal &amp; Elektrikal</h4>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <label className="text-text-secondary text-sm font-medium">Titik Air Bersih</label>
+                  <input type="number" min="0" value={projectData.waterPointCount}
+                    onChange={(e) => setProjectData({...projectData, waterPointCount: parseInt(e.target.value) || 0})}
+                    className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-text-secondary text-sm font-medium">Titik Air Kotor</label>
+                  <input type="number" min="0" value={projectData.drainPointCount}
+                    onChange={(e) => setProjectData({...projectData, drainPointCount: parseInt(e.target.value) || 0})}
+                    className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-text-secondary text-sm font-medium">Titik Air Konsumsi</label>
+                  <input type="number" min="0" value={projectData.drinkingPointCount}
+                    onChange={(e) => setProjectData({...projectData, drinkingPointCount: parseInt(e.target.value) || 0})}
+                    className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-text-secondary text-sm font-medium">Titik Lampu</label>
+                  <input type="number" min="0" value={projectData.lightPointCount}
+                    onChange={(e) => setProjectData({...projectData, lightPointCount: parseInt(e.target.value) || 0})}
+                    className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-text-secondary text-sm font-medium">Titik Stop Kontak</label>
+                  <input type="number" min="0" value={projectData.socketPointCount}
+                    onChange={(e) => setProjectData({...projectData, socketPointCount: parseInt(e.target.value) || 0})}
+                    className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-text-secondary text-sm font-medium">Tipe Kloset</label>
+                  <select value={projectData.toiletType}
+                    onChange={(e) => setProjectData({...projectData, toiletType: e.target.value as 'duduk' | 'jongkok'})}
+                    className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary appearance-none transition-all"
+                  >
+                    <option value="duduk">Kloset Duduk</option>
+                    <option value="jongkok">Kloset Jongkok</option>
+                  </select>
+                </div>
+              </div>
+            </div>
           </div>
         );
       case 2:
@@ -1304,118 +932,63 @@ const RABCalculator = () => {
           <div className="space-y-6">
             <h3 className="text-lg font-bold text-white flex items-center gap-2">
               <Layers size={20} className="text-primary" />
-              {['rumah', 'sekolah', 'rumah_sakit', 'kantor'].includes(projectData.type || 'rumah') ? 'Dimensi Per Lantai' : `Dimensi Utama ${projectData.type === 'jembatan' ? 'Jembatan' : 'Bendungan'}`}
+              Dimensi Per Lantai
             </h3>
-            <p className="text-[11px] text-yellow-400/80 bg-yellow-500/5 border border-yellow-500/20 rounded-lg px-2 py-1 mb-4">
-              {['rumah', 'sekolah', 'rumah_sakit', 'kantor'].includes(projectData.type || 'rumah') 
-                ? '📐 Isi ukuran panjang, lebar, dan tinggi proyeknya. Jangan asal isi biar harganya akurat.'
-                : '📐 Isi spesifikasi utama infrastruktur sesuai rencana desain teknis.'
-              }
-            </p>
-            
-            {/* Form Khusus Bangunan Gedung (Rumah & Sekolah) */}
-            {['rumah', 'sekolah', 'rumah_sakit', 'kantor'].includes(projectData.type || 'rumah') && (
-              <>
-                <div className="space-y-4">
-                  {projectData.dimensions?.map((dim, index) => (
-                    <div key={index} className="bg-background/50 border border-border p-4 rounded-xl grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="space-y-1">
-                        <label className="text-xs text-text-secondary uppercase font-bold tracking-wider">Panjang (m)</label>
-                        <input 
-                          type="number" 
-                          value={dim.length}
-                          onChange={(e) => {
-                            const newDims = [...projectData.dimensions!];
-                            newDims[index].length = parseFloat(e.target.value) || 0;
-                            setProjectData({...projectData, dimensions: newDims});
-                          }}
-                          className="w-full bg-background border border-border rounded-lg px-3 py-2 text-white focus:border-primary outline-none"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-xs text-text-secondary uppercase font-bold tracking-wider">Lebar (m)</label>
-                        <input 
-                          type="number" 
-                          value={dim.width}
-                          onChange={(e) => {
-                            const newDims = [...projectData.dimensions!];
-                            newDims[index].width = parseFloat(e.target.value) || 0;
-                            setProjectData({...projectData, dimensions: newDims});
-                          }}
-                          className="w-full bg-background border border-border rounded-lg px-3 py-2 text-white focus:border-primary outline-none"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-xs text-text-secondary uppercase font-bold tracking-wider">Tinggi (m)</label>
-                        <input 
-                          type="number" 
-                          value={dim.height}
-                          onChange={(e) => {
-                            const newDims = [...projectData.dimensions!];
-                            newDims[index].height = parseFloat(e.target.value) || 0;
-                            setProjectData({...projectData, dimensions: newDims});
-                          }}
-                          className="w-full bg-background border border-border rounded-lg px-3 py-2 text-white focus:border-primary outline-none"
-                        />
-                      </div>
-                    </div>
-                  ))}
+            <div className="space-y-4">
+              {projectData.dimensions?.map((dim, index) => (
+                <div key={index} className="bg-background/50 border border-border p-4 rounded-xl grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs text-text-secondary uppercase font-bold tracking-wider">Panjang (m)</label>
+                    <input 
+                      type="number" 
+                      value={dim.length}
+                      onChange={(e) => {
+                        const newDims = [...projectData.dimensions!];
+                        newDims[index].length = parseFloat(e.target.value) || 0;
+                        setProjectData({...projectData, dimensions: newDims});
+                      }}
+                      className="w-full bg-background border border-border rounded-lg px-3 py-2 text-white focus:border-primary outline-none"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs text-text-secondary uppercase font-bold tracking-wider">Lebar (m)</label>
+                    <input 
+                      type="number" 
+                      value={dim.width}
+                      onChange={(e) => {
+                        const newDims = [...projectData.dimensions!];
+                        newDims[index].width = parseFloat(e.target.value) || 0;
+                        setProjectData({...projectData, dimensions: newDims});
+                      }}
+                      className="w-full bg-background border border-border rounded-lg px-3 py-2 text-white focus:border-primary outline-none"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs text-text-secondary uppercase font-bold tracking-wider">Tinggi (m)</label>
+                    <input 
+                      type="number" 
+                      value={dim.height}
+                      onChange={(e) => {
+                        const newDims = [...projectData.dimensions!];
+                        newDims[index].height = parseFloat(e.target.value) || 0;
+                        setProjectData({...projectData, dimensions: newDims});
+                      }}
+                      className="w-full bg-background border border-border rounded-lg px-3 py-2 text-white focus:border-primary outline-none"
+                    />
+                  </div>
                 </div>
-    
-                {/* Fitur tambahan: validasi, sisi dinding, tulangan, bukaan */}
-                <DimensionExtras
-                  projectData={projectData}
-                  setProjectData={setProjectData}
-                  totalArea={totalArea}
-                  totalVolume={totalVolume}
-                  rebarConfig={rebarConfig}
-                  setRebarConfig={setRebarConfig}
-                />
-              </>
-            )}
+              ))}
+            </div>
 
-            {/* Spesifikasi Khusus Infrastruktur (Jembatan & Bendungan) */}
-            {projectData.type === 'jembatan' && (
-              <div className="space-y-4">
-                <div className="bg-background/50 border border-border p-4 rounded-xl grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-xs text-text-secondary uppercase font-bold tracking-wider">Panjang Bentang (m)</label>
-                    <input type="number" min="0" value={projectData.bridgeSpanLength ?? 0}
-                      onChange={(e) => setProjectData({...projectData, bridgeSpanLength: parseInt(e.target.value) || 0})}
-                      className="w-full h-12 bg-background border border-border rounded-lg px-4 text-white focus:outline-none focus:border-primary transition-all"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs text-text-secondary uppercase font-bold tracking-wider">Jumlah Pilar</label>
-                    <input type="number" min="0" value={projectData.bridgePillarCount ?? 0}
-                      onChange={(e) => setProjectData({...projectData, bridgePillarCount: parseInt(e.target.value) || 0})}
-                      className="w-full h-12 bg-background border border-border rounded-lg px-4 text-white focus:outline-none focus:border-primary transition-all"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {projectData.type === 'bendungan' && (
-              <div className="space-y-4">
-                <div className="bg-background/50 border border-border p-4 rounded-xl grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-xs text-text-secondary uppercase font-bold tracking-wider">Jumlah Pintu Air</label>
-                    <input type="number" min="0" value={projectData.waterGateCount ?? 0}
-                      onChange={(e) => setProjectData({...projectData, waterGateCount: parseInt(e.target.value) || 0})}
-                      className="w-full h-12 bg-background border border-border rounded-lg px-4 text-white focus:outline-none focus:border-primary transition-all"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs text-text-secondary uppercase font-bold tracking-wider">Kapasitas Tampung (m3)</label>
-                    <input type="number" min="0" value={projectData.damCapacity ?? 0}
-                      onChange={(e) => setProjectData({...projectData, damCapacity: parseInt(e.target.value) || 0})}
-                      className="w-full h-12 bg-background border border-border rounded-lg px-4 text-white focus:outline-none focus:border-primary transition-all"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
+            {/* Fitur tambahan: validasi, sisi dinding, tulangan, bukaan */}
+            <DimensionExtras
+              projectData={projectData}
+              setProjectData={setProjectData}
+              totalArea={totalArea}
+              totalVolume={totalVolume}
+              rebarConfig={rebarConfig}
+              setRebarConfig={setRebarConfig}
+            />
           </div>
         );
       case 3:
@@ -1496,12 +1069,6 @@ const RABCalculator = () => {
                     className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap flex-shrink-0 ${activeSubTab === 'template' ? 'bg-primary text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}
                   >
                     Template
-                  </button>
-                  <button 
-                    onClick={() => setActiveSubTab('bidding')}
-                    className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap flex-shrink-0 ${activeSubTab === 'bidding' ? 'bg-red-500 text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}
-                  >
-                    Bidding Strategy
                   </button>
                 </div>
               </div>
@@ -1841,71 +1408,6 @@ const RABCalculator = () => {
                   />
                 </motion.div>
               )}
-              {activeSubTab === 'bidding' && (
-                <motion.div
-                  key="bidding"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="space-y-6"
-                >
-                  <div className="glass-card p-6 bg-red-500/5 border-red-500/20">
-                    <h4 className="font-bold text-white mb-4 flex items-center gap-2">
-                      <Target size={20} className="text-red-500" />
-                      Target HPS & Auto-Bidding (Reverse Engineering)
-                    </h4>
-                    <p className="text-text-secondary text-sm mb-6">
-                      Masukkan Harga Perkiraan Sendiri (HPS) atau Target Pagu dari pemerintah/klien. Sistem AI akan memutar mundur kalkulasi dan secara otomatis menyesuaikan Profit Margin & Overhead untuk mendarat tepat pada angka penawaran yang Anda inginkan (misal: 95% dari HPS).
-                    </p>
-
-                    <div className="space-y-4">
-                      <div>
-                        <label className="text-xs text-text-secondary font-bold uppercase tracking-widest block mb-2">Target Harga Penawaran (Termasuk PPN)</label>
-                        <div className="flex flex-col sm:flex-row items-center gap-3">
-                          <input 
-                            type="number" 
-                            value={targetHPS}
-                            onChange={(e) => setTargetHPS(e.target.value ? Number(e.target.value) : '')}
-                            placeholder="Contoh: 8500000000"
-                            className="w-full sm:flex-1 bg-background border border-border rounded-xl px-4 py-3 text-white focus:border-red-500 outline-none"
-                          />
-                          <button
-                            onClick={handleAutoBidding}
-                            className="w-full sm:w-auto bg-red-500 hover:bg-red-600 text-white font-bold px-6 py-3 rounded-xl transition-all shadow-glow whitespace-nowrap"
-                          >
-                            Auto-Adjust Profit
-                          </button>
-                        </div>
-                      </div>
-
-                      {biddingStatus && (
-                        <div className={`p-4 rounded-xl border ${biddingStatus.success ? 'bg-green-500/10 border-green-500/20 text-green-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
-                          <p className="text-sm font-bold">{biddingStatus.msg}</p>
-                        </div>
-                      )}
-
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-border">
-                        <div className="bg-background/50 p-4 rounded-xl">
-                          <p className="text-[10px] text-text-secondary uppercase tracking-widest font-bold mb-1">Modal / Subtotal</p>
-                          <p className="text-white font-bold">{formatCurrency(summary.subtotal)}</p>
-                        </div>
-                        <div className="bg-background/50 p-4 rounded-xl">
-                          <p className="text-[10px] text-text-secondary uppercase tracking-widest font-bold mb-1">Overhead Aktual</p>
-                          <p className="text-blue-400 font-bold">{financials.overhead}% ({formatCurrency(summary.overheadAmount)})</p>
-                        </div>
-                        <div className="bg-background/50 p-4 rounded-xl">
-                          <p className="text-[10px] text-text-secondary uppercase tracking-widest font-bold mb-1">Profit Aktual</p>
-                          <p className="text-green-400 font-bold">{financials.profit}% ({formatCurrency(summary.profitAmount)})</p>
-                        </div>
-                        <div className="bg-background/50 p-4 rounded-xl">
-                          <p className="text-[10px] text-text-secondary uppercase tracking-widest font-bold mb-1">Grand Total</p>
-                          <p className="text-primary font-bold text-lg">{formatCurrency(summary.grandTotal)}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
             </AnimatePresence>
           </div>
         );
@@ -2045,7 +1547,7 @@ const RABCalculator = () => {
           <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-xl p-4 space-y-2">
             <p className="text-yellow-400 font-bold text-sm flex items-center gap-2">⚖️ Kejujuran adalah fondasi</p>
             <p className="text-text-secondary text-sm leading-relaxed">
-              RAB yang jujur melindungi <strong className="text-white">pemilik proyek</strong> dari kerugian,
+              RAB yang jujur melindungi <strong className="text-white">pemilik rumah</strong> dari kerugian,
               dan melindungi <strong className="text-white">kontraktor</strong> dari sengketa.
               Angka yang benar = kepercayaan yang terjaga.
             </p>
@@ -2063,11 +1565,11 @@ const RABCalculator = () => {
 
           {/* Nilai 3 — Tanggung jawab */}
           <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-4 space-y-2">
-            <p className="text-red-400 font-bold text-sm flex items-center gap-2">🏗️ Keselamatan adalah prioritas</p>
+            <p className="text-red-400 font-bold text-sm flex items-center gap-2">🏠 Keselamatan adalah prioritas</p>
             <p className="text-text-secondary text-sm leading-relaxed">
-              Bangunan atau infrastruktur yang dibangun dengan RAB yang benar = struktur yang kuat.
+              Rumah yang dibangun dengan RAB yang benar = struktur yang kuat.
               <strong className="text-white"> Jangan kurangi material demi keuntungan</strong> —
-              keselamatan pengguna/penghuni adalah tanggung jawab kita bersama.
+              keselamatan penghuni adalah tanggung jawab kita bersama.
             </p>
           </div>
 
