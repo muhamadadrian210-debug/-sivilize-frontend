@@ -229,7 +229,7 @@ const AHSPDatabase = () => {
                       <div className="flex items-center gap-3">
                         <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
                           item.category === 'Struktur' ? 'bg-blue-500/10 text-blue-500' :
-                          item.category === 'Arsitektur' ? 'bg-purple-500/10 text-purple-500' :
+                          (item as any).category === 'Arsitektur' ? 'bg-purple-500/10 text-purple-500' :
                           'bg-success/10 text-success'
                         }`}>
                           {item.category}

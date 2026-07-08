@@ -1,4 +1,4 @@
-﻿/* eslint-disable react-refresh/only-export-components */
+/* eslint-disable react-refresh/only-export-components */
 /**
  * DimensionExtras — Fitur tambahan di step 2:
  * - Validasi dimensi
@@ -285,7 +285,7 @@ const DimensionExtras = ({ projectData, setProjectData, totalArea, totalVolume, 
               <div className="space-y-1">
                 <label className="text-[10px] text-text-secondary">Diameter (mm)</label>
                 <select
-                  value={(rebarConfig as Record<string, number>)[dKey]}
+                  value={(rebarConfig as unknown as Record<string, number>)[dKey]}
                   onChange={(e) => setRebarConfig({ ...rebarConfig, [dKey]: +e.target.value })}
                   className="w-full bg-background border border-border rounded-lg px-2 py-1.5 text-white text-xs focus:border-primary outline-none"
                 >
@@ -295,7 +295,7 @@ const DimensionExtras = ({ projectData, setProjectData, totalArea, totalVolume, 
               <div className="space-y-1">
                 <label className="text-[10px] text-text-secondary">Jarak (mm)</label>
                 <select
-                  value={(rebarConfig as Record<string, number>)[sKey]}
+                  value={(rebarConfig as unknown as Record<string, number>)[sKey]}
                   onChange={(e) => setRebarConfig({ ...rebarConfig, [sKey]: +e.target.value })}
                   className="w-full bg-background border border-border rounded-lg px-2 py-1.5 text-white text-xs focus:border-primary outline-none"
                 >
