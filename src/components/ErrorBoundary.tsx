@@ -62,7 +62,7 @@ class ErrorBoundary extends Component<Props, State> {
                 </button>
               </div>
 
-              {process.env.NODE_ENV === 'development' && this.state.errorInfo && (
+              {this.state.errorInfo && (
                 <details className="mt-6 text-left">
                   <summary className="cursor-pointer text-sm text-gray-600 hover:text-gray-800">
                     Error Details (Development Only)
