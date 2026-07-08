@@ -84,7 +84,7 @@ export interface Project {
   name: string;
   location: string;
   materialGrade?: 'A' | 'B' | 'C';
-  type: 'rumah' | 'sekolah' | 'jembatan' | 'bendungan' | 'rumah_sakit';
+  type: 'rumah' | 'sekolah' | 'kantor' | 'jembatan' | 'bendungan' | 'rumah_sakit';
   roofModel?: '1-air' | '2-air' | '3-air' | '4-air' | 'dak';
   floors: number;
   dimensions: { length: number; width: number; height: number }[];
@@ -117,6 +117,11 @@ export interface Project {
   hospitalSurgeryRooms?: number;
   hospitalEmergencyRooms?: number;
   hospitalMorgue?: number;
+  // Spesifik Kantor
+  officeWorkspace?: number;
+  officeMeetingRoom?: number;
+  officePantry?: number;
+  officeReception?: number;
   // Spesifik Infrastruktur
   bridgePillarCount?: number;
   bridgeSpanLength?: number;

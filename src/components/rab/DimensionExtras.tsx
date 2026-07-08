@@ -42,7 +42,7 @@ interface DimensionExtrasProps {
 export function getDimensionErrors(projectData: Partial<Project>): string[] {
   const errors: string[] = [];
   
-  if (['rumah', 'sekolah', 'rumah_sakit'].includes(projectData.type || 'rumah')) {
+  if (['rumah', 'sekolah', 'rumah_sakit', 'kantor'].includes(projectData.type || 'rumah')) {
     const dims = projectData.dimensions ?? [];
     dims.forEach((d, i) => {
       if (d.length <= 0) errors.push(`Lantai ${i + 1}: Panjang harus > 0`);

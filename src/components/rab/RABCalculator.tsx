@@ -388,7 +388,7 @@ const RABCalculator = () => {
         });
       };
       
-      if (['rumah', 'sekolah', 'rumah_sakit'].includes(projectData.type || 'rumah')) {
+      if (['rumah', 'sekolah', 'rumah_sakit', 'kantor'].includes(projectData.type || 'rumah')) {
         // ── PEKERJAAN PERSIAPAN ──────────────────────────────────
         addItem('per-001', totalArea, { 'Pekerja': 3, 'Mandor': 1 });           // Pembersihan lokasi
       addItem('per-002', perimeter * 1.2, { 'Pekerja': 2, 'Tukang Kayu': 2, 'Mandor': 1 }); // Bowplank
@@ -563,6 +563,24 @@ const RABCalculator = () => {
           const uksCount = projectData.schoolUKS || 0;
           if (uksCount > 0) {
             addItem('rs-001', uksCount * 12, { 'Pekerja': 2, 'Tukang Khusus': 2, 'Mandor': 1 }); // 12m2 per UKS
+          }
+        }
+        
+        // ── KHUSUS KANTOR ──
+        if (projectData.type === 'kantor') {
+          const meetingCount = projectData.officeMeetingRoom || 0;
+          if (meetingCount > 0) {
+            addItem('elkal-002', meetingCount * 6, { 'Pekerja': 2, 'Tukang Listrik': 2 }); // Stop kontak & audio ekstra
+          }
+          
+          const serverCount = projectData.officeServerRoom || 0;
+          if (serverCount > 0) {
+            addItem('elkal-001', serverCount * 4, { 'Pekerja': 2, 'Tukang Listrik': 2 }); // Kabel server/data ekstra
+          }
+
+          const pantryCount = projectData.officePantry || 0;
+          if (pantryCount > 0) {
+            addItem('ins-002', pantryCount * 2, { 'Pekerja': 1, 'Tukang Pipa': 1 }); // Air bersih & kotor pantry
           }
         }
 
@@ -782,12 +800,13 @@ const RABCalculator = () => {
                 >
                   <option value="rumah">Rumah Minimalis</option>
                   <option value="sekolah">Sekolah / Gedung</option>
+                  <option value="kantor">Kantor / Perkantoran</option>
                   <option value="rumah_sakit">Rumah Sakit</option>
                   <option value="jembatan">Jembatan</option>
                   <option value="bendungan">Bendungan</option>
                 </select>
               </div>
-              {['rumah', 'sekolah', 'rumah_sakit'].includes(projectData.type) && (
+              {['rumah', 'sekolah', 'rumah_sakit', 'kantor'].includes(projectData.type) && (
                 <div className="space-y-2">
                   <label className="text-text-secondary text-sm font-medium">Jumlah Lantai</label>
                   <p className="text-[11px] text-yellow-400/80 bg-yellow-500/5 border border-yellow-500/20 rounded-lg px-2 py-1">🏠 Berapa tingkat bangunannya? Biasa = 1 lantai.</p>
@@ -826,7 +845,7 @@ const RABCalculator = () => {
                   Transparansi merek material tampil di tab Kebutuhan Material.
                 </p>
               </div>
-              {['rumah', 'sekolah', 'rumah_sakit'].includes(projectData.type) && (
+              {['rumah', 'sekolah', 'rumah_sakit', 'kantor'].includes(projectData.type) && (
                 <div className="space-y-2">
                   <label className="text-text-secondary text-sm font-medium">Model Atap</label>
                   <select
@@ -865,7 +884,7 @@ const RABCalculator = () => {
             </div>
 
             {/* Jenis Tanah & Rekomendasi Pondasi (Hanya untuk bangunan) */}
-            {['rumah', 'sekolah', 'rumah_sakit'].includes(projectData.type) && (
+            {['rumah', 'sekolah', 'rumah_sakit', 'kantor'].includes(projectData.type) && (
             <div className="border-t border-border pt-6">
               <h4 className="text-sm font-bold text-text-secondary uppercase tracking-widest mb-4 flex items-center gap-2">
                 <Lightbulb size={14} className="text-primary" />
@@ -963,7 +982,7 @@ const RABCalculator = () => {
 
 
             {/* Form Khusus Bangunan Gedung (Rumah & Sekolah) */}
-            {['rumah', 'sekolah', 'rumah_sakit'].includes(projectData.type) && (
+            {['rumah', 'sekolah', 'rumah_sakit', 'kantor'].includes(projectData.type) && (
               <>
                 {/* Detail Ruangan & Bukaan */}
                 <div className="border-t border-border pt-6">
@@ -1001,6 +1020,65 @@ const RABCalculator = () => {
                       </div>
                       <div className="space-y-2">
                         <label className="text-text-secondary text-sm font-medium">Toilet Pasien/Umum</label>
+                        <input type="number" min="0" value={projectData.bathroomCount || 0}
+                          onChange={(e) => setProjectData({...projectData, bathroomCount: parseInt(e.target.value) || 0})}
+                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-text-secondary text-sm font-medium">Jumlah Pintu</label>
+                        <input type="number" min="0" value={projectData.doorCount || 0}
+                          onChange={(e) => setProjectData({...projectData, doorCount: parseInt(e.target.value) || 0})}
+                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-text-secondary text-sm font-medium">Jumlah Jendela</label>
+                        <input type="number" min="0" value={projectData.windowCount || 0}
+                          onChange={(e) => setProjectData({...projectData, windowCount: parseInt(e.target.value) || 0})}
+                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                        />
+                      </div>
+                    </div>
+                  ) : projectData.type === 'kantor' ? (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-text-secondary text-sm font-medium">Ruang Kerja (Workspace)</label>
+                        <input type="number" min="0" value={projectData.officeWorkspace || 0}
+                          onChange={(e) => setProjectData({...projectData, officeWorkspace: parseInt(e.target.value) || 0})}
+                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-text-secondary text-sm font-medium">Ruang Meeting</label>
+                        <input type="number" min="0" value={projectData.officeMeetingRoom || 0}
+                          onChange={(e) => setProjectData({...projectData, officeMeetingRoom: parseInt(e.target.value) || 0})}
+                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-text-secondary text-sm font-medium">Pantri</label>
+                        <input type="number" min="0" value={projectData.officePantry || 0}
+                          onChange={(e) => setProjectData({...projectData, officePantry: parseInt(e.target.value) || 0})}
+                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-text-secondary text-sm font-medium">Resepsionis / Lobi</label>
+                        <input type="number" min="0" value={projectData.officeReception || 0}
+                          onChange={(e) => setProjectData({...projectData, officeReception: parseInt(e.target.value) || 0})}
+                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-text-secondary text-sm font-medium">Ruang Server</label>
+                        <input type="number" min="0" value={projectData.officeServerRoom || 0}
+                          onChange={(e) => setProjectData({...projectData, officeServerRoom: parseInt(e.target.value) || 0})}
+                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-text-secondary text-sm font-medium">Kamar Mandi / Toilet</label>
                         <input type="number" min="0" value={projectData.bathroomCount || 0}
                           onChange={(e) => setProjectData({...projectData, bathroomCount: parseInt(e.target.value) || 0})}
                           className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
@@ -1202,17 +1280,17 @@ const RABCalculator = () => {
           <div className="space-y-6">
             <h3 className="text-lg font-bold text-white flex items-center gap-2">
               <Layers size={20} className="text-primary" />
-              {['rumah', 'sekolah', 'rumah_sakit'].includes(projectData.type || 'rumah') ? 'Dimensi Per Lantai' : `Dimensi Utama ${projectData.type === 'jembatan' ? 'Jembatan' : 'Bendungan'}`}
+              {['rumah', 'sekolah', 'rumah_sakit', 'kantor'].includes(projectData.type || 'rumah') ? 'Dimensi Per Lantai' : `Dimensi Utama ${projectData.type === 'jembatan' ? 'Jembatan' : 'Bendungan'}`}
             </h3>
             <p className="text-[11px] text-yellow-400/80 bg-yellow-500/5 border border-yellow-500/20 rounded-lg px-2 py-1 mb-4">
-              {['rumah', 'sekolah', 'rumah_sakit'].includes(projectData.type || 'rumah') 
+              {['rumah', 'sekolah', 'rumah_sakit', 'kantor'].includes(projectData.type || 'rumah') 
                 ? '📐 Isi ukuran panjang, lebar, dan tinggi proyeknya. Jangan asal isi biar harganya akurat.'
                 : '📐 Isi spesifikasi utama infrastruktur sesuai rencana desain teknis.'
               }
             </p>
             
             {/* Form Khusus Bangunan Gedung (Rumah & Sekolah) */}
-            {['rumah', 'sekolah', 'rumah_sakit'].includes(projectData.type || 'rumah') && (
+            {['rumah', 'sekolah', 'rumah_sakit', 'kantor'].includes(projectData.type || 'rumah') && (
               <>
                 <div className="space-y-4">
                   {projectData.dimensions?.map((dim, index) => (
