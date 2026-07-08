@@ -956,6 +956,7 @@ const RABCalculator = () => {
                 );
               })()}
             </div>
+            )}
 
 
 
@@ -1018,9 +1019,6 @@ const RABCalculator = () => {
                         />
                       </div>
                     </div>
-                  ) : (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="space-y-2">
                   ) : projectData.type === 'sekolah' ? (
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div className="space-y-2">
