@@ -1,313 +1,121 @@
 # 🏗️ Sivilize Hub Pro
-
-> Platform teknik sipil tercanggih untuk perhitungan RAB, manajemen proyek, dan analisis AHSP berbasis AI.
+> **Platform Teknik Sipil Tercanggih untuk Perhitungan RAB, Manajemen Proyek, dan Analisis AHSP Berbasis AI.**
 
 🔗 **Live Demo: [sivilize-hub-pro.vercel.app](https://sivilize-hub-pro.vercel.app)**
 
----
-
-## 📋 Tentang Project
-
-Sivilize Hub Pro adalah aplikasi web fullstack untuk kalkulasi **Rencana Anggaran Biaya (RAB)** konstruksi yang mengacu pada standar **AHSP/SNI Indonesia**. Dirancang untuk kontraktor, konsultan, dan mahasiswa teknik sipil yang membutuhkan perhitungan biaya konstruksi yang akurat, cepat, dan profesional.
+Sivilize Hub Pro adalah solusi digital revolusioner yang dirancang khusus untuk memodernisasi industri konstruksi di Indonesia. Aplikasi ini mengotomatiskan proses kalkulasi Rencana Anggaran Biaya (RAB) dan mengintegrasikan manajemen proyek secara komprehensif. Dengan berpedoman pada standar **AHSP (Analisa Harga Satuan Pekerjaan) / SNI**, Sivilize Hub Pro memastikan setiap perhitungan tidak hanya cepat, tetapi juga akurat, profesional, dan siap dipertanggungjawabkan.
 
 ---
 
-## ✨ Fitur Utama
+## 🎯 Target Pengguna (Siapa yang Membutuhkan Sivilize Hub Pro?)
 
-### 🧮 Kalkulator RAB
-- Perhitungan otomatis berdasarkan standar AHSP/SNI
-- 4 kategori pekerjaan: Struktur, Dinding, Lantai, Finishing
-- Subtotal per kategori + Grand Total dengan PPN & Profit
-- Harga material per wilayah Indonesia
-
-### 📊 Manajemen Proyek
-- Buat, edit, dan kelola multiple proyek
-- Status proyek: Draft, Ongoing, Completed
-- Timeline dan estimasi waktu pengerjaan
-- Kurva S untuk monitoring progress
-
-### 🗄️ Database AHSP
-- Database AHSP/SNI lengkap
-- Custom AHSP editor
-- HSPK Manager per wilayah
-
-### 📤 Export Profesional
-- Export PDF format RAB siap presentasi
-- Export Excel multi-sheet dengan grouped structure
-- Preview sebelum export
-
-### 📅 Buku Harian
-- Log aktivitas harian proyek
-- Tracking progress pekerjaan
-
-### 💰 Laporan Keuangan
-- Realisasi biaya vs anggaran
-- Cost tracker per item pekerjaan
-
-### 🤖 AI Vision
-- Analisis gambar denah otomatis menggunakan Google Gemini AI
-- Estimasi RAB dari foto denah
-
-### 🔐 Autentikasi & Keamanan
-- Register & Login dengan OTP via email
-- JWT Authentication (30 hari)
-- Enkripsi password bcrypt
-- Rate limiting & firewall custom
-- Proteksi NoSQL injection, XSS, HPP
-
-### 👤 Admin Panel
-- Activity log viewer
-- User management
-- Backend status monitoring
+Aplikasi ini didesain secara khusus untuk berbagai profesional di ekosistem konstruksi:
+1. **Kontraktor & Pemborong**: Menyusun penawaran harga (bidding) dengan cepat, mengatur anggaran, dan memantau biaya pengeluaran (cost-tracking) agar proyek tetap profit.
+2. **Konsultan Perencana & Pengawas**: Membuat dokumen RAB dan Bill of Quantities (BoQ) yang profesional, rapi, dan sesuai dengan standar dinas PUPR.
+3. **Developer Properti**: Mengestimasi biaya pembangunan perumahan atau klaster secara presisi sebelum eksekusi lapangan.
+4. **Mahasiswa Teknik Sipil & Arsitektur**: Sebagai alat bantu belajar untuk memahami struktur penyusunan RAB dan AHSP di dunia kerja nyata.
+5. **Estimator Independen**: Bekerja lepas untuk menyusun RAB klien dengan waktu pengerjaan yang jauh lebih singkat.
 
 ---
 
-## 🛠️ Tech Stack
+## ✨ Fitur Unggulan Secara Detail
 
-### Frontend
-| Teknologi | Versi | Fungsi |
-|-----------|-------|--------|
-| React | 19 | UI Framework |
-| TypeScript | 5.9 | Bahasa utama |
-| Vite | 8 | Build tool |
-| Tailwind CSS | 4 | Styling |
-| Zustand | 5 | State management |
-| Axios | 1.14 | HTTP client |
-| Framer Motion | 12 | Animasi |
-| Recharts | 3 | Grafik & chart |
-| jsPDF + autoTable | 2.5 / 3.8 | Export PDF |
-| XLSX | 0.18 | Export Excel |
-| Lucide React | 0.475 | Icon library |
-| Firebase | 12 | Auth tambahan |
+### 1. 🧮 Kalkulator RAB (Rencana Anggaran Biaya) Super Pintar
+Sivilize Hub Pro mengubah cara kuno menghitung RAB menggunakan spreadsheet manual menjadi sistem cerdas yang terintegrasi:
+- **Kategori Terstruktur**: Pecah pekerjaan menjadi kategori besar seperti *Pekerjaan Persiapan*, *Pekerjaan Struktur*, *Pekerjaan Arsitektur*, *Pekerjaan Plumbing*, hingga *Finishing*.
+- **Perhitungan Otomatis**: Masukkan volume pekerjaan, dan sistem akan langsung mengalikan dengan Harga Satuan Pekerjaan (HSP), lalu menyusun Subtotal dan Grand Total secara real-time.
+- **Kustomisasi Pajak & Profit**: Atur besaran PPN (Pajak Pertambahan Nilai), persentase Keuntungan (Profit), Overhead, dan Biaya Tak Terduga (Contingency) sesuai kesepakatan kontrak.
+- **Tingkat Komponen Dalam Negeri (TKDN)**: Kalkulasi persentase penggunaan material lokal untuk proyek-proyek pemerintah (BUMN/PUPR).
 
-### Backend
-| Teknologi | Versi | Fungsi |
-|-----------|-------|--------|
-| Node.js | ≥18 | Runtime |
-| Express.js | 4.21 | Web framework |
-| Mongoose | 9.3 | MongoDB ODM |
-| JWT | 9 | Autentikasi |
-| bcryptjs | 3 | Enkripsi password |
-| Nodemailer | 8 | Kirim email OTP |
-| Helmet | 8 | Security headers |
-| express-rate-limit | 8 | Rate limiting |
-| express-mongo-sanitize | 2 | Proteksi NoSQL injection |
-| HPP | 0.2 | HTTP Parameter Pollution protection |
-| Multer | 1.4 | Upload file |
-| ExcelJS | 4.4 | Generate Excel di server |
-| PDFKit | 0.18 | Generate PDF di server |
+### 2. 🗄️ Database AHSP (Analisa Harga Satuan Pekerjaan) Terpadu
+Tidak perlu lagi membuka buku tebal AHSP/SNI setiap kali ingin menghitung harga satuan:
+- **Master Data Lengkap**: Tersedia ratusan template AHSP untuk berbagai jenis pekerjaan (Galian, Beton, Pasangan Bata, Plesteran, Atap, Baja, dll).
+- **Update Harga Material per Wilayah**: Harga material (Semen, Besi, Pasir) dan Upah Pekerja (Tukang, Mandor) dapat disesuaikan dengan standar HSPK (Harga Satuan Pokok Kegiatan) kabupaten/kota masing-masing.
+- **Custom AHSP Editor**: Buat analisis harga satuan Anda sendiri jika pekerjaan tersebut spesifik atau tidak ada di standar SNI.
 
-### Database & Infrastructure
-| Teknologi | Fungsi |
-|-----------|--------|
-| MongoDB Atlas | Database cloud (NoSQL) |
-| Vercel | Hosting frontend + backend |
-| GitHub | Source control + CI/CD |
+### 3. 📤 Ekspor Dokumen Standar Industri (PDF & Excel)
+Hasil akhir dari sebuah RAB adalah dokumen presentasi. Sivilize Hub Pro menghasilkan dokumen siap cetak standar tender:
+- **Ekspor Excel (Format Standar PU / B2G)**: 
+  - *Sheet 1*: Rekapitulasi Biaya (dengan Border profesional, angka Rp, dan cetak tebal untuk subtotal).
+  - *Sheet 2*: Bill of Quantities (Daftar Kuantitas dan Harga).
+  - *Sheet 3*: Breakdown Analisa Harga Satuan Pekerjaan.
+  - *Sheet Tambahan*: Ekspor format BoQ Kosong untuk dibagikan ke vendor/subkon saat proses tender.
+- **Ekspor PDF Profesional**: Cetak RAB menjadi dokumen PDF cantik yang dilengkapi Kop Surat Perusahaan, informasi proyek, nomor dokumen, dan kolom tanda tangan (Dibuat, Diperiksa, Disetujui).
 
----
+### 4. 📊 Manajemen Proyek & Kurva S
+Pantau progres dari awal hingga akhir tanpa perlu aplikasi pihak ketiga:
+- **Project Dashboard**: Lihat ringkasan proyek yang sedang berjalan (Ongoing), draf (Draft), atau yang sudah selesai (Completed).
+- **Kurva S (S-Curve) Otomatis**: Buat jadwal waktu (Time Schedule) bobot pekerjaan, dan sistem akan membuat grafik Kurva S secara otomatis untuk membandingkan Rencana vs Realisasi.
+- **Log Buku Harian Proyek**: Catat laporan cuaca, jumlah tenaga kerja, material masuk, dan kendala harian langsung dari lapangan menggunakan perangkat mobile.
 
-## 🚀 Cara Setup & Jalankan
+### 5. 💰 Modul Laporan Keuangan (Cost Tracking)
+Mencegah proyek dari kerugian (over-budget):
+- **Budget vs Actual**: Catat setiap pengeluaran material dan upah yang terjadi di lapangan, lalu bandingkan dengan RAB awal.
+- **Laba/Rugi Real-Time**: Ketahui secara presisi berapa sisa budget (margin) yang Anda miliki saat ini.
+- **Manajemen Upah Tukang**: Generate sistem payroll/upah mingguan untuk mandor, tukang, dan pekerja kasar, lalu ekspor langsung ke Excel.
 
-### Prerequisites
-- Node.js >= 18.0.0
-- npm >= 8.0.0
-- Akun MongoDB Atlas
-- Akun Vercel
+### 6. 🤖 Sivilize AI Vision (Estimator Cerdas)
+Fitur eksperimental yang mengadopsi kecerdasan buatan:
+- Upload foto denah kasar atau sketsa bangunan.
+- AI akan mencoba menganalisis dan memperkirakan volume pekerjaan serta memprediksi kebutuhan material utama.
 
-### 1. Clone Repository
-```bash
-git clone https://github.com/muhamadadrian/sivilize-hub-pro.git
-cd sivilize-hub-pro
-```
-
-### 2. Setup Frontend
-```bash
-# Install dependencies
-npm install
-
-# Copy env file
-cp .env.example .env.local
-
-# Edit .env.local
-VITE_API_URL=http://localhost:5000/api
-VITE_GEMINI_API_KEY=your_gemini_api_key
-```
-
-### 3. Setup Backend
-```bash
-cd server
-
-# Install dependencies
-npm install
-
-# Copy env file
-cp .env.example .env
-
-# Edit .env
-PORT=5000
-NODE_ENV=development
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/sivilize
-JWT_SECRET=your_jwt_secret_key
-ALLOWED_ORIGINS=http://localhost:5173
-SMTP_USER=your_email@gmail.com
-SMTP_PASS=your_gmail_app_password
-ADMIN_ALERT_EMAIL=your_email@gmail.com
-```
-
-### 4. Jalankan Development
-```bash
-# Terminal 1 - Backend
-cd server
-npm run dev
-
-# Terminal 2 - Frontend
-cd ..
-npm run dev
-```
-
-Frontend: `http://localhost:5173`
-Backend: `http://localhost:5000`
+### 7. 🛡️ Keamanan Data Tingkat Tinggi
+Walaupun proyek ini berjalan di cloud, keamanan data tetap menjadi prioritas absolut:
+- Autentikasi ketat menggunakan sistem One-Time Password (OTP) via Email.
+- Sesi login dilindungi dengan JWT (JSON Web Token).
+- Enkripsi password menggunakan Bcrypt (Salt factor 10).
+- Proteksi Anti-Spam, Rate Limiting, XSS Protection, dan Custom Firewall untuk mencegah injeksi berbahaya.
 
 ---
 
-## 🌐 Deploy ke Vercel
+## 🔄 Alur Kerja (Workflow) Sivilize Hub Pro
 
-### Backend
-```bash
-cd server
-npx vercel --prod
-```
+Bagaimana cara menggunakan aplikasi ini dari nol hingga menjadi dokumen RAB?
 
-Set environment variables di Vercel Dashboard → Settings → Environment Variables:
-- `MONGODB_URI`
-- `JWT_SECRET`
-- `SMTP_USER`
-- `SMTP_PASS`
-- `ADMIN_ALERT_EMAIL`
-- `NODE_ENV=production`
-- `ALLOWED_ORIGINS=https://your-frontend.vercel.app`
-
-### Frontend
-```bash
-# Di root project
-npx vercel --prod
-```
-
-Set environment variables:
-- `VITE_API_URL=https://your-backend.vercel.app/api`
-- `VITE_GEMINI_API_KEY=your_gemini_api_key`
+1. **Membuat Proyek Baru**
+   Masuk ke menu Dashboard, klik "Buat Proyek". Masukkan nama klien, lokasi proyek, dan estimasi waktu.
+2. **Mengatur Harga Dasar**
+   Masuk ke menu Database Material, atur harga Semen, Besi, Pasir, dan upah pekerja sesuai dengan harga toko bangunan di kota Anda.
+3. **Mulai Menyusun RAB**
+   Buka kalkulator RAB. Pilih template pekerjaan (misal: "Pekerjaan Beton Bertulang"). Masukkan volume (misal: 15 m3). Sistem akan otomatis menghitung total harga berdasarkan AHSP.
+4. **Atur PPN & Profit**
+   Buka pengaturan finansial, tentukan apakah klien dikenakan PPN 11% atau tidak, dan berapa % profit yang ingin Anda ambil.
+5. **Ekspor & Presentasi**
+   Klik tombol "Ekspor/Cetak". Pilih Excel atau PDF. Dokumen langsung terunduh ke perangkat Anda dan siap dikirim via WhatsApp atau Email ke klien/owner.
+6. **Mulai Pelaksanaan (Buku Harian)**
+   Saat proyek berjalan, buka fitur "Daily Log" setiap sore untuk mencatat progres harian.
 
 ---
 
-## 📁 Struktur Project
+## ❓ FAQ (Pertanyaan yang Sering Diajukan)
 
-```
-sivilize-hub-pro/
-├── src/
-│   ├── components/
-│   │   ├── admin/          # Admin dashboard & activity log
-│   │   ├── ahsp/           # AHSP database & editor
-│   │   ├── analysis/       # Analisis struktur
-│   │   ├── auth/           # Halaman login/register
-│   │   ├── common/         # Navbar, Sidebar, Toast, dll
-│   │   ├── daily-log/      # Buku harian
-│   │   ├── dashboard/      # Dashboard utama
-│   │   ├── export/         # Preview & export RAB
-│   │   ├── financial/      # Laporan keuangan
-│   │   ├── legal/          # Privacy Policy, ToS
-│   │   └── rab/            # Kalkulator RAB & fitur terkait
-│   ├── contexts/           # React context (Language)
-│   ├── data/               # Data statis AHSP, harga
-│   ├── hooks/              # Custom hooks
-│   ├── i18n/               # Terjemahan (ID/EN)
-│   ├── lib/                # Firebase config
-│   ├── services/           # API service (axios)
-│   ├── store/              # Zustand store
-│   ├── types/              # TypeScript types
-│   └── utils/              # Helper functions
-├── server/
-│   ├── api/                # Vercel serverless entry
-│   ├── config/             # Database config
-│   ├── controllers/        # Business logic
-│   ├── middleware/         # Auth, firewall, security
-│   ├── models/             # MongoDB models
-│   ├── routes/             # API routes
-│   ├── utils/              # Email, export, calculator
-│   └── validators/         # Input validation
-├── public/                 # Static assets
-├── .env.example            # Template env frontend
-└── package.json
-```
+**1. Apakah perhitungan Sivilize Hub Pro sudah sesuai SNI?**
+Ya, koefisien material dan tenaga kerja yang digunakan sebagai *default* di dalam sistem mengacu pada standar Analisa Harga Satuan Pekerjaan (AHSP) dari regulasi pemerintah (PUPR/SNI).
+
+**2. Apakah saya bisa mengubah harga materialnya sendiri?**
+Tentu saja. Sivilize Hub Pro bersifat dinamis. Anda bisa menyesuaikan semua harga material dasar, upah, hingga koefisien jika dirasa standar SNI terlalu tinggi atau terlalu rendah untuk proyek Anda.
+
+**3. Dokumen apa saja yang dihasilkan oleh sistem?**
+Sistem menghasilkan Rekapitulasi RAB, Daftar Kuantitas dan Harga (BoQ), Breakdown Analisa Harga Satuan Pekerjaan (AHSP), Laporan Kurva S, hingga Rekap Gaji/Upah pekerja. 
+
+**4. Apakah data proyek saya aman?**
+Sangat aman. Setiap akun memiliki ruang kerjanya sendiri (terisolasi), diamankan dengan enkripsi, dan tidak bisa diakses oleh akun lain tanpa otorisasi.
 
 ---
 
-## 🔌 API Endpoints
+## 👨‍💻 Tentang Pengembang
 
-### Auth
-| Method | Endpoint | Deskripsi |
-|--------|----------|-----------|
-| POST | `/api/auth/register` | Daftar akun baru |
-| POST | `/api/auth/login` | Login + kirim OTP |
-| POST | `/api/auth/verify-otp` | Verifikasi OTP |
-| POST | `/api/auth/logout` | Logout |
-| GET | `/api/auth/me` | Data user login |
-
-### Projects
-| Method | Endpoint | Deskripsi |
-|--------|----------|-----------|
-| GET | `/api/projects` | Ambil semua proyek |
-| POST | `/api/projects` | Buat proyek baru |
-| PUT | `/api/projects/:id` | Update proyek |
-| DELETE | `/api/projects/:id` | Hapus proyek |
-
-### AHSP
-| Method | Endpoint | Deskripsi |
-|--------|----------|-----------|
-| GET | `/api/ahsp` | Ambil data AHSP |
-| POST | `/api/ahsp` | Tambah AHSP custom |
-
-### Export
-| Method | Endpoint | Deskripsi |
-|--------|----------|-----------|
-| POST | `/api/export/pdf` | Export RAB ke PDF |
-| POST | `/api/export/excel` | Export RAB ke Excel |
-
-### Health
-| Method | Endpoint | Deskripsi |
-|--------|----------|-----------|
-| GET | `/health` | Status server & database |
-| GET | `/ping` | Keep-alive check |
+Sivilize Hub Pro dikembangkan sebagai bentuk dedikasi terhadap kemajuan teknologi konstruksi di Indonesia.
+- **Author**: Muhamad Adrian
+- **Email**: muhamadadrian210@gmail.com
+- **WhatsApp**: 0813 3821 9957
+- **Lokasi**: Kupang, Nusa Tenggara Timur, Indonesia
 
 ---
 
-## 🔒 Keamanan
+## 📄 Lisensi Penggunaan
 
-- Password dienkripsi dengan **bcrypt** (salt factor 10)
-- Autentikasi menggunakan **JWT** (expire 30 hari)
-- OTP di-hash dengan **SHA-256**, expire 5 menit
-- **Rate limiting** per endpoint (global, auth, export)
-- **Helmet** untuk security headers (XSS, Clickjacking, HSTS)
-- **NoSQL injection protection** via express-mongo-sanitize
-- **HTTP Parameter Pollution** protection via HPP
-- **Custom firewall** middleware untuk deteksi serangan
-- **Honeypot endpoints** untuk jebak scanner/hacker
+Hak Cipta (c) Sivilize Hub Pro - Muhamad Adrian.
+Aplikasi ini menggunakan Lisensi MIT. Bebas digunakan untuk membantu mempermudah perhitungan konstruksi Anda, baik untuk tujuan pribadi maupun komersial.
 
----
-
-## 👨‍💻 Author
-
-**Muhamad Adrian**
-- 📧 Email: muhamadadrian210@gmail.com
-- 📱 WhatsApp: 081338219957
-- 🌐 Website: [sivilize-hub-pro.vercel.app](https://sivilize-hub-pro.vercel.app)
-- 📍 Kupang, NTT, Indonesia
-
----
-
-## 📄 License
-
-MIT License — bebas digunakan untuk keperluan pribadi dan komersial.
-
----
-
-*Built with ❤️ for Indonesian Construction Industry*
+> *"Membangun peradaban dimulai dari perhitungan yang presisi."* - **Sivilize Hub Pro**
