@@ -122,6 +122,9 @@ export interface Project {
   officeMeetingRoom?: number;
   officePantry?: number;
   officeReception?: number;
+  officeServerRoom?: number;
+  officeDirectorRoom?: number; // Ruang Kepala Dinas / CEO
+  officeManagerRoom?: number; // Ruang Manager / Kepala Bagian
   // Spesifik Infrastruktur
   bridgePillarCount?: number;
   bridgeSpanLength?: number;

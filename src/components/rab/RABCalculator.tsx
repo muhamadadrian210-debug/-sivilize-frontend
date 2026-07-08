@@ -578,6 +578,16 @@ const RABCalculator = () => {
             addItem('elkal-001', serverCount * 4, { 'Pekerja': 2, 'Tukang Listrik': 2 }); // Kabel server/data ekstra
           }
 
+          const directorCount = projectData.officeDirectorRoom || 0;
+          if (directorCount > 0) {
+            addItem('ars-003', directorCount * 1, { 'Pekerja': 2, 'Tukang Khusus': 1 }); // Interior ekstra untuk ruang direktur/kepala dinas
+          }
+
+          const managerCount = projectData.officeManagerRoom || 0;
+          if (managerCount > 0) {
+            addItem('elkal-002', managerCount * 2, { 'Pekerja': 1, 'Tukang Listrik': 1 }); // Stop kontak ekstra ruang manager
+          }
+
           const pantryCount = projectData.officePantry || 0;
           if (pantryCount > 0) {
             addItem('ins-002', pantryCount * 2, { 'Pekerja': 1, 'Tukang Pipa': 1 }); // Air bersih & kotor pantry
@@ -1067,6 +1077,20 @@ const RABCalculator = () => {
                         <label className="text-text-secondary text-sm font-medium">Resepsionis / Lobi</label>
                         <input type="number" min="0" value={projectData.officeReception || 0}
                           onChange={(e) => setProjectData({...projectData, officeReception: parseInt(e.target.value) || 0})}
+                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-text-secondary text-sm font-medium">Ruang CEO / Kadis</label>
+                        <input type="number" min="0" value={projectData.officeDirectorRoom || 0}
+                          onChange={(e) => setProjectData({...projectData, officeDirectorRoom: parseInt(e.target.value) || 0})}
+                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-text-secondary text-sm font-medium">Ruang Manager</label>
+                        <input type="number" min="0" value={projectData.officeManagerRoom || 0}
+                          onChange={(e) => setProjectData({...projectData, officeManagerRoom: parseInt(e.target.value) || 0})}
                           className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
                         />
                       </div>
