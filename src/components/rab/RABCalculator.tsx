@@ -547,6 +547,22 @@ const RABCalculator = () => {
             addItem('fin-003', (projectData.hospitalMorgue || 0) * 24, { 'Pekerja': 2, 'Tukang Batu': 2 });
           }
         }
+        
+        // ── KHUSUS SEKOLAH ──
+        if (projectData.type === 'sekolah') {
+          // Lab butuh ekstra plumbing & elektrikal
+          const labCount = projectData.schoolLaboratory || 0;
+          if (labCount > 0) {
+            addItem('ins-002', labCount * 2, { 'Pekerja': 2, 'Tukang Pipa': 2 }); // Titik air ekstra
+            addItem('elkal-002', labCount * 4, { 'Pekerja': 1, 'Tukang Listrik': 1 }); // Stop kontak ekstra
+          }
+          
+          // UKS butuh vinyl anti bakteri seperti rumah sakit
+          const uksCount = projectData.schoolUKS || 0;
+          if (uksCount > 0) {
+            addItem('rs-001', uksCount * 12, { 'Pekerja': 2, 'Tukang Khusus': 2, 'Mandor': 1 }); // 12m2 per UKS
+          }
+        }
 
       // Bukaan - Pintu & Jendela (sudah dideklarasi di atas)
       const bathroomCount = projectData.bathroomCount ?? 2;
@@ -1005,18 +1021,104 @@ const RABCalculator = () => {
                   ) : (
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div className="space-y-2">
-                        <label className="text-text-secondary text-sm font-medium">
-                          {projectData.type === 'sekolah' ? 'Ruang Kelas' : 'Kamar Tidur'}
-                        </label>
+                  ) : projectData.type === 'sekolah' ? (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-text-secondary text-sm font-medium">Ruang Kelas</label>
+                        <input type="number" min="0" value={projectData.schoolClassrooms || 0}
+                          onChange={(e) => setProjectData({...projectData, schoolClassrooms: parseInt(e.target.value) || 0})}
+                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-text-secondary text-sm font-medium">Ruang Guru</label>
+                        <input type="number" min="0" value={projectData.schoolTeacherRooms || 0}
+                          onChange={(e) => setProjectData({...projectData, schoolTeacherRooms: parseInt(e.target.value) || 0})}
+                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-text-secondary text-sm font-medium">Ruang Kepsek</label>
+                        <input type="number" min="0" value={projectData.schoolPrincipalRoom || 0}
+                          onChange={(e) => setProjectData({...projectData, schoolPrincipalRoom: parseInt(e.target.value) || 0})}
+                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-text-secondary text-sm font-medium">Ruang TU</label>
+                        <input type="number" min="0" value={projectData.schoolAdminRoom || 0}
+                          onChange={(e) => setProjectData({...projectData, schoolAdminRoom: parseInt(e.target.value) || 0})}
+                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-text-secondary text-sm font-medium">Perpustakaan</label>
+                        <input type="number" min="0" value={projectData.schoolLibrary || 0}
+                          onChange={(e) => setProjectData({...projectData, schoolLibrary: parseInt(e.target.value) || 0})}
+                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-text-secondary text-sm font-medium">Laboratorium</label>
+                        <input type="number" min="0" value={projectData.schoolLaboratory || 0}
+                          onChange={(e) => setProjectData({...projectData, schoolLaboratory: parseInt(e.target.value) || 0})}
+                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-text-secondary text-sm font-medium">Ruang UKS</label>
+                        <input type="number" min="0" value={projectData.schoolUKS || 0}
+                          onChange={(e) => setProjectData({...projectData, schoolUKS: parseInt(e.target.value) || 0})}
+                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-text-secondary text-sm font-medium">Mushola / Ibadah</label>
+                        <input type="number" min="0" value={projectData.schoolWorshipRoom || 0}
+                          onChange={(e) => setProjectData({...projectData, schoolWorshipRoom: parseInt(e.target.value) || 0})}
+                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-text-secondary text-sm font-medium">Toilet Siswa</label>
+                        <input type="number" min="0" value={projectData.schoolStudentToilets || 0}
+                          onChange={(e) => setProjectData({...projectData, schoolStudentToilets: parseInt(e.target.value) || 0})}
+                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-text-secondary text-sm font-medium">Toilet Guru</label>
+                        <input type="number" min="0" value={projectData.schoolTeacherToilets || 0}
+                          onChange={(e) => setProjectData({...projectData, schoolTeacherToilets: parseInt(e.target.value) || 0})}
+                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-text-secondary text-sm font-medium">Jumlah Pintu</label>
+                        <input type="number" min="0" value={projectData.doorCount || 0}
+                          onChange={(e) => setProjectData({...projectData, doorCount: parseInt(e.target.value) || 0})}
+                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-text-secondary text-sm font-medium">Jumlah Jendela</label>
+                        <input type="number" min="0" value={projectData.windowCount || 0}
+                          onChange={(e) => setProjectData({...projectData, windowCount: parseInt(e.target.value) || 0})}
+                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-text-secondary text-sm font-medium">Kamar Tidur</label>
                         <input type="number" min="0" value={projectData.bedroomCount}
                           onChange={(e) => setProjectData({...projectData, bedroomCount: parseInt(e.target.value) || 0})}
                           className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-text-secondary text-sm font-medium">
-                          {projectData.type === 'sekolah' ? 'Toilet Siswa' : 'Kamar Mandi'}
-                        </label>
+                        <label className="text-text-secondary text-sm font-medium">Kamar Mandi</label>
                         <input type="number" min="0" value={projectData.bathroomCount}
                           onChange={(e) => setProjectData({...projectData, bathroomCount: parseInt(e.target.value) || 0})}
                           className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"

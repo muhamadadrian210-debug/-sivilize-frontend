@@ -101,6 +101,17 @@ export interface Project {
   bathroomCount?: number;
   doorCount?: number;
   windowCount?: number;
+  // Spesifik Sekolah
+  schoolClassrooms?: number;
+  schoolTeacherRooms?: number;
+  schoolPrincipalRoom?: number;
+  schoolAdminRoom?: number;
+  schoolLibrary?: number;
+  schoolLaboratory?: number;
+  schoolUKS?: number;
+  schoolStudentToilets?: number;
+  schoolTeacherToilets?: number;
+  schoolWorshipRoom?: number;
   // Spesifik Rumah Sakit
   hospitalInpatientRooms?: number;
   hospitalSurgeryRooms?: number;
