@@ -75,7 +75,8 @@ export const calculateTotalRAB = (
   items: RABItem[],
   settings: FinancialSettings
 ) => {
-  const subtotal = items.reduce((acc, item) => acc + item.total, 0);
+  const validItems = items?.filter(Boolean) || [];
+  const subtotal = validItems.reduce((acc, item) => acc + (item?.total || 0), 0);
   const overheadAmount = (subtotal * settings.overhead) / 100;
   const profitAmount = (subtotal * settings.profit) / 100;
   const contingencyAmount = (subtotal * (settings.contingency || 0)) / 100;

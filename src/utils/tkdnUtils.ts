@@ -60,9 +60,9 @@ export const calculateProjectTKDN = (rabItems: RABItem[]) => {
   let totalDomesticValue = 0;
   let totalProjectValue = 0;
 
-  rabItems.forEach(item => {
+  (rabItems || []).filter(Boolean).forEach(item => {
     // Jika tidak ada analisa AHSP rinci, kita asumsi TKDN item ini 80% rata-rata
-    if (!item.analysis) {
+    if (!item?.analysis) {
       totalProjectValue += item.total;
       totalDomesticValue += item.total * 0.8;
       return;

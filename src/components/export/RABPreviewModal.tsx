@@ -56,17 +56,19 @@ const RABPreviewModal = ({ isOpen, onClose, project, items, financials, grade }:
 
   if (!isOpen) return null;
 
-  const summary = calculateTotalRAB(items, financials);
+  const validItems = items?.filter(Boolean) || [];
+  const summary = calculateTotalRAB(validItems, financials);
 
   // Hitung subtotal per kategori
   const categoryTotals = useMemo<Record<string, number>>(() => {
-    return items.reduce((acc, item) => {
-      acc[item.category] = (acc[item.category] || 0) + item.total;
+    return validItems.reduce((acc, item) => {
+      const cat = item?.category || 'Lain-lain';
+      acc[cat] = (acc[cat] || 0) + (item?.total || 0);
       return acc;
     }, {} as Record<string, number>);
-  }, [items]);
+  }, [validItems]);
 
-  const tkdn = useMemo(() => calculateProjectTKDN(items), [items]);
+  const tkdn = useMemo(() => calculateProjectTKDN(validItems), [validItems]);
 
   const saveConfigAndExport = (exportFn: () => void) => {
     setIsExporting(true);
@@ -89,7 +91,7 @@ const RABPreviewModal = ({ isOpen, onClose, project, items, financials, grade }:
 
   const handleDownloadPDF = () => {
     saveConfigAndExport(() => {
-      exportToPDF(project, items, financials, grade, {
+      exportToPDF(project, validItems, financials, grade, {
         companyName: config.companyName.trim() || DEFAULT_EXPORT_CONFIG.companyName,
         preparedBy: config.estimatorName,
         projectNo: config.documentNumber,
@@ -99,7 +101,7 @@ const RABPreviewModal = ({ isOpen, onClose, project, items, financials, grade }:
 
   const handleDownloadExcel = () => {
     saveConfigAndExport(() => {
-      exportToExcel(project, items, financials, grade, {
+      exportToExcel(project, validItems, financials, grade, {
         companyName: config.companyName.trim() || DEFAULT_EXPORT_CONFIG.companyName,
         preparedBy: config.estimatorName,
         approvedBy: config.estimatorName,
@@ -111,7 +113,7 @@ const RABPreviewModal = ({ isOpen, onClose, project, items, financials, grade }:
 
   const handleDownloadBoQ = () => {
     saveConfigAndExport(() => {
-      exportBoQBlank(project, items, {
+      exportBoQBlank(project, validItems, {
         companyName: config.companyName.trim() || DEFAULT_EXPORT_CONFIG.companyName,
         projectNo: config.documentNumber
       });
