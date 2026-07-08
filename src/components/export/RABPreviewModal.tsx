@@ -54,8 +54,6 @@ const RABPreviewModal = ({ isOpen, onClose, project, items, financials, grade }:
     return DEFAULT_EXPORT_CONFIG;
   });
 
-  if (!isOpen) return null;
-
   const validItems = items?.filter(Boolean) || [];
   const summary = calculateTotalRAB(validItems, financials);
 
@@ -69,6 +67,8 @@ const RABPreviewModal = ({ isOpen, onClose, project, items, financials, grade }:
   }, [validItems]);
 
   const tkdn = useMemo(() => calculateProjectTKDN(validItems), [validItems]);
+
+  if (!isOpen) return null;
 
   const saveConfigAndExport = (exportFn: () => void) => {
     setIsExporting(true);
