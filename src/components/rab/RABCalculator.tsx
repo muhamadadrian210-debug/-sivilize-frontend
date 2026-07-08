@@ -20,7 +20,9 @@ import {
   Printer,
   GitCompare,
   Share2,
-  Target
+  Target,
+  Minus,
+  X
 } from 'lucide-react';
 import { useStore, type RABItem, type Project, type FinancialSettings } from '../../store/useStore';
 import { AHSP_TEMPLATES } from '../../data/ahsp';

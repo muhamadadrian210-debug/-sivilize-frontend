@@ -57,7 +57,7 @@ export function getDimensionErrors(projectData: Partial<Project>): string[] {
     if ((projectData.bridgeSpanLength ?? 0) <= 0) errors.push('Panjang bentang harus > 0');
     if ((projectData.bridgePillarCount ?? 0) < 0) errors.push('Jumlah pilar tidak boleh negatif');
   } else if (projectData.type === 'bendungan') {
-    if ((projectData.damGateCount ?? 0) < 0) errors.push('Jumlah pintu air tidak boleh negatif');
+    if ((projectData.waterGateCount ?? 0) < 0) errors.push('Jumlah pintu air tidak boleh negatif');
     if ((projectData.damCapacity ?? 0) <= 0) errors.push('Kapasitas tampung harus > 0');
   }
   
