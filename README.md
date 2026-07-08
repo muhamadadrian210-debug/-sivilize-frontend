@@ -115,7 +115,8 @@ Sivilize Hub Pro dikembangkan sebagai bentuk dedikasi terhadap kemajuan teknolog
 
 ## 📄 Lisensi Penggunaan
 
-Hak Cipta (c) Sivilize Hub Pro - Muhamad Adrian.
-Aplikasi ini menggunakan Lisensi MIT. Bebas digunakan untuk membantu mempermudah perhitungan konstruksi Anda, baik untuk tujuan pribadi maupun komersial.
+**Hak Cipta Dilindungi (All Rights Reserved)**
+Hak Cipta © 2026 Sivilize Hub Pro - Muhamad Adrian (Sivilize Corp).
+Perangkat lunak ini adalah properti intelektual mutlak milik Sivilize Corp. Dilarang keras untuk menyalin, menduplikasi, merekayasa balik (reverse engineer), atau menjual ulang source code dan fitur aplikasi ini tanpa izin tertulis dari pihak Sivilize Corp. Pelanggaran terhadap lisensi ini akan ditindak tegas sesuai dengan hukum Hak Kekayaan Intelektual (HAKI) yang berlaku di Republik Indonesia.
 
 > *"Membangun peradaban dimulai dari perhitungan yang presisi."* - **Sivilize Hub Pro**
