@@ -84,7 +84,7 @@ export interface Project {
   name: string;
   location: string;
   materialGrade?: 'A' | 'B' | 'C';
-  type: 'rumah' | 'sekolah' | 'jembatan' | 'bendungan';
+  type: 'rumah' | 'sekolah' | 'jembatan' | 'bendungan' | 'rumah_sakit';
   roofModel?: '1-air' | '2-air' | '3-air' | '4-air' | 'dak';
   floors: number;
   dimensions: { length: number; width: number; height: number }[];
