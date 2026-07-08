@@ -1,4 +1,4 @@
-﻿import { Fragment, useState, useMemo, useEffect } from 'react';
+import { Fragment, useState, useMemo, useEffect } from 'react';
 import { 
   Trash2, 
   ChevronRight, 
@@ -19,9 +19,10 @@ import {
   Lightbulb,
   Printer,
   GitCompare,
-  Share2
+  Share2,
+  Target
 } from 'lucide-react';
-import { useStore, type RABItem, type Project } from '../../store/useStore';
+import { useStore, type RABItem, type Project, type FinancialSettings } from '../../store/useStore';
 import { AHSP_TEMPLATES } from '../../data/ahsp';
 import {
   PROVINCES,
@@ -166,7 +167,9 @@ const RABCalculator = () => {
   const [showVisionUpload, setShowVisionUpload] = useState(false);
   const [rebarConfig, setRebarConfig] = useState<RebarConfig>(DEFAULT_REBAR_CONFIG);
   const [showQuranPopup, setShowQuranPopup] = useState(false);
-  const [activeSubTab, setActiveSubTab] = useState<'rab' | 'split' | 'materials' | 'prices' | 'timeline' | 'template'>('rab');
+  const [activeSubTab, setActiveSubTab] = useState<'rab' | 'split' | 'materials' | 'prices' | 'timeline' | 'template' | 'bidding'>('rab');
+  const [targetHPS, setTargetHPS] = useState<number | ''>('');
+  const [biddingStatus, setBiddingStatus] = useState<{success: boolean, msg: string} | null>(null);
   const [customPrices, setCustomPrices] = useState<Record<string, number>>({});
   const [selectedProvince, setSelectedProvince] = useState(DEFAULT_PROVINCE_ID);
   const [materialGrade, setMaterialGrade] = useState<MaterialGrade>(DEFAULT_MATERIAL_GRADE);
@@ -201,11 +204,11 @@ const RABCalculator = () => {
 
   const [rabItems, setRabItems] = useState<RABItem[]>([]);
   const [selectedItemForTeam, setSelectedItemForTeam] = useState<string | null>(null);
-  const [financials, setFinancials] = useState({
-    overhead: 5,
+  const [financials, setFinancials] = useState<FinancialSettings>({
+    overhead: 10,
     profit: 10,
-    tax: 11,
     contingency: 0,
+    tax: 12,
   });
 
   const cityOptions = useMemo(() => getCitiesByProvince(selectedProvince), [selectedProvince]);
@@ -289,6 +292,48 @@ const RABCalculator = () => {
   const costPerM2 = totalArea > 0 ? summary.grandTotal / totalArea : 0;
   const category = getCostCategory(costPerM2);
 
+  // Auto-Bidding Logic
+  const handleAutoBidding = () => {
+    if (!targetHPS || targetHPS <= 0) {
+      setBiddingStatus({ success: false, msg: 'Masukkan angka HPS yang valid' });
+      return;
+    }
+    const currentSubtotal = summary.subtotal;
+    if (currentSubtotal === 0) {
+      setBiddingStatus({ success: false, msg: 'Subtotal RAB masih 0' });
+      return;
+    }
+    
+    // Reverse engineer
+    const requiredBeforeTax = Number(targetHPS) / (1 + financials.tax / 100);
+    const requiredMargin = requiredBeforeTax - currentSubtotal - summary.contingencyAmount;
+    
+    if (requiredMargin < 0) {
+      setBiddingStatus({ 
+        success: false, 
+        msg: `TARGET HPS TERLALU RENDAH! Anda rugi ${formatCurrency(Math.abs(requiredMargin))}. Turunkan spesifikasi material!`
+      });
+      return;
+    }
+
+    const newOverheadAmount = requiredMargin * 0.3;
+    const newProfitAmount = requiredMargin * 0.7;
+    
+    const newOverheadPercent = (newOverheadAmount / currentSubtotal) * 100;
+    const newProfitPercent = (newProfitAmount / currentSubtotal) * 100;
+
+    setFinancials(prev => ({
+      ...prev,
+      overhead: Number(newOverheadPercent.toFixed(2)),
+      profit: Number(newProfitPercent.toFixed(2))
+    }));
+    
+    setBiddingStatus({ 
+      success: true, 
+      msg: `Sukses! Overhead diatur ke ${newOverheadPercent.toFixed(2)}% dan Profit ke ${newProfitPercent.toFixed(2)}%`
+    });
+  };
+
   // Auto-generate basic items based on dimensions
   const handleGenerateRAB = () => {
     setLoading(true);
@@ -341,8 +386,9 @@ const RABCalculator = () => {
         });
       };
       
-      // ── PEKERJAAN PERSIAPAN ──────────────────────────────────
-      addItem('per-001', totalArea, { 'Pekerja': 3, 'Mandor': 1 });           // Pembersihan lokasi
+      if (['rumah', 'sekolah'].includes(projectData.type || 'rumah')) {
+        // ── PEKERJAAN PERSIAPAN ──────────────────────────────────
+        addItem('per-001', totalArea, { 'Pekerja': 3, 'Mandor': 1 });           // Pembersihan lokasi
       addItem('per-002', perimeter * 1.2, { 'Pekerja': 2, 'Tukang Kayu': 2, 'Mandor': 1 }); // Bowplank
       addItem('per-003', 12, { 'Pekerja': 2, 'Tukang Kayu': 2, 'Mandor': 1 }); // Gudang bahan 12m²
       addItem('per-004', 9, { 'Pekerja': 2, 'Tukang Kayu': 2, 'Mandor': 1 });  // Direksi keet 9m²
@@ -507,12 +553,24 @@ const RABCalculator = () => {
         addItem(toiletId, bathroomCount, { 'Pekerja': 1, 'Tukang Pipa': 1, 'Mandor': 1 });
       }
 
-      // Elektrikal
-      const lightPts = projectData.lightPointCount ?? 10;
-      const socketPts = projectData.socketPointCount ?? 8;
-      if (lightPts > 0) addItem('elk-001', lightPts, { 'Pekerja': 1, 'Tukang Listrik': 2, 'Mandor': 1 });
-      if (socketPts > 0) addItem('elk-002', socketPts, { 'Pekerja': 1, 'Tukang Listrik': 2, 'Mandor': 1 });
-      addItem('elk-003', 1, { 'Pekerja': 1, 'Tukang Listrik': 2, 'Mandor': 1 });
+        // Elektrikal
+        const lightPts = projectData.lightPointCount ?? 10;
+        const socketPts = projectData.socketPointCount ?? 8;
+        if (lightPts > 0) addItem('elk-001', lightPts, { 'Pekerja': 1, 'Tukang Listrik': 2, 'Mandor': 1 });
+        if (socketPts > 0) addItem('elk-002', socketPts, { 'Pekerja': 1, 'Tukang Listrik': 2, 'Mandor': 1 });
+        addItem('elk-003', 1, { 'Pekerja': 1, 'Tukang Listrik': 2, 'Mandor': 1 });
+      } else if (projectData.type === 'jembatan') {
+        // ── PEKERJAAN INFRASTRUKTUR (JEMBATAN) ──────────────────────────────────
+        addItem('per-001', totalArea, { 'Pekerja': 5, 'Mandor': 1 }); // Pembersihan
+        addItem('infra-001', perimeter * 10, { 'Pekerja': 4, 'Operator Alat Berat': 1 }); // Spun pile
+        addItem('infra-002', totalVolume * 0.4, { 'Pekerja': 5, 'Tukang Batu': 2 }); // Pier beton
+        addItem('infra-003', totalArea * 150, { 'Pekerja': 3, 'Tukang Las': 2 }); // Baja WF Jembatan
+      } else if (projectData.type === 'bendungan') {
+        // ── PEKERJAAN INFRASTRUKTUR (BENDUNGAN) ──────────────────────────────────
+        addItem('per-001', totalArea * 2, { 'Pekerja': 10, 'Mandor': 2 }); // Pembersihan area luas
+        addItem('str-001', totalVolume * 0.8, { 'Pekerja': 10, 'Operator Alat Berat': 2 }); // Galian bendungan (approx)
+        addItem('infra-002', totalVolume * 0.6, { 'Pekerja': 8, 'Tukang Batu': 4 }); // Beton massa spillway
+      }
 
       setRabItems(generated);
       setLoading(false);
@@ -667,28 +725,35 @@ const RABCalculator = () => {
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-text-secondary text-sm font-medium">Tipe Bangunan</label>
-                <input
-                  value="Rumah Minimalis"
-                  disabled
-                  className="w-full h-12 bg-background/60 border border-border rounded-xl px-4 text-white outline-none"
-                />
+                <label className="text-text-secondary text-sm font-medium">Tipe Proyek</label>
+                <select
+                  value={projectData.type}
+                  onChange={(e) => setProjectData({ ...projectData, type: e.target.value as Project['type'] })}
+                  className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary appearance-none transition-all"
+                >
+                  <option value="rumah">Rumah Minimalis</option>
+                  <option value="sekolah">Sekolah / Gedung</option>
+                  <option value="jembatan">Jembatan</option>
+                  <option value="bendungan">Bendungan</option>
+                </select>
               </div>
-              <div className="space-y-2">
-                <label className="text-text-secondary text-sm font-medium">Jumlah Lantai</label>
-                <p className="text-[11px] text-yellow-400/80 bg-yellow-500/5 border border-yellow-500/20 rounded-lg px-2 py-1">🏠 Berapa tingkat rumahnya? Rumah biasa = 1 lantai. Ada kamar di atas = 2 lantai.</p>
-                <input 
-                  type="number" 
-                  min="1"
-                  value={projectData.floors}
-                  onChange={(e) => {
-                    const floors = parseInt(e.target.value) || 1;
-                    const dims = Array(floors).fill(0).map((_, i) => projectData.dimensions![i] || { length: 0, width: 0, height: 3 });
-                    setProjectData({...projectData, floors, dimensions: dims});
-                  }}
-                  className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                />
-              </div>
+              {['rumah', 'sekolah'].includes(projectData.type) && (
+                <div className="space-y-2">
+                  <label className="text-text-secondary text-sm font-medium">Jumlah Lantai</label>
+                  <p className="text-[11px] text-yellow-400/80 bg-yellow-500/5 border border-yellow-500/20 rounded-lg px-2 py-1">🏠 Berapa tingkat bangunannya? Biasa = 1 lantai.</p>
+                  <input 
+                    type="number" 
+                    min="1"
+                    value={projectData.floors}
+                    onChange={(e) => {
+                      const floors = parseInt(e.target.value) || 1;
+                      const dims = Array(floors).fill(0).map((_, i) => projectData.dimensions![i] || { length: 0, width: 0, height: 3 });
+                      setProjectData({...projectData, floors, dimensions: dims});
+                    }}
+                    className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                  />
+                </div>
+              )}
               <div className="space-y-2">
                 <label className="text-text-secondary text-sm font-medium">Grade Material</label>
                 <p className="text-[11px] text-yellow-400/80 bg-yellow-500/5 border border-yellow-500/20 rounded-lg px-2 py-1">🧱 Pilih kualitas bahan bangunan: Ekonomis = harga murah, Standar = harga normal, Premium = harga mahal tapi bagus.</p>
@@ -711,20 +776,22 @@ const RABCalculator = () => {
                   Transparansi merek material tampil di tab Kebutuhan Material.
                 </p>
               </div>
-              <div className="space-y-2">
-                <label className="text-text-secondary text-sm font-medium">Model Atap</label>
-                <select
-                  value={projectData.roofModel}
-                  onChange={(e) => setProjectData({ ...projectData, roofModel: e.target.value as Project['roofModel'] })}
-                  className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary appearance-none transition-all"
-                >
-                  <option value="1-air">Atap 1 Air</option>
-                  <option value="2-air">Atap 2 Air</option>
-                  <option value="3-air">Atap 3 Air</option>
-                  <option value="4-air">Atap 4 Air</option>
-                  <option value="dak">Atap Dak Beton</option>
-                </select>
-              </div>
+              {['rumah', 'sekolah'].includes(projectData.type) && (
+                <div className="space-y-2">
+                  <label className="text-text-secondary text-sm font-medium">Model Atap</label>
+                  <select
+                    value={projectData.roofModel}
+                    onChange={(e) => setProjectData({ ...projectData, roofModel: e.target.value as Project['roofModel'] })}
+                    className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary appearance-none transition-all"
+                  >
+                    <option value="1-air">Atap 1 Air</option>
+                    <option value="2-air">Atap 2 Air</option>
+                    <option value="3-air">Atap 3 Air</option>
+                    <option value="4-air">Atap 4 Air</option>
+                    <option value="dak">Atap Dak Beton</option>
+                  </select>
+                </div>
+              )}
               <div className="space-y-2 md:col-span-2">
                 <label className="text-text-secondary text-sm font-medium flex items-center gap-2">
                   Tipe Lokasi Proyek
@@ -932,8 +999,9 @@ const RABCalculator = () => {
           <div className="space-y-6">
             <h3 className="text-lg font-bold text-white flex items-center gap-2">
               <Layers size={20} className="text-primary" />
-              Dimensi Per Lantai
+              {['rumah', 'sekolah'].includes(projectData.type || 'rumah') ? 'Dimensi Per Lantai' : `Dimensi Utama ${projectData.type === 'jembatan' ? 'Jembatan' : 'Bendungan'}`}
             </h3>
+            <p className="text-[11px] text-yellow-400/80 bg-yellow-500/5 border border-yellow-500/20 rounded-lg px-2 py-1 mb-4">📐 Isi ukuran panjang, lebar, dan tinggi proyeknya. Jangan asal isi biar harganya akurat.</p>
             <div className="space-y-4">
               {projectData.dimensions?.map((dim, index) => (
                 <div key={index} className="bg-background/50 border border-border p-4 rounded-xl grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -1069,6 +1137,12 @@ const RABCalculator = () => {
                     className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap flex-shrink-0 ${activeSubTab === 'template' ? 'bg-primary text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}
                   >
                     Template
+                  </button>
+                  <button 
+                    onClick={() => setActiveSubTab('bidding')}
+                    className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap flex-shrink-0 ${activeSubTab === 'bidding' ? 'bg-red-500 text-white shadow-glow' : 'text-text-secondary hover:text-white'}`}
+                  >
+                    Bidding Strategy
                   </button>
                 </div>
               </div>
@@ -1406,6 +1480,71 @@ const RABCalculator = () => {
                       setFinancials(fin);
                     }}
                   />
+                </motion.div>
+              )}
+              {activeSubTab === 'bidding' && (
+                <motion.div
+                  key="bidding"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="space-y-6"
+                >
+                  <div className="glass-card p-6 bg-red-500/5 border-red-500/20">
+                    <h4 className="font-bold text-white mb-4 flex items-center gap-2">
+                      <Target size={20} className="text-red-500" />
+                      Target HPS & Auto-Bidding (Reverse Engineering)
+                    </h4>
+                    <p className="text-text-secondary text-sm mb-6">
+                      Masukkan Harga Perkiraan Sendiri (HPS) atau Target Pagu dari pemerintah/klien. Sistem AI akan memutar mundur kalkulasi dan secara otomatis menyesuaikan Profit Margin & Overhead untuk mendarat tepat pada angka penawaran yang Anda inginkan (misal: 95% dari HPS).
+                    </p>
+
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-xs text-text-secondary font-bold uppercase tracking-widest block mb-2">Target Harga Penawaran (Termasuk PPN)</label>
+                        <div className="flex flex-col sm:flex-row items-center gap-3">
+                          <input 
+                            type="number" 
+                            value={targetHPS}
+                            onChange={(e) => setTargetHPS(e.target.value ? Number(e.target.value) : '')}
+                            placeholder="Contoh: 8500000000"
+                            className="w-full sm:flex-1 bg-background border border-border rounded-xl px-4 py-3 text-white focus:border-red-500 outline-none"
+                          />
+                          <button
+                            onClick={handleAutoBidding}
+                            className="w-full sm:w-auto bg-red-500 hover:bg-red-600 text-white font-bold px-6 py-3 rounded-xl transition-all shadow-glow whitespace-nowrap"
+                          >
+                            Auto-Adjust Profit
+                          </button>
+                        </div>
+                      </div>
+
+                      {biddingStatus && (
+                        <div className={`p-4 rounded-xl border ${biddingStatus.success ? 'bg-green-500/10 border-green-500/20 text-green-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
+                          <p className="text-sm font-bold">{biddingStatus.msg}</p>
+                        </div>
+                      )}
+
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-border">
+                        <div className="bg-background/50 p-4 rounded-xl">
+                          <p className="text-[10px] text-text-secondary uppercase tracking-widest font-bold mb-1">Modal / Subtotal</p>
+                          <p className="text-white font-bold">{formatCurrency(summary.subtotal)}</p>
+                        </div>
+                        <div className="bg-background/50 p-4 rounded-xl">
+                          <p className="text-[10px] text-text-secondary uppercase tracking-widest font-bold mb-1">Overhead Aktual</p>
+                          <p className="text-blue-400 font-bold">{financials.overhead}% ({formatCurrency(summary.overheadAmount)})</p>
+                        </div>
+                        <div className="bg-background/50 p-4 rounded-xl">
+                          <p className="text-[10px] text-text-secondary uppercase tracking-widest font-bold mb-1">Profit Aktual</p>
+                          <p className="text-green-400 font-bold">{financials.profit}% ({formatCurrency(summary.profitAmount)})</p>
+                        </div>
+                        <div className="bg-background/50 p-4 rounded-xl">
+                          <p className="text-[10px] text-text-secondary uppercase tracking-widest font-bold mb-1">Grand Total</p>
+                          <p className="text-primary font-bold text-lg">{formatCurrency(summary.grandTotal)}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>

@@ -9,7 +9,8 @@ import {
   HardHat,
   ShieldCheck,
   Upload,
-  MapPin
+  MapPin,
+  Building2
 } from 'lucide-react';
 import { AHSP_TEMPLATES } from '../../data/ahsp';
 import { formatCurrency } from '../../utils/calculations';
@@ -36,15 +37,21 @@ const AHSPDatabase = () => {
   const [selectedCity, setSelectedCity] = useState(DEFAULT_CITY_ID);
   const [selectedGrade, setSelectedGrade] = useState<MaterialGrade>(DEFAULT_MATERIAL_GRADE);
   const [activeCategory, setActiveCategory] = useState('Semua');
+  const [activeProjectType, setActiveProjectType] = useState('Semua Proyek');
   const [apiUrl, setApiUrl] = useState('');
   const [importMessage, setImportMessage] = useState('');
 
+  const projectTypes = ['Semua Proyek', 'Rumah & Gedung', 'Gedung Sekolah', 'Rumah Sakit', 'Infrastruktur Jembatan', 'Infrastruktur Bendungan'];
   const categories = ['Semua', 'Struktur', 'Arsitektur', 'Finishing', 'MEP'];
 
   const filteredItems = AHSP_TEMPLATES.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase());
     const matchesCategory = activeCategory === 'Semua' || item.category === activeCategory;
-    return matchesSearch && matchesCategory;
+    const matchesProjectType = activeProjectType === 'Semua Proyek' 
+      || (item as any).tags?.includes(activeProjectType) 
+      || !(item as any).tags; // Show generic items everywhere
+      
+    return matchesSearch && matchesCategory && matchesProjectType;
   });
 
   const cityOptions = getCitiesByProvince(selectedProvince);
@@ -80,20 +87,39 @@ const AHSPDatabase = () => {
           <h2 className="text-3xl font-bold text-white">AHSP Database</h2>
           <p className="text-text-secondary mt-1">Analisa Harga Satuan Pekerjaan (SNI 2024)</p>
         </div>
-        <div className="flex items-center gap-4">
-           <div className="bg-card border border-border p-1 rounded-xl flex gap-1">
-            {categories.map(cat => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-all ${
-                  activeCategory === cat ? 'bg-primary text-white shadow-glow' : 'text-text-secondary hover:text-white'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
+      </div>
+
+      {/* Project Type Filter (Visual representation of comprehensiveness) */}
+      <div className="overflow-x-auto no-scrollbar pb-2">
+        <div className="flex items-center gap-2 w-max bg-background/50 border border-border p-1 rounded-xl">
+          {projectTypes.map(type => (
+            <button
+              key={type}
+              onClick={() => setActiveProjectType(type)}
+              className={`px-4 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${
+                activeProjectType === type ? 'bg-primary text-white shadow-glow' : 'text-text-secondary hover:text-white'
+              }`}
+            >
+              {type === 'Semua Proyek' ? <Layers size={14} className="inline mr-2" /> : <Building2 size={14} className="inline mr-2" />}
+              {type}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex items-center gap-4">
+        <div className="bg-card border border-border p-1 rounded-xl flex gap-1 w-full md:w-auto overflow-x-auto no-scrollbar">
+          {categories.map(cat => (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${
+                activeCategory === cat ? 'bg-primary text-white shadow-glow' : 'text-text-secondary hover:text-white'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -228,8 +254,8 @@ const AHSPDatabase = () => {
                     <div>
                       <div className="flex items-center gap-3">
                         <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
-                          item.category === 'Struktur' ? 'bg-blue-500/10 text-blue-500' :
-                          item.category === 'Arsitektur' ? 'bg-purple-500/10 text-purple-500' :
+                          (item.category as string) === 'Struktur' ? 'bg-blue-500/10 text-blue-500' :
+                          (item.category as string) === 'Arsitektur' ? 'bg-purple-500/10 text-purple-500' :
                           'bg-success/10 text-success'
                         }`}>
                           {item.category}

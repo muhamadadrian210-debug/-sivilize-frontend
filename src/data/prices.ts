@@ -178,6 +178,16 @@ const defaultMaterials: Record<string, number> = {
   'Plamir Eksterior': 32000,        // per kg
   // === TANAH URUG ===
   'Tanah Urug': 120000,             // per m3
+
+  // === INFRASTRUKTUR BERAT ===
+  'Spun Pile Dia. 500mm': 450000,   // per m1
+  'Solar': 11000,                   // per liter
+  'Minyak Pelumas': 45000,          // per liter
+  'Beton K-350': 950000,            // per m3
+  'Sewa Concrete Pump': 2500000,    // per jam
+  'Baja WF': 18500,                 // per kg
+  'Kawat Las': 35000,               // per kg
+  'Sewa Crane': 3500000,            // per jam
 };
 
 // Upah tenaga kerja per OH (Orang Hari) - harga pasar 2026
@@ -192,6 +202,7 @@ export const DEFAULT_LABOR_PRICES: Record<string, number> = {
   'Tukang Listrik': 225000, // Rp 210.000-240.000/OH
   'Kepala Tukang': 250000,  // Rp 230.000-270.000/OH
   'Mandor': 290000,         // Rp 270.000-320.000/OH
+  'Operator Alat Berat': 350000, // Rp 300.000-400.000/OH
 };
 
 // backward compat alias

@@ -1,4 +1,4 @@
-﻿/* eslint-disable react-refresh/only-export-components */
+/* eslint-disable react-refresh/only-export-components */
 /**
  * DimensionExtras — Fitur tambahan di step 2:
  * - Validasi dimensi
@@ -244,7 +244,7 @@ const DimensionExtras = ({ projectData, setProjectData, totalArea, totalVolume, 
 
       {/* Konfigurasi tulangan */}
       <div className="border-t border-border pt-5 space-y-3">
-        <h4 className="text-sm font-bold text-white flex items-center gap-2">
+        <h4 className="text-sm font-bold text-white uppercase tracking-widest mb-1 flex items-center gap-2">
           <AlertCircle size={14} className="text-primary" />
           Konfigurasi Tulangan Besi
           <span className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-full font-bold">Akurasi Besi</span>
@@ -276,16 +276,16 @@ const DimensionExtras = ({ projectData, setProjectData, totalArea, totalVolume, 
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {[
-            { label: 'Kolom', color: 'blue',   dKey: 'kolomDiameter', sKey: 'kolomSengkang', diameters: [10,12,13,16,19,22], spacings: [100,125,150,200] },
-            { label: 'Balok', color: 'orange', dKey: 'balokDiameter', sKey: 'balokSengkang', diameters: [10,12,13,16,19,22], spacings: [100,125,150,200] },
-            { label: 'Plat',  color: 'green',  dKey: 'platDiameter',  sKey: 'platJarak',     diameters: [8,10,12,13],         spacings: [100,125,150,200] },
+            { label: projectData.type === 'jembatan' ? 'Pilar (Pier)' : projectData.type === 'bendungan' ? 'Dinding Penahan' : 'Kolom', color: 'blue',   dKey: 'kolomDiameter', sKey: 'kolomSengkang', diameters: [10,12,13,16,19,22], spacings: [100,125,150,200] },
+            { label: projectData.type === 'jembatan' ? 'Gelagar Baja' : projectData.type === 'bendungan' ? 'Balok Pengaku' : 'Balok', color: 'orange', dKey: 'balokDiameter', sKey: 'balokSengkang', diameters: [10,12,13,16,19,22], spacings: [100,125,150,200] },
+            { label: projectData.type === 'jembatan' ? 'Lantai Jembatan' : projectData.type === 'bendungan' ? 'Lantai Saluran' : 'Plat Lantai',  color: 'green',  dKey: 'platDiameter',  sKey: 'platJarak',     diameters: [8,10,12,13],         spacings: [100,125,150,200] },
           ].map(({ label, color, dKey, sKey, diameters, spacings }) => (
             <div key={label} className="space-y-2 bg-background/50 border border-border rounded-xl p-3">
               <p className={`text-xs font-bold text-${color}-400 uppercase tracking-widest`}>{label}</p>
               <div className="space-y-1">
                 <label className="text-[10px] text-text-secondary">Diameter (mm)</label>
                 <select
-                  value={(rebarConfig as Record<string, number>)[dKey]}
+                  value={(rebarConfig as unknown as Record<string, number>)[dKey]}
                   onChange={(e) => setRebarConfig({ ...rebarConfig, [dKey]: +e.target.value })}
                   className="w-full bg-background border border-border rounded-lg px-2 py-1.5 text-white text-xs focus:border-primary outline-none"
                 >
@@ -295,7 +295,7 @@ const DimensionExtras = ({ projectData, setProjectData, totalArea, totalVolume, 
               <div className="space-y-1">
                 <label className="text-[10px] text-text-secondary">Jarak (mm)</label>
                 <select
-                  value={(rebarConfig as Record<string, number>)[sKey]}
+                  value={(rebarConfig as unknown as Record<string, number>)[sKey]}
                   onChange={(e) => setRebarConfig({ ...rebarConfig, [sKey]: +e.target.value })}
                   className="w-full bg-background border border-border rounded-lg px-2 py-1.5 text-white text-xs focus:border-primary outline-none"
                 >
@@ -306,9 +306,9 @@ const DimensionExtras = ({ projectData, setProjectData, totalArea, totalVolume, 
           ))}
         </div>
         <div className="flex gap-4 text-xs text-text-secondary bg-background/50 border border-border rounded-xl p-3">
-          <span>Kolom: <span className="text-blue-400 font-bold">{rebarPreview.bk.toFixed(2)} kg/m</span></span>
-          <span>Balok: <span className="text-orange-400 font-bold">{rebarPreview.bb.toFixed(2)} kg/m</span></span>
-          <span>Plat: <span className="text-green-400 font-bold">{rebarPreview.bp.toFixed(2)} kg/m²</span></span>
+          <span>{projectData.type === 'jembatan' ? 'Pilar' : projectData.type === 'bendungan' ? 'Dinding' : 'Kolom'}: <span className="text-blue-400 font-bold">{rebarPreview.bk.toFixed(2)} kg/m</span></span>
+          <span>{projectData.type === 'jembatan' ? 'Gelagar' : projectData.type === 'bendungan' ? 'Balok' : 'Balok'}: <span className="text-orange-400 font-bold">{rebarPreview.bb.toFixed(2)} kg/m</span></span>
+          <span>{projectData.type === 'jembatan' ? 'Lantai' : projectData.type === 'bendungan' ? 'Saluran' : 'Plat'}: <span className="text-green-400 font-bold">{rebarPreview.bp.toFixed(2)} kg/m²</span></span>
         </div>
       </div>
     </div>

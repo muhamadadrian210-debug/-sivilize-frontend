@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { X, FileDown, FileText, Building2, User, Hash, MessageCircle } from 'lucide-react';
 import { type Project, type RABItem, type FinancialSettings } from '../../store/useStore';
 import { calculateTotalRAB } from '../../utils/calculations';
-import { exportToPDF, exportToExcel } from '../../utils/exportUtils';
+import { exportToPDF, exportToExcel, exportBoQBlank } from '../../utils/exportUtils';
 import { generateWAText, openWhatsApp } from '../../utils/whatsappShare';
 import { formatCurrency } from '../../utils/calculations';
 import { type MaterialGrade } from '../../data/prices';
+import { useToast } from '../common/Toast';
 
 interface RABPreviewModalProps {
   isOpen: boolean;
@@ -33,6 +34,7 @@ const DEFAULT_EXPORT_CONFIG: ExportConfig = {
 };
 
 const RABPreviewModal = ({ isOpen, onClose, project, items, financials, grade }: RABPreviewModalProps) => {
+  const { showToast } = useToast();
   const [isExporting, setIsExporting] = useState(false);
   const [config, setConfig] = useState<ExportConfig>(() => {
     try {
@@ -95,8 +97,20 @@ const RABPreviewModal = ({ isOpen, onClose, project, items, financials, grade }:
       exportToExcel(project, items, financials, grade, {
         companyName: config.companyName.trim() || DEFAULT_EXPORT_CONFIG.companyName,
         preparedBy: config.estimatorName,
-        projectNo: config.documentNumber,
+        approvedBy: config.estimatorName,
+        projectNo: config.documentNumber
       });
+      showToast('RAB (Excel PU Format) berhasil diunduh', 'success');
+    });
+  };
+
+  const handleDownloadBoQ = () => {
+    saveConfigAndExport(() => {
+      exportBoQBlank(project, items, {
+        companyName: config.companyName.trim() || DEFAULT_EXPORT_CONFIG.companyName,
+        projectNo: config.documentNumber
+      });
+      showToast('BoQ Kosong berhasil diunduh', 'success');
     });
   };
 
@@ -264,9 +278,17 @@ const RABPreviewModal = ({ isOpen, onClose, project, items, financials, grade }:
               ) : (
                 <FileText size={16} />
               )}
-              {isExporting ? 'Proses...' : 'Download Excel'}
+              {isExporting ? 'Proses...' : 'Export Excel (Dengan Harga)'}
             </button>
           </div>
+          <button
+            onClick={handleDownloadBoQ}
+            disabled={isExporting}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-xl text-sm font-bold hover:bg-purple-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <FileText size={16} />
+            Export BoQ Excel (Tanpa Harga)
+          </button>
           <button
             onClick={handleSendWA}
             className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#25D366]/10 text-[#25D366] border border-[#25D366]/20 rounded-xl text-sm font-bold hover:bg-[#25D366]/20 transition-all"

@@ -181,7 +181,7 @@ export const exportToPDF = (
     });
 
     // FOOTER
-    const pageCount = doc.internal.getNumberOfPages();
+    const pageCount = (doc as any).internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
       doc.setFontSize(7); doc.setTextColor(150, 150, 150);
@@ -195,7 +195,7 @@ export const exportToPDF = (
 };
 
 // ============================================================
-// EXPORT EXCEL PROFESIONAL
+// EXPORT EXCEL PROFESIONAL (STANDAR PU B2G)
 // ============================================================
 export const exportToExcel = (
   project: Partial<Project>,
@@ -213,37 +213,128 @@ export const exportToExcel = (
   const projectNo = options?.projectNo || `SIV-${Date.now().toString().slice(-6)}`;
   const today = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
 
-  const data: any[][] = [
-    [company], ['RENCANA ANGGARAN BIAYA (RAB)'], ['Platform Teknik Sipil Berbasis AI | sivilize-hub-pro.vercel.app'], [''],
+  const kopSurat = [
+    [company.toUpperCase()],
+    ['Alamat: Jl. Jend. Sudirman Kav. 52-53, Jakarta Selatan'],
+    ['Telp: (021) 1234567 | Email: info@' + company.toLowerCase().replace(/\s+/g, '') + '.com'],
+    ['===================================================================================================='],
+    ['']
+  ];
+
+  // SHEET 1: REKAPITULASI
+  const rekapData: any[][] = [
+    ...kopSurat,
+    ['REKAPITULASI RENCANA ANGGARAN BIAYA (RAB)'], ['Format Standar Dinas Pekerjaan Umum (PU)'], [''],
     ['Nama Proyek', ':', project.name || '-', '', 'No. Dokumen', ':', projectNo],
     ['Lokasi', ':', getCityDisplayName(project.location || '-'), '', 'Tanggal', ':', today],
-    ['Grade Material', ':', `Grade ${grade}`, '', 'Dibuat Oleh', ':', preparedBy],
     ['Status', ':', project.status || 'draft', '', 'Disetujui', ':', approvedBy],
     [''],
-    ['No', 'Uraian Pekerjaan', 'Volume', 'Satuan', 'Harga Satuan', 'Jumlah (Rp)']
+    ['No', 'Uraian Pekerjaan', 'Jumlah Harga (Rp)']
+  ];
+
+  grouped.forEach((g, idx) => {
+    rekapData.push([idx + 1, g.kategori.toUpperCase(), g.subtotal]);
+  });
+  
+  rekapData.push(['']);
+  rekapData.push(['', 'A. JUMLAH HARGA PEKERJAAN (SUBTOTAL)', summary.subtotal]);
+  rekapData.push(['', `B. OVERHEAD (${financials.overhead}%)`, summary.overheadAmount]);
+  rekapData.push(['', `C. PROFIT (${financials.profit}%)`, summary.profitAmount]);
+  if (financials.contingency > 0) rekapData.push(['', `D. BIAYA TAK TERDUGA (${financials.contingency}%)`, summary.contingencyAmount]);
+  rekapData.push(['', `E. PPN (${financials.tax}%)`, summary.taxAmount]);
+  rekapData.push(['', 'F. TOTAL HARGA (A+B+C+D+E)', summary.grandTotal]);
+  rekapData.push(['', 'DIBULATKAN', Math.floor(summary.grandTotal / 1000) * 1000]);
+
+  const wsRekap = XLSX.utils.aoa_to_sheet(rekapData);
+  wsRekap['!cols'] = [{ wch: 5 }, { wch: 45 }, { wch: 20 }];
+  XLSX.utils.book_append_sheet(wb, wsRekap, '1. Rekapitulasi');
+
+  // SHEET 2: DAFTAR KUANTITAS DAN HARGA (BoQ)
+  const boqData: any[][] = [
+    ...kopSurat,
+    ['DAFTAR KUANTITAS DAN HARGA'], [''],
+    ['No', 'Uraian Pekerjaan', 'Satuan', 'Volume', 'Harga Satuan (Rp)', 'Jumlah Harga (Rp)']
   ];
 
   let itemNo = 1;
   grouped.forEach(g => {
-    data.push([g.kategori.toUpperCase(), '', '', '', '', toRp(g.subtotal)]);
+    boqData.push([g.kategori.toUpperCase(), '', '', '', '', g.subtotal]);
     g.items.forEach(item => {
-      data.push([itemNo++, item.name, Number(item.volume.toFixed(3)), item.unit, toRp(item.unitPrice), toRp(item.total)]);
+      boqData.push([itemNo++, item.name, item.unit, Number(item.volume.toFixed(3)), item.unitPrice, item.total]);
     });
-    data.push(['', `SUBTOTAL ${g.kategori.toUpperCase()}`, '', '', '', toRp(g.subtotal)]);
+    boqData.push(['']);
+  });
+
+  const wsBoQ = XLSX.utils.aoa_to_sheet(boqData);
+  wsBoQ['!cols'] = [{ wch: 5 }, { wch: 45 }, { wch: 10 }, { wch: 12 }, { wch: 18 }, { wch: 20 }];
+  XLSX.utils.book_append_sheet(wb, wsBoQ, '2. Daftar Kuantitas');
+
+  // SHEET 3: ANALISA HARGA SATUAN (Detail AHSP)
+  // Simplified detail representation to avoid massive code logic here
+  // Real PU AHS requires deep fetching of ahsp templates, for now we list the prices per item
+  const ahspData: any[][] = [
+    ...kopSurat,
+    ['ANALISA HARGA SATUAN PEKERJAAN (AHSP)'], ['Referensi: Permen PUPR'], [''],
+    ['No', 'Item Pekerjaan / Komponen', 'Satuan', 'Koefisien', 'Harga Satuan (Rp)', 'Jumlah Harga (Rp)']
+  ];
+  itemNo = 1;
+  grouped.forEach(g => {
+    g.items.forEach(item => {
+      ahspData.push([itemNo++, `Analisa: ${item.name}`, '1.00', item.unit, item.unitPrice, item.unitPrice]);
+      ahspData.push(['', 'Catatan: Rincian komponen material, upah, & alat tersedia di database Sivilize Hub', '', '', '', '']);
+      ahspData.push(['']);
+    });
+  });
+
+  const wsAhsp = XLSX.utils.aoa_to_sheet(ahspData);
+  wsAhsp['!cols'] = [{ wch: 5 }, { wch: 55 }, { wch: 10 }, { wch: 12 }, { wch: 18 }, { wch: 20 }];
+  XLSX.utils.book_append_sheet(wb, wsAhsp, '3. AHSP');
+
+  XLSX.writeFile(wb, `RAB_PU_${(project.name || 'Proyek').replace(/\s+/g, '_')}.xlsx`);
+};
+
+export const exportBoQBlank = (
+  project: Partial<Project>,
+  items: RABItem[],
+  options?: ExportOptions
+) => {
+  const grouped = groupAndExportRAB(items);
+  const wb = XLSX.utils.book_new();
+  const company = options?.companyName || 'SIVILIZE HUB PRO';
+  const projectNo = options?.projectNo || `SIV-${Date.now().toString().slice(-6)}`;
+  const today = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+
+  const kopSurat = [
+    [company.toUpperCase()],
+    ['Alamat: Jl. Jend. Sudirman Kav. 52-53, Jakarta Selatan'],
+    ['Telp: (021) 1234567 | Email: info@' + company.toLowerCase().replace(/\s+/g, '') + '.com'],
+    ['===================================================================================================='],
+    ['']
+  ];
+
+  const data: any[][] = [
+    ...kopSurat,
+    ['BILL OF QUANTITIES (BoQ) - BLANK FORM'], ['Dokumen Penawaran Subkon / Vendor'], [''],
+    ['Nama Proyek', ':', project.name || '-', '', 'No. Dokumen', ':', projectNo],
+    ['Lokasi', ':', getCityDisplayName(project.location || '-'), '', 'Tanggal', ':', today],
+    [''],
+    ['No', 'Uraian Pekerjaan', 'Satuan', 'Volume', 'Harga Satuan (Rp)', 'Jumlah Harga (Rp)']
+  ];
+
+  let itemNo = 1;
+  grouped.forEach(g => {
+    data.push([g.kategori.toUpperCase(), '', '', '', '', '']);
+    g.items.forEach(item => {
+      data.push([itemNo++, item.name, item.unit, Number(item.volume.toFixed(3)), '', '']);
+    });
+    data.push(['', `SUBTOTAL ${g.kategori.toUpperCase()}`, '', '', '', '']);
     data.push(['']);
   });
 
-  data.push([''], ['', '', '', '', 'Subtotal Pekerjaan', toRp(summary.subtotal)]);
-  data.push(['', '', '', '', `Overhead (${financials.overhead}%)`, toRp(summary.overheadAmount)]);
-  data.push(['', '', '', '', `Profit (${financials.profit}%)`, toRp(summary.profitAmount)]);
-  if (financials.contingency > 0) data.push(['', '', '', '', `Biaya Tak Terduga (${financials.contingency}%)`, toRp(summary.contingencyAmount)]);
-  data.push(['', '', '', '', `PPN (${financials.tax}%)`, toRp(summary.taxAmount)]);
-  data.push(['', '', '', '', 'GRAND TOTAL', toRp(summary.grandTotal)]);
-
   const ws = XLSX.utils.aoa_to_sheet(data);
-  ws['!cols'] = [{ wch: 5 }, { wch: 45 }, { wch: 12 }, { wch: 10 }, { wch: 20 }, { wch: 20 }];
-  XLSX.utils.book_append_sheet(wb, ws, 'RAB Detail');
-  XLSX.writeFile(wb, `RAB_${(project.name || 'Proyek').replace(/\s+/g, '_')}.xlsx`);
+  ws['!cols'] = [{ wch: 5 }, { wch: 45 }, { wch: 10 }, { wch: 12 }, { wch: 20 }, { wch: 20 }];
+  XLSX.utils.book_append_sheet(wb, ws, 'BoQ Kosong');
+  XLSX.writeFile(wb, `BoQ_Kosong_${(project.name || 'Proyek').replace(/\s+/g, '_')}.xlsx`);
 };
 
 // ============================================================
