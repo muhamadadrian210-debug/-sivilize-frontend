@@ -522,6 +522,32 @@ const RABCalculator = () => {
       // Finishing
       addItem('fin-001', paintArea, { 'Pekerja': 2, 'Tukang Cat': 2, 'Mandor': 1 });
 
+        // ── KHUSUS RUMAH SAKIT ──
+        if (projectData.type === 'rumah_sakit') {
+          // Lantai Vinyl Anti-Bakteri untuk ruang operasi/UGD/IGD
+          const operationRoomArea = (projectData.hospitalSurgeryRooms || 0) * 36; // Asumsi 36m2 per ruang operasi
+          const ugdArea = (projectData.hospitalEmergencyRooms || 0) * 48; // Asumsi 48m2 per UGD
+          if (operationRoomArea + ugdArea > 0) {
+            addItem('rs-001', operationRoomArea + ugdArea, { 'Pekerja': 2, 'Tukang Khusus': 2, 'Mandor': 1 });
+          }
+          
+          // Pintu Lapis Timbal untuk radiologi/operasi
+          if ((projectData.hospitalSurgeryRooms || 0) > 0) {
+            addItem('rs-002', projectData.hospitalSurgeryRooms || 0, { 'Pekerja': 2, 'Tukang Besi': 2, 'Mandor': 1 });
+          }
+          
+          // Gas Medis untuk ruang rawat/operasi/UGD
+          const gasMedisLength = ((projectData.hospitalInpatientRooms || 0) * 5) + ((projectData.hospitalSurgeryRooms || 0) * 10) + ((projectData.hospitalEmergencyRooms || 0) * 10);
+          if (gasMedisLength > 0) {
+            addItem('rs-003', gasMedisLength, { 'Tukang Pipa Khusus': 2, 'Pekerja': 2 });
+          }
+          
+          // Kamar Mayat
+          if ((projectData.hospitalMorgue || 0) > 0) {
+            addItem('fin-003', (projectData.hospitalMorgue || 0) * 24, { 'Pekerja': 2, 'Tukang Batu': 2 });
+          }
+        }
+
       // Bukaan - Pintu & Jendela (sudah dideklarasi di atas)
       const bathroomCount = projectData.bathroomCount ?? 2;
 
@@ -923,40 +949,95 @@ const RABCalculator = () => {
                 {/* Detail Ruangan & Bukaan */}
                 <div className="border-t border-border pt-6">
                   <h4 className="text-sm font-bold text-text-secondary uppercase tracking-widest mb-4">Detail Ruangan &amp; Bukaan</h4>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-text-secondary text-sm font-medium">
-                        {projectData.type === 'sekolah' ? 'Ruang Kelas' : projectData.type === 'rumah_sakit' ? 'Ruang Rawat/Poli' : 'Kamar Tidur'}
-                      </label>
-                      <input type="number" min="0" value={projectData.bedroomCount}
-                        onChange={(e) => setProjectData({...projectData, bedroomCount: parseInt(e.target.value) || 0})}
-                        className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                      />
+                  
+                  {projectData.type === 'rumah_sakit' ? (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-text-secondary text-sm font-medium">Ruang Rawat Inap</label>
+                        <input type="number" min="0" value={projectData.hospitalInpatientRooms || 0}
+                          onChange={(e) => setProjectData({...projectData, hospitalInpatientRooms: parseInt(e.target.value) || 0})}
+                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-text-secondary text-sm font-medium">Ruang Operasi</label>
+                        <input type="number" min="0" value={projectData.hospitalSurgeryRooms || 0}
+                          onChange={(e) => setProjectData({...projectData, hospitalSurgeryRooms: parseInt(e.target.value) || 0})}
+                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-text-secondary text-sm font-medium">UGD / IGD</label>
+                        <input type="number" min="0" value={projectData.hospitalEmergencyRooms || 0}
+                          onChange={(e) => setProjectData({...projectData, hospitalEmergencyRooms: parseInt(e.target.value) || 0})}
+                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-text-secondary text-sm font-medium">Kamar Mayat</label>
+                        <input type="number" min="0" value={projectData.hospitalMorgue || 0}
+                          onChange={(e) => setProjectData({...projectData, hospitalMorgue: parseInt(e.target.value) || 0})}
+                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-text-secondary text-sm font-medium">Toilet Pasien/Umum</label>
+                        <input type="number" min="0" value={projectData.bathroomCount || 0}
+                          onChange={(e) => setProjectData({...projectData, bathroomCount: parseInt(e.target.value) || 0})}
+                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-text-secondary text-sm font-medium">Jumlah Pintu</label>
+                        <input type="number" min="0" value={projectData.doorCount || 0}
+                          onChange={(e) => setProjectData({...projectData, doorCount: parseInt(e.target.value) || 0})}
+                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-text-secondary text-sm font-medium">Jumlah Jendela</label>
+                        <input type="number" min="0" value={projectData.windowCount || 0}
+                          onChange={(e) => setProjectData({...projectData, windowCount: parseInt(e.target.value) || 0})}
+                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                        />
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-text-secondary text-sm font-medium">
-                        {projectData.type === 'sekolah' ? 'Toilet Siswa' : projectData.type === 'rumah_sakit' ? 'Toilet Pasien' : 'Kamar Mandi'}
-                      </label>
-                      <input type="number" min="0" value={projectData.bathroomCount}
-                        onChange={(e) => setProjectData({...projectData, bathroomCount: parseInt(e.target.value) || 0})}
-                        className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                      />
+                  ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-text-secondary text-sm font-medium">
+                          {projectData.type === 'sekolah' ? 'Ruang Kelas' : 'Kamar Tidur'}
+                        </label>
+                        <input type="number" min="0" value={projectData.bedroomCount}
+                          onChange={(e) => setProjectData({...projectData, bedroomCount: parseInt(e.target.value) || 0})}
+                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-text-secondary text-sm font-medium">
+                          {projectData.type === 'sekolah' ? 'Toilet Siswa' : 'Kamar Mandi'}
+                        </label>
+                        <input type="number" min="0" value={projectData.bathroomCount}
+                          onChange={(e) => setProjectData({...projectData, bathroomCount: parseInt(e.target.value) || 0})}
+                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-text-secondary text-sm font-medium">Jumlah Pintu</label>
+                        <input type="number" min="0" value={projectData.doorCount}
+                          onChange={(e) => setProjectData({...projectData, doorCount: parseInt(e.target.value) || 0})}
+                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-text-secondary text-sm font-medium">Jumlah Jendela</label>
+                        <input type="number" min="0" value={projectData.windowCount}
+                          onChange={(e) => setProjectData({...projectData, windowCount: parseInt(e.target.value) || 0})}
+                          className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
+                        />
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-text-secondary text-sm font-medium">Jumlah Pintu</label>
-                      <input type="number" min="0" value={projectData.doorCount}
-                        onChange={(e) => setProjectData({...projectData, doorCount: parseInt(e.target.value) || 0})}
-                        className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-text-secondary text-sm font-medium">Jumlah Jendela</label>
-                      <input type="number" min="0" value={projectData.windowCount}
-                        onChange={(e) => setProjectData({...projectData, windowCount: parseInt(e.target.value) || 0})}
-                        className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                      />
-                    </div>
-                  </div>
+                  )}
                 </div>
 
                 {/* Mekanikal & Elektrikal */}

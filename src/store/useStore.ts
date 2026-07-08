@@ -101,6 +101,11 @@ export interface Project {
   bathroomCount?: number;
   doorCount?: number;
   windowCount?: number;
+  // Spesifik Rumah Sakit
+  hospitalInpatientRooms?: number;
+  hospitalSurgeryRooms?: number;
+  hospitalEmergencyRooms?: number;
+  hospitalMorgue?: number;
   // Spesifik Infrastruktur
   bridgePillarCount?: number;
   bridgeSpanLength?: number;
