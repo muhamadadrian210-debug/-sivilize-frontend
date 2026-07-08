@@ -209,7 +209,7 @@ export const exportToPDF = (
     doc.save(`RAB_${(project.name || 'Proyek').replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
   } catch (err) {
     console.error('PDF Export Error:', err);
-    alert('Gagal membuat PDF. Silakan coba lagi.');
+    alert('Gagal membuat PDF. Detail error: ' + (err instanceof Error ? err.message : String(err)));
   }
 };
 
