@@ -830,7 +830,7 @@ const RABCalculator = () => {
                 {/* Pilih Jenis Tanah */}
                 <div className="space-y-3">
                   <label className="text-text-secondary text-sm font-medium">Jenis Tanah di Lokasi</label>
-                  <p className="text-[11px] text-yellow-400/80 bg-yellow-500/5 border border-yellow-500/20 rounded-lg px-2 py-1">🌍 Tanah di bawah rumah kamu seperti apa? Kalau tidak tahu, tanya tukang atau tetangga yang sudah bangun rumah di sana. Jenis tanah menentukan pondasi yang cocok.</p>
+                  <p className="text-[11px] text-yellow-400/80 bg-yellow-500/5 border border-yellow-500/20 rounded-lg px-2 py-1">🌍 Kondisi tanah di lokasi proyek seperti apa? Jika kurang yakin, cek kondisi sekitar atau tanyakan pada ahli/warga lokal. Jenis tanah sangat menentukan kekuatan pondasi.</p>
                   <div className="grid grid-cols-2 gap-2">
                     {SOIL_TYPES.map(soil => (
                       <button
@@ -1757,7 +1757,7 @@ const RABCalculator = () => {
           <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-xl p-4 space-y-2">
             <p className="text-yellow-400 font-bold text-sm flex items-center gap-2">⚖️ Kejujuran adalah fondasi</p>
             <p className="text-text-secondary text-sm leading-relaxed">
-              RAB yang jujur melindungi <strong className="text-white">pemilik rumah</strong> dari kerugian,
+              RAB yang jujur melindungi <strong className="text-white">pemilik proyek</strong> dari kerugian,
               dan melindungi <strong className="text-white">kontraktor</strong> dari sengketa.
               Angka yang benar = kepercayaan yang terjaga.
             </p>
@@ -1775,11 +1775,11 @@ const RABCalculator = () => {
 
           {/* Nilai 3 — Tanggung jawab */}
           <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-4 space-y-2">
-            <p className="text-red-400 font-bold text-sm flex items-center gap-2">🏠 Keselamatan adalah prioritas</p>
+            <p className="text-red-400 font-bold text-sm flex items-center gap-2">🏗️ Keselamatan adalah prioritas</p>
             <p className="text-text-secondary text-sm leading-relaxed">
-              Rumah yang dibangun dengan RAB yang benar = struktur yang kuat.
+              Bangunan atau infrastruktur yang dibangun dengan RAB yang benar = struktur yang kuat.
               <strong className="text-white"> Jangan kurangi material demi keuntungan</strong> —
-              keselamatan penghuni adalah tanggung jawab kita bersama.
+              keselamatan pengguna/penghuni adalah tanggung jawab kita bersama.
             </p>
           </div>
 
