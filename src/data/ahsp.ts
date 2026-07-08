@@ -1,4 +1,4 @@
-﻿export interface AHSPTemplate {
+export interface AHSPTemplate {
   id: string;
   category: 'Persiapan' | 'Tanah & Pondasi' | 'Struktur' | 'Dinding & Plesteran' | 'Kusen, Pintu & Jendela' | 'Atap & Plafon' | 'Lantai & Keramik' | 'Instalasi Listrik' | 'Instalasi Air & Sanitasi' | 'Finishing & Pengecatan' | 'Lain-lain';
   name: string;
@@ -7,6 +7,7 @@
   materials: { name: string; coeff: number; unit: string }[];
   laborCoefficients: { name: string; coeff: number; unit: string }[];
   productivity?: number;
+  tags?: string[];
 }
 
 export const AHSP_TEMPLATES: AHSPTemplate[] = [
