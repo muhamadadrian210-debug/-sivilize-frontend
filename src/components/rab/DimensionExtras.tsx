@@ -41,16 +41,26 @@ interface DimensionExtrasProps {
 // ── Validasi dimensi ───────────────────────────────────────
 export function getDimensionErrors(projectData: Partial<Project>): string[] {
   const errors: string[] = [];
-  const dims = projectData.dimensions ?? [];
-  dims.forEach((d, i) => {
-    if (d.length <= 0) errors.push(`Lantai ${i + 1}: Panjang harus > 0`);
-    if (d.width  <= 0) errors.push(`Lantai ${i + 1}: Lebar harus > 0`);
-    if (d.height <= 0) errors.push(`Lantai ${i + 1}: Tinggi harus > 0`);
-    if (d.length > 200) errors.push(`Lantai ${i + 1}: Panjang tidak wajar (> 200m)`);
-    if (d.width  > 200) errors.push(`Lantai ${i + 1}: Lebar tidak wajar (> 200m)`);
-    if (d.height > 10)  errors.push(`Lantai ${i + 1}: Tinggi tidak wajar (> 10m)`);
-  });
-  if ((projectData.floors ?? 1) > 10) errors.push('Jumlah lantai tidak wajar (> 10)');
+  
+  if (['rumah', 'sekolah', 'rumah_sakit'].includes(projectData.type || 'rumah')) {
+    const dims = projectData.dimensions ?? [];
+    dims.forEach((d, i) => {
+      if (d.length <= 0) errors.push(`Lantai ${i + 1}: Panjang harus > 0`);
+      if (d.width  <= 0) errors.push(`Lantai ${i + 1}: Lebar harus > 0`);
+      if (d.height <= 0) errors.push(`Lantai ${i + 1}: Tinggi harus > 0`);
+      if (d.length > 200) errors.push(`Lantai ${i + 1}: Panjang tidak wajar (> 200m)`);
+      if (d.width  > 200) errors.push(`Lantai ${i + 1}: Lebar tidak wajar (> 200m)`);
+      if (d.height > 10)  errors.push(`Lantai ${i + 1}: Tinggi tidak wajar (> 10m)`);
+    });
+    if ((projectData.floors ?? 1) > 10) errors.push('Jumlah lantai tidak wajar (> 10)');
+  } else if (projectData.type === 'jembatan') {
+    if ((projectData.bridgeSpanLength ?? 0) <= 0) errors.push('Panjang bentang harus > 0');
+    if ((projectData.bridgePillarCount ?? 0) < 0) errors.push('Jumlah pilar tidak boleh negatif');
+  } else if (projectData.type === 'bendungan') {
+    if ((projectData.damGateCount ?? 0) < 0) errors.push('Jumlah pintu air tidak boleh negatif');
+    if ((projectData.damCapacity ?? 0) <= 0) errors.push('Kapasitas tampung harus > 0');
+  }
+  
   return errors;
 }
 
