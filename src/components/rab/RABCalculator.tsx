@@ -911,50 +911,7 @@ const RABCalculator = () => {
               })()}
             </div>
 
-            {/* Spesifikasi Khusus Infrastruktur (Jembatan & Bendungan) */}
-            {projectData.type === 'jembatan' && (
-              <div className="border-t border-border pt-6">
-                <h4 className="text-sm font-bold text-text-secondary uppercase tracking-widest mb-4">Spesifikasi Jembatan</h4>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-text-secondary text-sm font-medium">Panjang Bentang (m)</label>
-                    <input type="number" min="0" value={projectData.bridgeSpanLength ?? 0}
-                      onChange={(e) => setProjectData({...projectData, bridgeSpanLength: parseInt(e.target.value) || 0})}
-                      className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-text-secondary text-sm font-medium">Jumlah Pilar</label>
-                    <input type="number" min="0" value={projectData.bridgePillarCount ?? 0}
-                      onChange={(e) => setProjectData({...projectData, bridgePillarCount: parseInt(e.target.value) || 0})}
-                      className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
 
-            {projectData.type === 'bendungan' && (
-              <div className="border-t border-border pt-6">
-                <h4 className="text-sm font-bold text-text-secondary uppercase tracking-widest mb-4">Spesifikasi Bendungan</h4>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-text-secondary text-sm font-medium">Jumlah Pintu Air</label>
-                    <input type="number" min="0" value={projectData.waterGateCount ?? 0}
-                      onChange={(e) => setProjectData({...projectData, waterGateCount: parseInt(e.target.value) || 0})}
-                      className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-text-secondary text-sm font-medium">Kapasitas Tampung (m3)</label>
-                    <input type="number" min="0" value={projectData.damCapacity ?? 0}
-                      onChange={(e) => setProjectData({...projectData, damCapacity: parseInt(e.target.value) || 0})}
-                      className="w-full h-12 bg-background border border-border rounded-xl px-4 text-white focus:outline-none focus:border-primary transition-all"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
 
             {/* Form Khusus Bangunan Gedung (Rumah & Sekolah) */}
             {['rumah', 'sekolah'].includes(projectData.type) && (
@@ -1056,62 +1013,116 @@ const RABCalculator = () => {
               <Layers size={20} className="text-primary" />
               {['rumah', 'sekolah'].includes(projectData.type || 'rumah') ? 'Dimensi Per Lantai' : `Dimensi Utama ${projectData.type === 'jembatan' ? 'Jembatan' : 'Bendungan'}`}
             </h3>
-            <p className="text-[11px] text-yellow-400/80 bg-yellow-500/5 border border-yellow-500/20 rounded-lg px-2 py-1 mb-4">📐 Isi ukuran panjang, lebar, dan tinggi proyeknya. Jangan asal isi biar harganya akurat.</p>
-            <div className="space-y-4">
-              {projectData.dimensions?.map((dim, index) => (
-                <div key={index} className="bg-background/50 border border-border p-4 rounded-xl grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-xs text-text-secondary uppercase font-bold tracking-wider">Panjang (m)</label>
-                    <input 
-                      type="number" 
-                      value={dim.length}
-                      onChange={(e) => {
-                        const newDims = [...projectData.dimensions!];
-                        newDims[index].length = parseFloat(e.target.value) || 0;
-                        setProjectData({...projectData, dimensions: newDims});
-                      }}
-                      className="w-full bg-background border border-border rounded-lg px-3 py-2 text-white focus:border-primary outline-none"
+            <p className="text-[11px] text-yellow-400/80 bg-yellow-500/5 border border-yellow-500/20 rounded-lg px-2 py-1 mb-4">
+              {['rumah', 'sekolah'].includes(projectData.type || 'rumah') 
+                ? '📐 Isi ukuran panjang, lebar, dan tinggi proyeknya. Jangan asal isi biar harganya akurat.'
+                : '📐 Isi spesifikasi utama infrastruktur sesuai rencana desain teknis.'
+              }
+            </p>
+            
+            {/* Form Khusus Bangunan Gedung (Rumah & Sekolah) */}
+            {['rumah', 'sekolah'].includes(projectData.type || 'rumah') && (
+              <>
+                <div className="space-y-4">
+                  {projectData.dimensions?.map((dim, index) => (
+                    <div key={index} className="bg-background/50 border border-border p-4 rounded-xl grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-xs text-text-secondary uppercase font-bold tracking-wider">Panjang (m)</label>
+                        <input 
+                          type="number" 
+                          value={dim.length}
+                          onChange={(e) => {
+                            const newDims = [...projectData.dimensions!];
+                            newDims[index].length = parseFloat(e.target.value) || 0;
+                            setProjectData({...projectData, dimensions: newDims});
+                          }}
+                          className="w-full bg-background border border-border rounded-lg px-3 py-2 text-white focus:border-primary outline-none"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs text-text-secondary uppercase font-bold tracking-wider">Lebar (m)</label>
+                        <input 
+                          type="number" 
+                          value={dim.width}
+                          onChange={(e) => {
+                            const newDims = [...projectData.dimensions!];
+                            newDims[index].width = parseFloat(e.target.value) || 0;
+                            setProjectData({...projectData, dimensions: newDims});
+                          }}
+                          className="w-full bg-background border border-border rounded-lg px-3 py-2 text-white focus:border-primary outline-none"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs text-text-secondary uppercase font-bold tracking-wider">Tinggi (m)</label>
+                        <input 
+                          type="number" 
+                          value={dim.height}
+                          onChange={(e) => {
+                            const newDims = [...projectData.dimensions!];
+                            newDims[index].height = parseFloat(e.target.value) || 0;
+                            setProjectData({...projectData, dimensions: newDims});
+                          }}
+                          className="w-full bg-background border border-border rounded-lg px-3 py-2 text-white focus:border-primary outline-none"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+    
+                {/* Fitur tambahan: validasi, sisi dinding, tulangan, bukaan */}
+                <DimensionExtras
+                  projectData={projectData}
+                  setProjectData={setProjectData}
+                  totalArea={totalArea}
+                  totalVolume={totalVolume}
+                  rebarConfig={rebarConfig}
+                  setRebarConfig={setRebarConfig}
+                />
+              </>
+            )}
+
+            {/* Spesifikasi Khusus Infrastruktur (Jembatan & Bendungan) */}
+            {projectData.type === 'jembatan' && (
+              <div className="space-y-4">
+                <div className="bg-background/50 border border-border p-4 rounded-xl grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-xs text-text-secondary uppercase font-bold tracking-wider">Panjang Bentang (m)</label>
+                    <input type="number" min="0" value={projectData.bridgeSpanLength ?? 0}
+                      onChange={(e) => setProjectData({...projectData, bridgeSpanLength: parseInt(e.target.value) || 0})}
+                      className="w-full h-12 bg-background border border-border rounded-lg px-4 text-white focus:outline-none focus:border-primary transition-all"
                     />
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-xs text-text-secondary uppercase font-bold tracking-wider">Lebar (m)</label>
-                    <input 
-                      type="number" 
-                      value={dim.width}
-                      onChange={(e) => {
-                        const newDims = [...projectData.dimensions!];
-                        newDims[index].width = parseFloat(e.target.value) || 0;
-                        setProjectData({...projectData, dimensions: newDims});
-                      }}
-                      className="w-full bg-background border border-border rounded-lg px-3 py-2 text-white focus:border-primary outline-none"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs text-text-secondary uppercase font-bold tracking-wider">Tinggi (m)</label>
-                    <input 
-                      type="number" 
-                      value={dim.height}
-                      onChange={(e) => {
-                        const newDims = [...projectData.dimensions!];
-                        newDims[index].height = parseFloat(e.target.value) || 0;
-                        setProjectData({...projectData, dimensions: newDims});
-                      }}
-                      className="w-full bg-background border border-border rounded-lg px-3 py-2 text-white focus:border-primary outline-none"
+                  <div className="space-y-2">
+                    <label className="text-xs text-text-secondary uppercase font-bold tracking-wider">Jumlah Pilar</label>
+                    <input type="number" min="0" value={projectData.bridgePillarCount ?? 0}
+                      onChange={(e) => setProjectData({...projectData, bridgePillarCount: parseInt(e.target.value) || 0})}
+                      className="w-full h-12 bg-background border border-border rounded-lg px-4 text-white focus:outline-none focus:border-primary transition-all"
                     />
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
 
-            {/* Fitur tambahan: validasi, sisi dinding, tulangan, bukaan */}
-            <DimensionExtras
-              projectData={projectData}
-              setProjectData={setProjectData}
-              totalArea={totalArea}
-              totalVolume={totalVolume}
-              rebarConfig={rebarConfig}
-              setRebarConfig={setRebarConfig}
-            />
+            {projectData.type === 'bendungan' && (
+              <div className="space-y-4">
+                <div className="bg-background/50 border border-border p-4 rounded-xl grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-xs text-text-secondary uppercase font-bold tracking-wider">Jumlah Pintu Air</label>
+                    <input type="number" min="0" value={projectData.waterGateCount ?? 0}
+                      onChange={(e) => setProjectData({...projectData, waterGateCount: parseInt(e.target.value) || 0})}
+                      className="w-full h-12 bg-background border border-border rounded-lg px-4 text-white focus:outline-none focus:border-primary transition-all"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs text-text-secondary uppercase font-bold tracking-wider">Kapasitas Tampung (m3)</label>
+                    <input type="number" min="0" value={projectData.damCapacity ?? 0}
+                      onChange={(e) => setProjectData({...projectData, damCapacity: parseInt(e.target.value) || 0})}
+                      className="w-full h-12 bg-background border border-border rounded-lg px-4 text-white focus:outline-none focus:border-primary transition-all"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         );
       case 3:
