@@ -44,12 +44,14 @@ const AHSPDatabase = () => {
   const projectTypes = ['Semua Proyek', 'Rumah & Gedung', 'Gedung Sekolah', 'Rumah Sakit', 'Infrastruktur Jembatan', 'Infrastruktur Bendungan'];
   const categories = ['Semua', 'Struktur', 'Arsitektur', 'Finishing', 'MEP'];
 
+  const isBuildingProject = ['Rumah & Gedung', 'Gedung Sekolah', 'Rumah Sakit'].includes(activeProjectType);
+
   const filteredItems = AHSP_TEMPLATES.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase());
     const matchesCategory = activeCategory === 'Semua' || item.category === activeCategory;
     const matchesProjectType = activeProjectType === 'Semua Proyek' 
       || (item as any).tags?.includes(activeProjectType) 
-      || !(item as any).tags; // Show generic items everywhere
+      || (!(item as any).tags && isBuildingProject); // Show generic items only for building projects
       
     return matchesSearch && matchesCategory && matchesProjectType;
   });
