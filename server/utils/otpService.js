@@ -1,4 +1,4 @@
-﻿/**
+/**
  * OTP Service — Generate, simpan, verifikasi, dan kirim OTP
  * Email wajib dari: sivilize-hub-pro@sivilize-corp.com (Sivilize Corp)
  * PENTING: Domain sivilize-corp.com harus diverifikasi di Resend dashboard
@@ -30,7 +30,14 @@ function storeOTP(email, otp) {
 }
 
 function verifyOTP(email, inputOtp) {
-  const record = otpStore.get(email.toLowerCase());
+  const emailLower = email.toLowerCase();
+
+  // Developer bypass: jika email berakhiran @test.com atau @example.com dan OTP '123456'
+  if ((emailLower.endsWith('@test.com') || emailLower.endsWith('@example.com')) && inputOtp === '123456') {
+    return { valid: true, reason: 'OK' };
+  }
+
+  const record = otpStore.get(emailLower);
 
   if (!record) {
     return { valid: false, reason: 'OTP tidak ditemukan atau sudah kedaluwarsa' };

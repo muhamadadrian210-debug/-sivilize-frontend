@@ -6,7 +6,7 @@ import { useStore } from '../../store/useStore';
 import { LogoCivil as CivilEngineeringLogo } from '../LogoCivil';
 
 type AxiosLikeError = {
-  response?: { data?: { message?: string; resetToken?: string; resetUrl?: string; errors?: { message: string }[] } };
+  response?: { data?: { message?: string; error?: string; resetToken?: string; resetUrl?: string; errors?: { message: string }[] } };
 };
 
 type AuthMode = 'login' | 'register' | 'forgot' | 'reset' | 'otp';
@@ -84,12 +84,12 @@ const AuthPage = () => {
     }
     setLoading(true); setError(''); setSuccess('Kode OTP sedang dikirimkan ke Gmail Anda...');
     try {
-      await authService.sendOtp(formData.email, purpose);
+      const response = await authService.sendOtp(formData.email, purpose);
       setOtpPurpose(purpose);
       setOtpDigits(['', '', '', '', '', '']);
       setOtpCountdown(60);
       setError('');
-      setSuccess('');
+      setSuccess(response.message || 'Kode OTP telah dikirim.');
       setMode('otp');
       setTimeout(() => otpRefs.current[0]?.focus(), 100);
     } catch (err: unknown) {
@@ -99,7 +99,11 @@ const AuthPage = () => {
       if (status === 429) setError('Terlalu banyak percobaan. Tunggu 1 menit lalu coba lagi.');
       else if (status === 400) setError(e.response?.data?.message || 'Gagal mengirim OTP.');
       else if (!e.response) setError('Tidak ada respon dari server. Periksa koneksi internet Anda.');
-      else setError(e.response?.data?.message || 'Gagal mengirim OTP. Coba lagi.');
+      else {
+        const msg = e.response?.data?.message || 'Gagal mengirim OTP. Coba lagi.';
+        const detail = e.response?.data?.error;
+        setError(detail ? `${msg} (Detail: ${detail})` : msg);
+      }
     } finally { setLoading(false); }
   };
 
@@ -241,6 +245,13 @@ const AuthPage = () => {
                 {error && (
                   <div className="bg-red-500/10 p-3 rounded-lg border border-red-500/20">
                     <p className="text-red-400 text-xs font-bold text-center">{error}</p>
+                  </div>
+                )}
+
+                {success && (
+                  <div className="flex items-start gap-2 bg-green-500/10 p-3 rounded-lg border border-green-500/20">
+                    <CheckCircle2 size={16} className="text-green-400 shrink-0 mt-0.5" />
+                    <p className="text-green-400 text-xs font-bold break-all text-center w-full">{success}</p>
                   </div>
                 )}
 
