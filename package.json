@@ -35,6 +35,9 @@
     "url": "https://github.com/muhamadadrian/sivilize-hub-pro"
   },
   "dependencies": {
+    "@capacitor/android": "^8.4.1",
+    "@capacitor/cli": "^8.4.1",
+    "@capacitor/core": "^8.4.1",
     "@tailwindcss/postcss": "^4.2.2",
     "axios": "^1.14.0",
     "clsx": "^2.1.1",

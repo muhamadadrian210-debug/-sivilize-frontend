@@ -1,7 +1,7 @@
-﻿﻿﻿import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Calculator, BarChart3, BookOpen, Database, Shield, Smartphone,
+  Calculator, BarChart3, BookOpen, Database, Shield, Smartphone, Tablet,
   ArrowRight, CheckCircle2, Star, Building2,
   FileText, Zap, Globe, ChevronDown, Menu, X
 } from 'lucide-react';
@@ -14,6 +14,7 @@ interface LandingPageProps {
 const LandingPage = ({ onGetStarted }: LandingPageProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
 
   // Warm up backend saat landing page dibuka — supaya tidak cold start saat user klik login
   useEffect(() => {
@@ -132,6 +133,7 @@ const LandingPage = ({ onGetStarted }: LandingPageProps) => {
             <a href="#fitur" className="text-text-secondary hover:text-white transition-colors text-sm">Fitur</a>
             <a href="#testimoni" className="text-text-secondary hover:text-white transition-colors text-sm">Testimoni</a>
             <a href="#faq" className="text-text-secondary hover:text-white transition-colors text-sm">FAQ</a>
+            <button onClick={() => setShowDownloadModal(true)} className="text-text-secondary hover:text-white transition-colors text-sm font-medium">Download App</button>
           </div>
 
           <div className="hidden md:flex items-center gap-3">
@@ -155,6 +157,7 @@ const LandingPage = ({ onGetStarted }: LandingPageProps) => {
             <a href="#fitur" className="block text-text-secondary hover:text-white py-2 text-sm" onClick={() => setMobileMenuOpen(false)}>Fitur</a>
             <a href="#testimoni" className="block text-text-secondary hover:text-white py-2 text-sm" onClick={() => setMobileMenuOpen(false)}>Testimoni</a>
             <a href="#faq" className="block text-text-secondary hover:text-white py-2 text-sm" onClick={() => setMobileMenuOpen(false)}>FAQ</a>
+            <button onClick={() => { setShowDownloadModal(true); setMobileMenuOpen(false); }} className="block w-full text-left text-text-secondary hover:text-white py-2 text-sm">Download App</button>
             <button onClick={onGetStarted} className="btn-primary w-full py-2.5 text-sm mt-2">Daftar Gratis</button>
           </div>
         )}
@@ -162,24 +165,6 @@ const LandingPage = ({ onGetStarted }: LandingPageProps) => {
 
       {/* â”€â”€ HERO â”€â”€ */}
       <section className="pt-32 pb-20 px-4 lg:px-8 max-w-7xl mx-auto">
-        {/* Ayat Quran — Kejujuran & Amanah */}
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="max-w-3xl mx-auto mb-10 text-center"
-        >
-          <div className="bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 border border-primary/20 rounded-2xl px-6 py-5">
-            <p className="text-primary/60 text-xs font-bold uppercase tracking-widest mb-2">QS. Al-Ahzab: 70-71</p>
-            <p className="text-white font-bold text-lg md:text-xl leading-relaxed mb-2" dir="rtl" lang="ar">
-              يَٰٓأَيُّهَا ٱلَّذِينَ ءَامَنُوا۟ ٱتَّقُوا۟ ٱللَّهَ وَقُولُوا۟ قَوْلًا سَدِيدًا
-            </p>
-            <p className="text-text-secondary text-sm italic leading-relaxed">
-              "Wahai orang-orang yang beriman, bertakwalah kepada Allah dan ucapkanlah perkataan yang benar (jujur). Niscaya Allah memperbaiki amal-amalmu dan mengampuni dosa-dosamu."
-            </p>
-            <p className="text-primary/50 text-xs mt-2">— QS. Al-Ahzab: 70-71</p>
-          </div>
-        </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -208,6 +193,13 @@ const LandingPage = ({ onGetStarted }: LandingPageProps) => {
             >
               Mulai Gratis Sekarang
               <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+            </button>
+            <button
+              onClick={() => setShowDownloadModal(true)}
+              className="flex items-center justify-center gap-2 py-4 px-8 text-base bg-primary/10 border border-primary/30 rounded-xl text-primary hover:bg-primary/20 hover:border-primary/50 transition-all"
+            >
+              <Smartphone size={18} />
+              Unduh Aplikasi APK
             </button>
             <a
               href="#fitur"
@@ -460,6 +452,98 @@ const LandingPage = ({ onGetStarted }: LandingPageProps) => {
           </div>
         </div>
       </footer>
+
+      {/* ── DOWNLOAD APP MODAL ── */}
+      <AnimatePresence>
+        {showDownloadModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowDownloadModal(false)}
+              className="absolute inset-0 bg-background/85 backdrop-blur-sm"
+            />
+
+            {/* Modal Card */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-card border border-border w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl relative z-10 p-6 md:p-8"
+            >
+              <button
+                onClick={() => setShowDownloadModal(false)}
+                className="absolute top-4 right-4 text-text-secondary hover:text-white p-1 rounded-lg hover:bg-border transition-all"
+              >
+                <X size={20} />
+              </button>
+
+              <div className="text-center mb-8">
+                <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4 text-primary">
+                  <Smartphone size={24} />
+                </div>
+                <h3 className="text-2xl font-black text-white">Unduh Aplikasi APK</h3>
+                <p className="text-text-secondary text-sm mt-2 font-medium">
+                  Pilih versi yang paling sesuai dengan jenis perangkat yang Anda gunakan.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Mobile version */}
+                <div className="bg-background/60 border border-border hover:border-primary/50 rounded-2xl p-6 flex flex-col justify-between transition-all group">
+                  <div>
+                    <div className="w-10 h-10 bg-blue-500/10 text-blue-400 rounded-xl flex items-center justify-center mb-4">
+                      <Smartphone size={20} />
+                    </div>
+                    <h4 className="text-white font-bold text-lg mb-2">Versi HP (Mobile)</h4>
+                    <p className="text-text-secondary text-xs leading-relaxed mb-6">
+                      Dioptimalkan untuk layar ponsel portrait. Navigasi bawah jempol yang ergonomis, sangat praktis saat digunakan langsung di lapangan proyek.
+                    </p>
+                  </div>
+                  <a
+                    href="/downloads/sivilize-mobile.apk"
+                    download
+                    className="w-full btn-primary py-2.5 text-center text-sm font-semibold flex items-center justify-center gap-2 group-hover:scale-[1.02] transition-transform"
+                  >
+                    <span>Download APK Mobile</span>
+                  </a>
+                </div>
+
+                {/* Tablet version */}
+                <div className="bg-background/60 border border-border hover:border-primary/50 rounded-2xl p-6 flex flex-col justify-between transition-all group">
+                  <div>
+                    <div className="w-10 h-10 bg-purple-500/10 text-purple-400 rounded-xl flex items-center justify-center mb-4">
+                      <Tablet size={20} />
+                    </div>
+                    <h4 className="text-white font-bold text-lg mb-2">Versi Tablet</h4>
+                    <p className="text-text-secondary text-xs leading-relaxed mb-6">
+                      Dioptimalkan untuk tablet dengan layout lanskap. Menampilkan kalkulator grid penuh dan review Curve S visual mirip versi desktop.
+                    </p>
+                  </div>
+                  <a
+                    href="/downloads/sivilize-tablet.apk"
+                    download
+                    className="w-full bg-white/5 border border-border hover:border-primary/50 text-white py-2.5 text-center text-sm font-semibold flex items-center justify-center gap-2 group-hover:scale-[1.02] transition-transform"
+                  >
+                    <span>Download APK Tablet</span>
+                  </a>
+                </div>
+              </div>
+
+              <div className="text-center mt-8 pt-6 border-t border-border">
+                <button
+                  onClick={() => setShowDownloadModal(false)}
+                  className="text-text-secondary hover:text-white text-xs font-semibold"
+                >
+                  Atau tetap menggunakan Versi Web (Browser)
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

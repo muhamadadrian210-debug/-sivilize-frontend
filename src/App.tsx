@@ -25,6 +25,7 @@ import { checkTokenValidity } from './utils/security';
 import PrankPage from './pages/PrankPage';
 import LandingPage from './pages/LandingPage';
 import ShareView from './pages/ShareView';
+import VerifyView from './pages/VerifyView';
 import { useDataSync } from './hooks/useDataSync';
 import { runNotificationEngine } from './utils/notificationEngine';
 import { LanguageProvider } from './contexts/LanguageContext';
@@ -99,6 +100,11 @@ function App() {
     return <ShareView />;
   }
 
+  // Tampilkan halaman verifikasi jika URL /verify
+  if (window.location.pathname.startsWith('/verify')) {
+    return <VerifyView />;
+  }
+
   if (!isAuthenticated) {
     if (showAuth) {
       return <ToastProvider><AuthPage /></ToastProvider>;
@@ -153,7 +159,7 @@ function App() {
           <Navbar />
           
           {/* Desktop: pl-64 pt-20 | Mobile: pt-14 pb-16 (top bar + bottom nav) */}
-          <main className="lg:pl-64 lg:pt-20 pt-14 pb-16 lg:pb-0 transition-all duration-300 flex-1 flex flex-col">
+          <main className="lg:pl-64 lg:pt-20 pt-[calc(3.5rem+env(safe-area-inset-top,0px))] pb-[calc(4rem+env(safe-area-inset-bottom,0px))] lg:pb-0 transition-all duration-300 flex-1 flex flex-col">
             <div className="flex-1">
               <AnimatePresence mode="wait">
                 <motion.div

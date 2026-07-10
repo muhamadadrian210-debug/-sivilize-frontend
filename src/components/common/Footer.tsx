@@ -74,7 +74,7 @@ const Footer = () => {
               </span>
             </div>
             <p className="text-text-secondary text-sm leading-relaxed">
-              Platform teknik sipil tercanggih untuk perhitungan RAB, manajemen proyek, dan analisis AHSP berbasis AI.
+              Platform teknik sipil tercanggih untuk perhitungan RAB, manajemen proyek, dan analisis AHSP berbasis AI. Sivilize Hub Pro merupakan bagian dari ekosistem PT Sivilize Corp Indonesia.
             </p>
           </div>
 
@@ -113,7 +113,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-text-secondary text-sm">
-            © {currentYear} Sivilize Hub Pro. All rights reserved. Dilindungi oleh undang-undang.
+            © {currentYear} PT Sivilize Corp Indonesia. All rights reserved. Dilindungi oleh undang-undang.
           </p>
           <div className="flex items-center gap-6">
             <span className="text-xs text-text-secondary px-3 py-1 rounded-full bg-border/50 border border-border">
