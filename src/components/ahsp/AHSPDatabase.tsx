@@ -29,6 +29,22 @@ import { importRegionalPriceCsv, importRegionalPriceFromApi } from '../../servic
 import HSPKManager from './HSPKManager';
 import CustomAHSPEditor from './CustomAHSPEditor';
 
+const mapRawCategoryToMainTab = (rawCat: string): string => {
+  if (['Persiapan', 'Tanah & Pondasi', 'Struktur'].includes(rawCat)) {
+    return 'Struktur';
+  }
+  if (['Dinding & Plesteran', 'Kusen, Pintu & Jendela', 'Atap & Plafon', 'Lantai & Keramik'].includes(rawCat)) {
+    return 'Arsitektur';
+  }
+  if (['Finishing & Pengecatan'].includes(rawCat)) {
+    return 'Finishing';
+  }
+  if (['Instalasi Listrik', 'Instalasi Air & Sanitasi'].includes(rawCat)) {
+    return 'MEP';
+  }
+  return 'Lain-lain';
+};
+
 const AHSPDatabase = () => {
   const [mainTab, setMainTab] = useState<'ahsp' | 'hspk' | 'custom'>('ahsp');
   const [search, setSearch] = useState('');
@@ -43,7 +59,8 @@ const AHSPDatabase = () => {
 
   const filteredItems = AHSP_TEMPLATES.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase());
-    const matchesCategory = activeCategory === 'Semua' || item.category === activeCategory;
+    const itemMainTab = mapRawCategoryToMainTab(item.category);
+    const matchesCategory = activeCategory === 'Semua' || itemMainTab === activeCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -228,8 +245,9 @@ const AHSPDatabase = () => {
                     <div>
                       <div className="flex items-center gap-3">
                         <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
-                          item.category === 'Struktur' ? 'bg-blue-500/10 text-blue-500' :
-                          (item as any).category === 'Arsitektur' ? 'bg-purple-500/10 text-purple-500' :
+                          mapRawCategoryToMainTab(item.category) === 'Struktur' ? 'bg-blue-500/10 text-blue-500' :
+                          mapRawCategoryToMainTab(item.category) === 'Arsitektur' ? 'bg-purple-500/10 text-purple-500' :
+                          mapRawCategoryToMainTab(item.category) === 'Finishing' ? 'bg-yellow-500/10 text-yellow-500' :
                           'bg-success/10 text-success'
                         }`}>
                           {item.category}
