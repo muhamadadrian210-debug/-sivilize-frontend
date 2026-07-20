@@ -7,6 +7,85 @@ Aplikasi ini merupakan bagian integral dari **Ekosistem PT Sivilize Corp Indones
 
 ---
 
+## 🔑 1. Panduan Pendaftaran & Otentikasi Akun
+
+Sivilize Hub Pro mengadopsi standar keamanan tingkat tinggi menggunakan otentikasi tanpa password konvensional, melainkan dengan **Gmail OTP (One-Time Password)** untuk meminimalisir risiko peretasan data anggaran proyek Anda.
+
+### A. Cara Melakukan Pendaftaran (Register)
+1. Buka aplikasi, klik tombol **Dapatkan Akses** atau **Mulai Sekarang** di Landing Page.
+2. Pada form Auth, pilih tab **Daftar**.
+3. Isi nama lengkap Anda, alamat Gmail aktif, dan pilih Peran/Role Anda (misal: Kontraktor, Konsultan, Developer, Estimator).
+4. Tekan **Kirim OTP**. Kode OTP 6-digit rahasia akan dikirimkan otomatis ke inbox Gmail Anda.
+5. Masukkan 6-digit kode OTP tersebut pada kolom verifikasi aplikasi untuk mengaktifkan akun Anda.
+
+### B. Cara Melakukan Login
+1. Buka form login, masukkan alamat Gmail terdaftar Anda, lalu klik **Minta Kode OTP**.
+2. Buka inbox Gmail Anda, salin kode OTP 6-digit terbaru yang dikirim oleh sistem Sivilize.
+3. Masukkan kode tersebut ke dalam aplikasi, lalu tekan **Verifikasi & Masuk**.
+4. Centang opsi **Ingat Saya (Remember Me)** jika Anda ingin login otomatis pada perangkat ini di kemudian hari tanpa harus meminta kode OTP berulang kali (selama masa berlaku token aktif).
+
+---
+
+## 🧭 2. Penjelasan Menu & Navigasi (Sidebar / Navbar)
+
+Setelah berhasil masuk ke dashboard utama, Anda akan disajikan dengan menu sidebar navigasi yang merepresentasikan modul fungsionalitas utama aplikasi:
+
+1. **📊 Dashboard**: Halaman rangkuman utama yang menyajikan statistik proyek aktif, ringkasan jumlah RAB, grafik status pengerjaan mingguan, progres keuangan aktual, notifikasi sistem, serta pintasan cepat untuk membuat estimasi baru.
+2. **🧮 Kalkulator RAB**: Jantung dari aplikasi. Modul interaktif untuk menyusun kategori pekerjaan sipil (Persiapan, Struktur, Finishing, dll.), menginput volume pekerjaan, memilih rumus AHSP, serta menghitung subtotal secara real-time.
+3. **📈 Analisis Struktur**: Fitur kalkulator teknik sipil tambahan untuk menganalisis pembebanan struktur bangunan ringan (beton/baja/kayu) guna membantu perencanaan dimensi elemen sebelum dihitung biayanya.
+4. **🗄️ AHSP Database**: Modul database regional yang memuat standar Analisa Harga Satuan Pekerjaan (AHSP) dari 514 kota dan kabupaten di Indonesia (sesuai regulasi Kementerian PUPR / SNI). Di sini Anda juga bisa menambah atau mengubah harga material dasar, sewa alat, dan tarif upah pekerja lokal.
+5. **📖 Buku Harian (Daily Log)**: Buku jurnal digital untuk mencatat laporan harian langsung dari lokasi konstruksi (kondisi cuaca harian, jumlah pekerja yang hadir, kedatangan bahan bangunan, hambatan teknis di lapangan, serta lampiran foto dokumentasi fisik proyek).
+6. **⚙️ Manajemen Proyek**: Pusat konfigurasi proyek untuk mengatur nama pemilik (owner), alamat lokasi, masa kontrak kerja, tim pelaksana, serta manajemen unggah berkas kontrak/gambar cetak kerja.
+7. **💰 Lap. Keuangan (Financial)**: Dashboard pelacakan anggaran (*Budget vs Actual cost tracking*). Digunakan untuk mencatat pengeluaran riil di lapangan (beli material/upah) dan membandingkannya dengan RAB awal agar margin keuntungan proyek tetap aman terkendali.
+8. **📉 Kurva S (S-Curve)**: Modul penjadwalan dan pemantauan waktu kerja. Menghasilkan grafik Kurva S secara otomatis untuk membandingkan target rencana waktu proyek versus realisasi perkembangan fisik di lapangan (mendeteksi keterlambatan proyek).
+9. **👥 Upah Tukang (Labor)**: Sistem penggajian (*payroll*) pekerja konstruksi. Mengatur rekap jam kerja harian, upah lembur, dan pembayaran mingguan untuk mandor, tukang batu, tukang kayu, hingga asisten tukang.
+10. **🛡️ Control Panel (Admin)**: Khusus akun ber-role Admin. Berfungsi untuk mengelola daftar akun anggota tim, mengkonfigurasi hak akses, serta mengawasi **Log Audit** (catatan riwayat log aktivitas pengguna demi keamanan data perusahaan).
+11. **🔔 Pusat Notifikasi**: Menampilkan pemberitahuan real-time mengenai pengingat batas waktu proyek, log harian yang belum diisi, pengeluaran keuangan yang melebihi batas anggaran, atau update status dari anggota tim.
+
+---
+
+## 🚀 3. Panduan Alur Kerja Penggunaan Aplikasi (Step-by-Step)
+
+Untuk menghasilkan output dokumen estimasi hingga laporan manajemen proyek secara komprehensif, ikuti alur kerja standar berikut:
+
+### Langkah 1: Inisialisasi Proyek Baru
+* Buka menu **Dashboard**, lalu klik tombol **Buat Proyek Baru** (atau masuk ke menu **Manajemen Proyek**).
+* Masukkan nama proyek, nama klien, tanggal mulai, estimasi durasi (minggu), dan lokasi proyek (pilih dari 514 kota/kabupaten se-Indonesia).
+
+### Langkah 2: Sesuaikan Database Harga Satuan Regional (HSPK)
+* Masuk ke menu **AHSP Database**.
+* Pilih kota/kabupaten proyek Anda. Sistem akan memuat default harga pasar lokal untuk bahan (seperti semen, pasir, besi) dan upah (tukang, mandor).
+* Lakukan penyesuaian harga dasar jika Anda mendapatkan harga pemasok yang lebih murah atau ada kesepakatan upah borongan tertentu.
+
+### Langkah 3: Susun Rencana Anggaran Biaya (RAB)
+* Buka menu **Kalkulator RAB** dan pilih proyek Anda.
+* Tambahkan kategori pekerjaan (misal: *Pekerjaan Pondasi*).
+* Klik tombol **Tambah Item Pekerjaan**, cari template analisis AHSP yang relevan dari database (misal: *Pemasangan Pondasi Batu Kali 1:4*).
+* Masukkan volume pengerjaan fisik di lapangan (misal: `12` m³). Sistem akan menghitung secara otomatis total biaya bahan, tenaga, dan alat.
+
+### Langkah 4: Tentukan Pajak & Margin Keuntungan
+* Di bagian bawah kalkulator RAB, atur parameter finansial proyek:
+  * **PPN** (misal: 11%)
+  * **Overhead & Keuntungan** (misal: 10% - 15%)
+  * **Contingency / Biaya Tak Terduga** (opsional)
+* Sistem akan mengalkulasi total penawaran harga akhir (*Grand Total*).
+
+### Langkah 5: Ekspor Dokumen Siap Tender
+* Buka tab cetak laporan, klik **Ekspor Excel** untuk mengunduh dokumen RAB 3-sheet rapi (Rekapitulasi, Rincian Anggaran, dan Rincian AHSP koefisien bahan/upah) untuk diserahkan ke klien/panitia tender.
+* Klik **Ekspor PDF** untuk membuat berkas presentasi resmi lengkap dengan kop surat perusahaan Sivilize.
+
+### Langkah 6: Kelola Progres Pelaksanaan (Kurva S & Daily Log)
+* Saat konstruksi dimulai, masuk ke menu **Kurva S** untuk membagi persentase bobot setiap pekerjaan ke dalam target mingguan.
+* Setiap sore, mintalah pengawas/mandor untuk mengisi **Buku Harian** mengenai cuaca, jumlah pekerja aktif, dan log kemajuan fisik.
+* Sistem akan memperbarui grafik Kurva S secara real-time untuk memperlihatkan apakah proyek berjalan lebih cepat (*ahead of schedule*) atau terlambat (*behind schedule*).
+
+### Langkah 7: Kontrol Keuangan & Pembayaran Gaji
+* Masuk ke menu **Lap. Keuangan** setiap kali ada kuitansi pembelian material datang atau pembayaran mingguan pekerja.
+* Catat pengeluaran riil tersebut di sistem untuk memantau grafik perbandingan pengeluaran aktual versus anggaran rencana.
+* Gunakan menu **Upah Tukang** untuk merekap jam kerja pekerja lapangan dan mencetak laporan tanda terima upah mingguan.
+
+---
+
 ## 🎯 Target Pengguna
 
 Aplikasi ini didesain secara khusus untuk berbagai profesional di ekosistem konstruksi:
